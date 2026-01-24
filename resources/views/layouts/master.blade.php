@@ -45,6 +45,7 @@
 @include('layouts.footer')
 
 {{-- JS FABKIN --}}
+<script src="/js/layout-setup.js"></script>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="/libs/simplebar/simplebar.min.js"></script>
 

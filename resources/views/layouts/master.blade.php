@@ -24,7 +24,8 @@
 <link href="/css/custom.css" rel="stylesheet">
 <link href="/libs/simplebar/simplebar.min.css" rel="stylesheet">
 
-    
+
+    @yield('styles')
 </head>
 
 <body class="bg-body">
@@ -46,34 +47,34 @@
 {{-- JS FABKIN --}}
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="/libs/simplebar/simplebar.min.js"></script>
-<script src="/libs/node-waves/waves.min.js"></script>
+
 <script src="/js/app.js"></script>
 
 
 <script>
 // ====== Sidebar: forzar funcionamiento del collapse ======
-document.addEventListener('DOMContentLoaded', function () {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar || typeof bootstrap === 'undefined') return;
-
-    sidebar.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function (trigger) {
-        trigger.addEventListener('click', function (e) {
-            e.preventDefault(); // ✅ corregido
-
-            const selector = this.getAttribute('href') || this.getAttribute('data-bs-target');
-            if (!selector) return;
-
-            const target = document.querySelector(selector);
-            if (!target) return;
-
-            const instance = bootstrap.Collapse.getOrCreateInstance(target, {
-                toggle: false // 👈 CLAVE
-            });
-
-            instance.toggle();
-        });
-    });
-});
+//document.addEventListener('DOMContentLoaded', function () {
+//    const sidebar = document.getElementById('sidebar');
+//    if (!sidebar || typeof bootstrap === 'undefined') return;
+//
+//    sidebar.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function (trigger) {
+//        trigger.addEventListener('click', function (e) {
+//            e.preventDefault(); // ✅ corregido
+//
+//            const selector = this.getAttribute('href') || this.getAttribute('data-bs-target');
+//            if (!selector) return;
+//
+//            const target = document.querySelector(selector);
+//            if (!target) return;
+//
+//            const instance = bootstrap.Collapse.getOrCreateInstance(target, {
+//                toggle: false // 👈 CLAVE
+//            });
+//
+//            instance.toggle();
+//        });
+//    });
+//});
 </script>
 
 <script>

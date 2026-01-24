@@ -3,10 +3,10 @@
     <div class="pe-app-sidebar-logo px-6 d-flex align-items-center position-relative">
         <!--begin::Brand Image-->
 <a href="/pages/dashboard.php" class="fs-18 fw-semibold">
-    <img height="72" class="pe-app-sidebar-logo-default d-none" alt="Logo" src="/assets/images/logo/logorn.png">
-    <img height="72" class="pe-app-sidebar-logo-light d-none" alt="Logo" src="/assets/images/logo/logorn.png">
-    <img height="72" class="pe-app-sidebar-logo-minimize d-none" alt="Logo" src="/assets/images/logo/logorn.png">
-    <img height="72" class="pe-app-sidebar-logo-minimize-light d-none" alt="Logo" src="/assets/images/logo/logorn.png">
+    <img height="45" class="pe-app-sidebar-logo-default d-none" alt="Logo" src="/images/RecusosNaturalesCompleto.svg">
+    <img height="45" class="pe-app-sidebar-logo-light d-none" alt="Logo" src="/images/RecusosNaturalesCompleto.svg">
+    <img height="45" class="pe-app-sidebar-logo-minimize d-none" alt="Logo" src="/images/RecursosNaturales.svg">
+    <img height="45" class="pe-app-sidebar-logo-minimize-light d-none" alt="Logo" src="/images/RecursosNaturales.svg">
 </a>
         <!--end::Brand Image-->
     </div> 

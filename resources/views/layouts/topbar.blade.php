@@ -9,13 +9,13 @@
                     {{-- LOGO --}}
                     <a href="/dashboard" class="fs-18 fw-semibold">
                         <img height="30" class="header-sidebar-logo-default d-none"
-                             src="/assets/images/logo-dark.png">
+                             src="/images/RecusosNaturalesCompleto.svg">
                         <img height="30" class="header-sidebar-logo-light d-none"
-                             src="/assets/images/logo-light.png">
+                             src="/images/RecusosNaturalesCompleto.svg">
                         <img height="30" class="header-sidebar-logo-small d-none"
-                             src="/assets/images/logo-md.png">
+                             src="/images/RecursosNaturales.svg">
                         <img height="30" class="header-sidebar-logo-small-light d-none"
-                             src="/assets/images/logo-md-light.png">
+                             src="/images/RecursosNaturales.svg">
                     </a>
 
                     {{-- TOGGLE SIDEBAR --}}

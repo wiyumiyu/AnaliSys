@@ -1,6 +1,6 @@
 
 <aside class="pe-app-sidebar" id="sidebar">
-    <div class="pe-app-sidebar-logo px-6 d-flex align-items-center position-relative">
+    <div class="pe-app-sidebar-logo px-4 d-flex align-items-center position-relative">
         <!--begin::Brand Image-->
 <a href="/pages/dashboard.php" class="fs-18 fw-semibold">
     <img height="45" class="pe-app-sidebar-logo-default d-none" alt="Logo" src="/images/RecusosNaturalesCompleto.svg">

@@ -50,13 +50,146 @@
 <script src="/js/app.js"></script>
 
 
-{{-- Sidebar toggle (OBLIGATORIO) --}}
-@include('layouts.partials.sidebar-toggle')
+<script>
+// ====== Sidebar: forzar funcionamiento del collapse ======
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar || typeof bootstrap === 'undefined') return;
+
+    sidebar.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function (trigger) {
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault(); // ✅ corregido
+
+            const selector = this.getAttribute('href') || this.getAttribute('data-bs-target');
+            if (!selector) return;
+
+            const target = document.querySelector(selector);
+            if (!target) return;
+
+            const instance = bootstrap.Collapse.getOrCreateInstance(target, {
+                toggle: false // 👈 CLAVE
+            });
+
+            instance.toggle();
+        });
+    });
+});
+</script>
+
+<script>
+// ====== Mantener activo el menú actual y abrir el padre ======
+document.addEventListener("DOMContentLoaded", function () {
+    const currentUrl = window.location.pathname;
+
+    document.querySelectorAll(".pe-slide-item a.pe-nav-link").forEach(link => {
+        const href = link.getAttribute("href");
+
+        // Ignorar links inválidos
+        if (!href || href === "javascript:void(0)") return;
+
+        // Normalizar rutas (quitar archivo final)
+        const hrefBase = href.replace(/\/[^\/]+\.php$/, '/');
+        const currentBase = currentUrl.replace(/\/[^\/]+\.php$/, '/');
+
+        /*
+         Regla general:
+         - Si la URL actual empieza con la ruta base del link,
+           ese link pertenece a la sección activa
+        */
+        if (
+            currentUrl === href ||
+            currentBase.startsWith(hrefBase)
+        ) {
+            activarLink(link);
+        }
+    });
+
+    function activarLink(link) {
+        // 1️⃣ marcar link activo
+        link.classList.add("active");
+
+        // 2️⃣ abrir menú padre
+        const parentMenu = link.closest(".pe-slide-menu");
+        if (parentMenu) {
+            parentMenu.classList.add("show");
+        }
+
+        // 3️⃣ marcar trigger padre como activo
+        const parentTrigger = parentMenu?.previousElementSibling;
+        if (parentTrigger && parentTrigger.classList.contains("pe-nav-link")) {
+            parentTrigger.classList.add("active");
+            parentTrigger.setAttribute("aria-expanded", "true");
+        }
+    }
+});
+//document.addEventListener("DOMContentLoaded", function () {
+//    const currentUrl = window.location.pathname;
+//
+//    // Seleccionar todos los links del menú
+//    document.querySelectorAll(".pe-slide-item a.pe-nav-link").forEach(link => {
+//        const href = link.getAttribute("href");
+//
+//        // Ignorar vacíos o javascript:void
+//        if (!href || href === "javascript:void(0)") return;
+//
+//        // Si la URL actual contiene el href del link → este es el activo
+//if (
+//    currentUrl === href ||
+//    (href.includes("/pages/ingreso_datos/textura") &&
+//     currentUrl.includes("/pages/ingreso_datos/textura/")) ||
+//    (href.includes("/pages/ingreso_datos/densidad_aparente") &&
+//     currentUrl.includes("/pages/ingreso_datos/densidad_aparente/")) ||
+//    (href.includes("/pages/ingreso_datos/densidad_particulas") &&
+//     currentUrl.includes("/pages/ingreso_datos/densidad_particulas/")) ||
+//    (href.includes("/pages/ingreso_datos/porosidad_total") &&
+//     currentUrl.includes("/pages/ingreso_datos/porosidad_total/")) ||
+//    (href.includes("/pages/ingreso_datos/conductividad_hidraulica") &&
+//     currentUrl.includes("/pages/ingreso_datos/conductividad_hidraulica/"))||
+//    (href.includes("/pages/ingreso_datos/humedad_gravimetrica") &&
+//     currentUrl.includes("/pages/ingreso_datos/humedad_gravimetrica/")) || 
+//    (href.includes("/pages/ingreso_datos/retencion_humedad") &&
+//     currentUrl.includes("/pages/ingreso_datos/retencion_humedad/")) || 
+//    (href.includes("/pages/ingreso_datos/curvatura_retencion") &&
+//     currentUrl.includes("/pages/ingreso_datos/curvatura_retencion/")) || 
+//    (href.includes("/pages/ingreso_datos/granulometria_gruesa") &&
+//     currentUrl.includes("/pages/ingreso_datos/granulometria_gruesa/")) || 
+//    (href.includes("/pages/ingreso_datos/estabilidad_agregados") &&
+//     currentUrl.includes("/pages/ingreso_datos/estabilidad_agregados/"))  || 
+//    (href.includes("/pages/ingreso_datos/coel") &&
+//     currentUrl.includes("/pages/ingreso_datos/coel/")) || 
+//    (href.includes("/pages/ingreso_datos/permeabilidad_aire") &&
+//     currentUrl.includes("/pages/ingreso_datos/permeabilidad_aire/"))                
+//) {
+//
+//            // 1. marcar hijo como activo
+//            link.classList.add("active");
+//
+//            // 2. abrir menú padre
+//            const parentMenu = link.closest(".pe-slide-menu");
+//            if (parentMenu) {
+//                parentMenu.classList.add("show"); // muestra el collapse
+//            }
+//
+//            // 3. marcar el enlace del padre como activo y expandido
+//            const parentTrigger = parentMenu?.previousElementSibling;
+//            if (parentTrigger && parentTrigger.classList.contains("pe-nav-link")) {
+//                parentTrigger.classList.add("active");
+//                parentTrigger.setAttribute("aria-expanded", "true");
+//            }
+//        }
+//    });
+//});
+</script>
 
 
 
-{{-- footer --}}
-@include('layouts.partials.footer-js')
+<!--{{-- Sidebar toggle (OBLIGATORIO) --}}
+@include('layouts.partials.sidebar-toggle')-->
+
+
+
+<!--{{-- footer --}}
+@include('layouts.partials.footer-js')-->
 
 @yield('scripts')
 </body>

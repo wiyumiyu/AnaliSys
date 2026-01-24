@@ -29,68 +29,118 @@
 
 
 
+/* ============================================================
+   SIDEBAR COLLAPSE
+============================================================ */
 
+/* Ancho normal del sidebar */
+.pe-app-sidebar {
+    width: 260px;
+    transition: width .25s ease;
+}
+
+/* Sidebar colapsado */
+.pe-app-sidebar.collapsed {
+    width: 70px !important;
+    overflow: hidden;
+}
+
+/* Ocultar texto cuando colapsa */
+.pe-app-sidebar.collapsed .pe-nav-content,
+.pe-app-sidebar.collapsed .pe-nav-content1,
+.pe-app-sidebar.collapsed .pe-nav-arrow {
+    display: none !important;
+}
+
+/* Íconos centrados */
+.pe-app-sidebar.collapsed .pe-nav-link {
+    justify-content: center !important;
+}
+
+.pe-app-sidebar.collapsed .pe-nav-icon {
+    margin-right: 0 !important;
+}
 
 /* ============================================================
-   CONTENIDO PRINCIPAL
+   MOVIMIENTO DEL TOPBAR + CONTENIDO
+   (se basan en la clase body.sidebar-collapsed)
 ============================================================ */
 
 /* Contenido normal */
+main.pe-content {
+    margin-left: 260px;
+    transition: margin-left .25s ease;
+}
+
+/* Contenido cuando la barra está cerrada */
+body.sidebar-collapsed main.pe-content {
+    margin-left: 70px !important;
+}
+
+/* Topbar normal */
+.app-header {
+    margin-left: 0px;     /* antes 260 */
+    transition: margin-left .25s ease;
+}
+
+/* Topbar colapsado */
+body.sidebar-collapsed .app-header {
+    margin-left: -180px !important;   /* antes 70 */
+}
+
+
+/* ============================================================
+   OPCIONAL: Mejora visual del hover del sidebar
+============================================================ */
+.pe-app-sidebar .pe-nav-link:hover {
+    background-color: rgba(255,255,255,0.05);
+}
+
+/* ============================================================
+   FIN CUSTOM.CSS
+============================================================ */
+
+
+
+/* Contenido alineado con sidebar abierto */
 .pe-content {
     margin-left: 260px;
-    margin-top: 70px;
-    padding: 20px;
-    transition: margin-left 0.25s ease;
+    margin-top: 70px;   /* baja el contenido debajo del topbar */
+    padding: 20px;      /* opcional: para que no quede pegado */
+    transition: margin-left .25s ease;
 }
 
-/* Contenido con sidebar colapsado */
+/* Contenido cuando sidebar está colapsado */
 body.sidebar-collapsed .pe-content {
-    margin-left: 70px;
-}
-
-/* ============================================================
-   TOPBAR
-============================================================ */
-.app-header {
-    position: fixed;
-    top: 0;
-    left: 260px;
-    right: 0;
-    height: 70px;
-    z-index: 1100;
-    transition: left 0.25s ease;
-}
-
-body.sidebar-collapsed .app-header {
-    left: 70px;
+    margin-left: 70px !important;
 }
 
 
-
-
-/* ============================================================
-   BOTONES DE ACCIÓN (preparado para CRUD)
-============================================================ */
-
+/* ===============================
+   BOTONES DE ACCIÓN EN TABLAS
+   =============================== */
+/*
 .btn-action {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     padding: 0 !important;
-    min-width: 36px;
-    min-height: 36px;
+    min-width: 38px;
+    min-height: 38px;
 }
 
+ Editar 
 .btn-action-edit {
     border: 1px solid #ff7c32;
-    background-color: rgba(255, 124, 50, 0.12);
+    background-color: rgba(255, 124, 50, 0.10);
     color: #ff7c32;
 }
 
 .btn-action-edit:hover {
-    background-color: rgba(255, 124, 50, 0.22);
+    background-color: rgba(255, 124, 50, 0.20);
     color: #ff7c32;
 }
 
+ Eliminar 
 .btn-action-delete {
     border: 1px solid #d9534f;
     background-color: rgba(217, 83, 79, 0.12);
@@ -100,146 +150,4 @@ body.sidebar-collapsed .app-header {
 .btn-action-delete:hover {
     background-color: rgba(217, 83, 79, 0.25);
     color: #d9534f;
-}
-
-/* ============================================================
-   FIN CUSTOM.CSS
-============================================================ */
-#toggleSidebar {
-    position: relative;
-    z-index: 1200; /* más alto que todo */
-}
-/* SIDEBAR */
-.pe-app-sidebar {
-    width: 260px;
-    transition: width .25s ease;
-}
-
-.pe-app-sidebar.collapsed {
-    width: 70px;
-    overflow: hidden;
-}
-
-/* OCULTAR TEXTO */
-.pe-app-sidebar.collapsed .pe-nav-content,
-.pe-app-sidebar.collapsed .pe-nav-arrow {
-    display: none !important;
-}
-
-.pe-app-sidebar.collapsed .pe-nav-content1 {
-    display: block;
-    padding: 10px 20px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    opacity: .6;
-}
-
-
-/* ICONOS CENTRADOS */
-.pe-app-sidebar.collapsed .pe-nav-link {
-    justify-content: center;
-}
-
-/* CONTENIDO */
-.pe-content {
-    margin-left: 260px;
-    margin-top: 70px;
-    transition: margin-left .25s ease;
-}
-
-body.sidebar-collapsed .pe-content {
-    margin-left: 70px;
-}
-
-/* TOPBAR */
-.app-header {
-    margin-left: 0px;
-    transition: margin-left .25s ease;
-}
-
-body.sidebar-collapsed .app-header {
-    margin-left: 0px;
-}
-
-/* SUBMENÚS */
-.pe-slide-menu {
-    display: none;
-}
-
-
-
-/* MINI SIDEBAR HOVER */
-.pe-app-sidebar.collapsed .pe-slide {
-    position: relative;
-}
-
-
-/* Hover flotante */
-.pe-app-sidebar.collapsed .pe-slide {
-    position: relative;
-}
-.pe-app-sidebar.collapsed .pe-slide:hover > .pe-slide-menu {
-    display: block;
-    position: absolute;
-    left: 70px;
-    top: 0;
-    min-width: 240px;
-
-    background: var(--bs-body-bg);
-    box-shadow: 0 10px 30px rgba(0,0,0,.15);
-    border-radius: 12px;
-    padding: 8px 0;
-    z-index: 3000;
-}
-
-.pe-app-sidebar.collapsed .pe-slide-item a {
-    padding: 8px 20px;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-
-.pe-app-sidebar.collapsed .pe-slide-menu {
-    display: none;
-}
-
-
-/* TÍTULO DEL SUBMENÚ */
-.pe-app-sidebar.collapsed .pe-slide-menu .pe-nav-content1 {
-    display: block;
-    padding: 10px 20px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    opacity: .6;
-}
-
-
-/* ============================================================
-   SUBMENÚS – SIDEBAR ABIERTO
-============================================================ */
-
-.pe-app-sidebar:not(.collapsed) .pe-slide-menu {
-    display: block;
-    position: static;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
-
-/* ============================================================
-   SIDEBAR HOVER (opcional, visual)
-============================================================ */
-
-
-.pe-app-sidebar .pe-nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-}
-
-/* ============================================================
-   LIMPIAR PUNTOS / LÍNEAS (TIMELINE)
-============================================================ */
-
-.pe-app-sidebar.collapsed .pe-slide-item::before,
-.pe-app-sidebar.collapsed .pe-main-menu::before {
-    display: none !important;
-}
+}*/

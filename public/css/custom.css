@@ -9,13 +9,6 @@
 
 
 
-/* Contenido alineado con sidebar abierto */
-.pe-content {
-    margin-left: 260px;
-    margin-top: 70px;   /* baja el contenido debajo del topbar */
-    padding: 20px;      /* opcional: para que no quede pegado */
-    transition: margin-left .25s ease;
-}
 
 
 

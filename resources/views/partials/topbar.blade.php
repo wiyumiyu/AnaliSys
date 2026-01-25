@@ -78,7 +78,7 @@
 
                         {{-- PERFIL HEADER --}}
                         <div class="border-bottom pb-2 mb-2 d-flex align-items-center gap-2">
-                            <img src="/assets/images/avatar/dummy_avatar.jpg"
+                            <img src="/../images/avatar/dummy_avatar.jpg"
                                  class="rounded-circle header-profile-user"
                                  width="35" height="35">
 

@@ -57,7 +57,7 @@
                             aria-expanded="false">
 
                         <span class="header-btn btn position-relative">
-                            <img src="/assets/images/avatar/dummy_avatar.jpg"
+                            <img src="/images/avatar/dummy-avatar.jpg"
                                  class="img-fluid rounded-circle">
                             <span class="position-absolute translate-middle badge border border-light rounded-circle bg-success">
                                 <span class="visually-hidden">online</span>
@@ -78,7 +78,7 @@
 
                         {{-- PERFIL HEADER --}}
                         <div class="border-bottom pb-2 mb-2 d-flex align-items-center gap-2">
-                            <img src="/../images/avatar/dummy_avatar.jpg"
+                            <img src="/images/avatar/dummy-avatar.jpg"
                                  class="rounded-circle header-profile-user"
                                  width="35" height="35">
 

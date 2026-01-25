@@ -24,7 +24,7 @@
         <main class="app-wrapper">
             <div class="container-fluid">
 
-                @include('partials.page-title')
+<!--                @include('partials.page-title')-->
 
                 @yield('content')
                 @include('partials.switcher')

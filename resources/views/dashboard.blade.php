@@ -16,9 +16,9 @@
 @endsection
 
 @section('js')
-    <script src="/libs/apexcharts/apexcharts.min.js"></script>
+<!--    <script src="/libs/apexcharts/apexcharts.min.js"></script>-->
 
-    <script src="/js/dashboard/academy.init.js"></script>
+<!--    <script src="/js/dashboard/academy.init.js"></script>-->
     <script src="/js/bootstrap.bundle.min.js"></script>
     <!-- App js -->
     <script src="/js/app.js"></script>

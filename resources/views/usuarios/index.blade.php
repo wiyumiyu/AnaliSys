@@ -1,59 +1,80 @@
-@extends('layouts.master')
+@extends('partials.layouts.master')
 
 @section('title', 'Gestión de Usuarios')
 
+@section('css')
+    <!-- Datatables CSS (FabKin style) -->
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
+@endsection
+
 @section('content')
 
-<div class="container-fluid page-inner">
+<div class="row">
+    <div class="col-lg-12">
 
-    {{-- TITLE + BUTTON --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold">Gestión de Usuarios</h1>
+        {{-- HEADER --}}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 fw-semibold">Usuarios del sistema</h4>
 
-        <a href="{{ route('usuarios.create') }}" class="btn btn-primary px-4">
-            + Nuevo usuario
-        </a>
-    </div>
-
-    {{-- CARD --}}
-    <div class="card shadow-sm">
-
-        <div class="card-header pb-2">
-            <h5 class="card-title mb-1 fw-bold fs-5">
-                Listado de usuarios del sistema
-            </h5>
-            <div class="text-muted fs-13">
-                Usuarios autorizados a ingresar y operar en la plataforma.
-            </div>
+            <a href="{{ route('usuarios.create') }}"
+               class="btn btn-primary">
+                <i class="ri-user-add-line me-1"></i>
+                Nuevo usuario
+            </a>
         </div>
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table align-middle table-hover mb-0">
+        {{-- CARD --}}
+        <div class="card">
+            <div class="card-body">
+
+                {{-- TABLE --}}
+              <table id="default_datatable" class="table table-nowrap align-middle">
 
                     <thead>
-                        <tr class="border-bottom">
-                            <th class="text-muted fw-bold">Nombre</th>
-                            <th class="text-muted fw-bold">Cédula</th>
-                            <th class="text-muted fw-bold">Rol</th>
-                            <th class="text-muted fw-bold">Estado</th>
-                            <th class="text-muted fw-bold text-center">Acciones</th>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Cédula</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
 
                     <tbody>
+                        @forelse($users as $u)
+                        <tr>
 
-                    @forelse($users as $u)
-                        <tr class="border-bottom">
-
-                            <td>{{ $u->nombre_completo }}</td>
-
-                            <td class="fw-semibold text-primary">
-                                {{ $u->cedula }}
+                            {{-- USUARIO --}}
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="/images/avatar/dummy-avatar.jpg"
+                                         class="avatar-sm rounded-circle"
+                                         alt="avatar">
+                                    <div>
+                                        <h6 class="mb-0">
+                                            {{ $u->nombre_completo }}
+                                        </h6>
+                                        <small class="text-muted">
+                                            ID {{ $u->id_persona }}
+                                        </small>
+                                    </div>
+                                </div>
                             </td>
 
-                            <td>{{ $u->rol ?? 'Sin rol' }}</td>
+                            {{-- CÉDULA --}}
+                            <td>{{ $u->cedula }}</td>
 
+                            {{-- ROL --}}
+                            <td>
+                                <span class="badge bg-info-subtle text-info">
+                                    {{ $u->rol ?? 'Sin rol' }}
+                                </span>
+                            </td>
+
+                            {{-- ESTADO --}}
                             <td>
                                 @if($u->id_estado == 1)
                                     <span class="badge bg-success-subtle text-success">
@@ -66,40 +87,41 @@
                                 @endif
                             </td>
 
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center gap-2">
+                            {{-- ACCIONES --}}
+                            <td class="text-end">
+                                <div class="hstack gap-2 fs-15 justify-content-end">
 
                                     {{-- EDITAR --}}
                                     <a href="{{ route('usuarios.edit', $u->id_persona) }}"
-                                       class="btn btn-action btn-action-edit">
-                                        <i class="bi bi-pencil"></i>
+                                       class="btn bg-primary-subtle text-primary btn-sm">
+                                        <i class="ri-edit-line"></i>
                                     </a>
 
                                     {{-- ELIMINAR --}}
-                                    <button class="btn btn-action btn-action-delete"
+                                    <button class="btn bg-danger-subtle text-danger btn-sm"
                                             onclick="confirmarEliminacionUsuario({{ $u->id_persona }})">
-                                        <i class="bi bi-trash"></i>
+                                        <i class="ri-delete-bin-line"></i>
                                     </button>
 
                                 </div>
                             </td>
 
                         </tr>
-                    @empty
+                        @empty
                         <tr>
                             <td colspan="5" class="text-center text-muted py-4">
                                 No hay usuarios registrados.
                             </td>
                         </tr>
-                    @endforelse
-
+                        @endforelse
                     </tbody>
 
                 </table>
+
             </div>
         </div>
-    </div>
 
+    </div>
 </div>
 
 {{-- MODAL CONFIRMAR ELIMINACIÓN --}}
@@ -109,19 +131,22 @@
 
             <div class="modal-header">
                 <h5 class="modal-title text-danger">Eliminar usuario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
-                ¿Está seguro que desea eliminar este usuario?
+                ¿Está seguro que desea inactivar este usuario?
                 <br>
                 <small class="text-muted">
-                    El usuario quedará inactivo.
+                    El usuario no podrá acceder al sistema.
                 </small>
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-light" data-bs-dismiss="modal">
+                <button class="btn btn-light"
+                        data-bs-dismiss="modal">
                     Cancelar
                 </button>
 
@@ -137,18 +162,28 @@
         </div>
     </div>
 </div>
+        </div><!--End container-fluid-->
+    </main><!--End app-wrapper-->
+
 
 @endsection
 
-@section('scripts')
-<script>
-    let deleteForm = document.getElementById('deleteUserForm');
 
-    function confirmarEliminacionUsuario(id) {
-        deleteForm.action = `/usuarios/${id}`;
-        new bootstrap.Modal(
-            document.getElementById('confirmDeleteUserModal')
-        ).show();
-    }
-</script>
+
+@section('js')
+
+<!-- Bootstrap (necesario para sidebar, modales, etc) -->
+<script src="/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables CORE (OBLIGATORIO) -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<!-- FabKin Datatable Init (usa $ y DataTable) -->
+<script src="/js/table/datatable.init.js"></script>
+
+<!-- FabKin App (sidebar, toggles, theme, etc) -->
+<script src="/js/app.js"></script>
+
 @endsection

@@ -127,7 +127,7 @@
                         <a href="javascript:void(0)">Administración</a>
                     </li>
                     <li class="pe-slide-item">
-                        <a href="/pages/usuarios/listado.php" class="pe-nav-link">
+                        <a href="usuarios" class="pe-nav-link">
                             Usuario
                         </a>
                     </li>

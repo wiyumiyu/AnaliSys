@@ -1,8 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Academy | FabKin Admin & Dashboards Template')
-@section('title-sub', 'E-Commerce ')
-@section('pagetitle', 'Academy')
+@section('title', 'Lista de Usuarios')
 @section('content')
 
 

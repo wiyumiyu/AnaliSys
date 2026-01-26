@@ -1,15 +1,23 @@
 <!-- Simplebar Css -->
-<link rel="stylesheet" href="libs/simplebar/simplebar.min.css">
+<link rel="stylesheet" href="{{ asset('libs/simplebar/simplebar.min.css') }}">
+
 <!-- Swiper Css -->
-<link href="libs/swiper/swiper-bundle.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('libs/swiper/swiper-bundle.min.css') }}">
+
 <!-- Nouislider Css -->
-<link href="libs/nouislider/nouislider.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('libs/nouislider/nouislider.min.css') }}">
+
 <!-- Bootstrap Css -->
-<link href="css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css">
-<!--icons css-->
-<link href="css/icons.min.css" rel="stylesheet" type="text/css">
-<!-- App Css-->
-<link href="css/app.min.css" id="app-style" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" id="bootstrap-style" type="text/css">
+
+<!-- Icons Css -->
+<link rel="stylesheet" href="{{ asset('css/icons.min.css') }}" type="text/css">
+
+<!-- App Css -->
+<link rel="stylesheet" href="{{ asset('css/app.min.css') }}" id="app-style" type="text/css">
+
+
+
 
 
 

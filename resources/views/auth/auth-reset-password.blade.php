@@ -31,7 +31,7 @@
                                         <button type="submit" class="btn btn-primary w-full mb-5">Enviar correo de recuperación</button>
                                     </div>
                                 </div>
-                                <p class="mb-0 fw-semibold position-relative text-center fs-12">
+                                <p class="mb-0 fw-normal position-relative text-center fs-12">
                                     Regresar al
                                     <a href="{{ route('login') }}"
                                        class="text-decoration-underline text-primary">

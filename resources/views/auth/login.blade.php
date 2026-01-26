@@ -1,26 +1,97 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
+@extends('partials.layouts.master_auth')
 
-<h1>Login</h1>
+@section('title', 'Sign In | FabKin Admin')
 
-<form method="POST" action="/login">
-    @csrf
+@section('content')
 
-    <div>
-        <input type="email" name="email" placeholder="Correo">
+@if ($errors->any())
+    <div class="alert alert-danger text-center">
+        {{ $errors->first() }}
     </div>
+@endif
 
-    <div>
-        <input type="password" name="password" placeholder="Contraseña">
+<div>
+    <img src="{{ asset('/images/auth/login_bg.jpg') }}" alt="Auth Background"
+        class="auth-bg light w-full h-full opacity-60 position-absolute top-0">
+    <img src="{{ asset('/images/auth/auth_bg_dark.jpg') }}" alt="Auth Background"
+        class="auth-bg d-none dark">
+
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100 py-10">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="card mx-xxl-8">
+                    <div class="card-body py-12 px-8">
+
+                        <img src="{{ asset("/images/logo-light.svg") }}" alt="Logo"
+                            height="70" class="mb-4 mx-auto d-block">
+
+                        <h6 class="mb-3 mb-8 fw-medium text-center">
+                            Inicia sesión para continuar
+                        </h6>
+
+                        <!-- 🔐 LOGIN FORM -->
+                        <form method="POST" action="{{ route('login') }}">
+                            @csrf
+
+                            <div class="row g-4">
+
+                                <!-- EMAIL -->
+                                <div class="col-12">
+                                    <label class="form-label">
+                                        Correo electrónico <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="email"
+                                           name="email"
+                                           class="form-control"
+                                           placeholder="correo@ejemplo.com"
+                                           value="{{ old('email') }}"
+                                           required>
+                                </div>
+
+                                <!-- PASSWORD -->
+                                <div class="col-12">
+                                    <label class="form-label">
+                                        Contraseña <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="password"
+                                           name="password"
+                                           class="form-control"
+                                           placeholder="••••••••"
+                                           required>
+                                </div>
+
+                                <!-- REMEMBER + FORGOT -->
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="form-text">
+                                            <a href="{{ route('password.request') }}"
+                                               class="link link-primary text-muted text-decoration-underline">
+                                                ¿Olvidaste tu contraseña?
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SUBMIT -->
+                                <div class="col-12 mt-8">
+                                    <button type="submit" class="btn btn-primary w-full mb-4">
+                                        Entrar
+                                        <i class="bi bi-box-arrow-in-right ms-1 fs-16"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <button type="submit">Entrar</button>
-</form>
+@endsection
 
-</body>
-</html>
+@section('js')
+@endsection

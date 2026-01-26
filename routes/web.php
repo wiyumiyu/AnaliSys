@@ -20,6 +20,10 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::get('/admin', function () {
     return 'Solo ADMIN';
 })->middleware('rol:ADMIN');
+    
+Route::get('/forgot-password', function () {
+return view('auth.auth-reset-password');
+})->name('password.request');
 
 Route::get('/personas', [PersonaController::class, 'index'])
         ->middleware('rol:ADMIN');
@@ -41,4 +45,5 @@ Route::middleware(['rol:ADMIN'])->group(function () {
     
     Route::get('/usuarios/crear', [UsuarioController::class, 'create'])
     ->name('usuarios.create');
+
 });

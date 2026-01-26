@@ -7,16 +7,7 @@
                 <div class="d-inline-flex align-items-center gap-5">
 
                     {{-- LOGO --}}
-                    <a href="/dashboard" class="fs-18 fw-semibold">
-                        <img height="30" class="header-sidebar-logo-default d-none"
-                             src="/images/RecusosNaturalesCompleto.svg">
-                        <img height="30" class="header-sidebar-logo-light d-none"
-                             src="/images/RecusosNaturalesCompleto.svg">
-                        <img height="30" class="header-sidebar-logo-small d-none"
-                             src="/images/RecursosNaturales.svg">
-                        <img height="30" class="header-sidebar-logo-small-light d-none"
-                             src="/images/RecursosNaturales.svg">
-                    </a>
+
 
                     {{-- TOGGLE SIDEBAR --}}
                     <button type="button"

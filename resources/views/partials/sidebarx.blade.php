@@ -1,12 +1,12 @@
 
 <aside class="pe-app-sidebar" id="sidebar">
-    <div class="pe-app-sidebar-logo px-4 d-flex align-items-center position-relative">
+    <div class="pe-app-sidebar-logo px-3 d-flex align-items-center position-relative">
         <!--begin::Brand Image-->
 <a href="/pages/dashboard.php" class="fs-18 fw-semibold">
     <img height="45" class="pe-app-sidebar-logo-default d-none" alt="Logo" src="/images/logo-light.svg">
     <img height="45" class="pe-app-sidebar-logo-light d-none" alt="Logo" src="/images/logo-dark.svg">
     <img height="45" class="pe-app-sidebar-logo-minimize d-none" alt="Logo" src="/images/logo-md-light.svg">
-    <img height="45" class="pe-app-sidebar-logo-minimize-light d-none" alt="Logo" src="/images/logo-mg.svg">
+    <img height="45" class="pe-app-sidebar-logo-minimize-light d-none" alt="Logo" src="/images/logo-md.svg">
 </a>
         <!--end::Brand Image-->
     </div> 

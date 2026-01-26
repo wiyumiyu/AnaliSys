@@ -1,6 +1,6 @@
 @extends('partials.layouts.master_auth')
 
-@section('title', 'Sign In | FabKin Admin')
+@section('title', 'Iniciar Sesión  | AnaliSys')
 
 @section('content')
 

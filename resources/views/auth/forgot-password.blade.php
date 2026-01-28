@@ -81,7 +81,8 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
 
-            <div class="modal-header">
+            <!-- HEADER SIN LÍNEA -->
+            <div class="modal-header border-0">
                 <h5 class="modal-title text-danger">
                     Error en la recuperación
                 </h5>
@@ -98,7 +99,8 @@
                 </p>
             </div>
 
-            <div class="modal-footer">
+            <!-- FOOTER SIN LÍNEA -->
+            <div class="modal-footer border-0">
                 <button type="button"
                         class="btn btn-light"
                         data-bs-dismiss="modal">
@@ -109,6 +111,56 @@
         </div>
     </div>
 </div>
+
+{{-- ================= MODAL ÉXITO ================= --}}
+@if (session('status'))
+<div class="modal fade"
+     id="successModal"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- HEADER SIN LÍNEA -->
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-success">
+                    Correo enviado
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+            
+            <div class="modal-body text-center">
+                <p class="mb-0">
+                    El correo de recuperación ha sido enviado correctamente.<br>
+                    <small class="text-muted">
+                        Por favor, ten paciencia: el mensaje puede tardar de
+                        <strong>1 a 3 minutos</strong> en llegar.
+                    </small>
+                </p>
+            </div>
+
+            <!-- FOOTER SIN LÍNEA -->
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button"
+                        class="btn btn-success"
+                        data-bs-dismiss="modal">
+                    Entendido
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+@endif
+
+
 
 @endsection
 
@@ -125,5 +177,17 @@
     });
 </script>
 @endif
+
+@if (session('status'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = new bootstrap.Modal(
+            document.getElementById('successModal')
+        );
+        modal.show();
+    });
+</script>
+@endif
+
 
 @endsection

@@ -3,13 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/xampp/htdocs/analisys/routes/web.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/public/css/custom.css</file>
-            <file>file:/C:/xampp/htdocs/analisys/resources/views/layouts/sidebar.blade.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/resources/views/layouts/topbar.blade.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/resources/views/layouts/footer.blade.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/resources/views/layouts/master.blade.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/public/js/layout-setup.js</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/resources/views/auth/login.blade.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/resources/views/partials/Layouts/master.blade.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/resources/views/partials/Layouts/master_auth.blade.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/resources/views/auth/auth-reset-password.blade.php</file>
         </group>
     </open-files>
 </project-private>

@@ -13,7 +13,7 @@ CREATE DATABASE IF NOT EXISTS analisysbd
   COLLATE utf8mb4_0900_ai_ci;
 
 -- drop database analisysbd;
-  
+
 USE analisysbd;
 
 GRANT ALL PRIVILEGES ON analisysbd.* TO 'sysusuario'@'%';
@@ -103,6 +103,10 @@ CREATE TABLE `sessions` (
   KEY `sessions_last_activity_index` (`last_activity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+UPDATE migrations
+SET migration = '0001_01_01_000000_create_users_table'
+WHERE id = 1;
+
 /* ============================================================
    3. TABLAS DE DOMINIO 
    ============================================================ */
@@ -165,6 +169,18 @@ CREATE TABLE trn_persona_telefono (
   UNIQUE KEY uk_persona_telefono (id_persona, telefono)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE tbl_password_resets (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_persona INT UNSIGNED NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+
+    UNIQUE KEY uk_tbl_password_resets_token (token_hash),
+    INDEX idx_tbl_password_resets_persona (id_persona)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
 -- Densidad Aparente
 CREATE TABLE trn_densidadaparente (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -226,6 +242,13 @@ ADD CONSTRAINT fk_persona_telefono_tipo
 FOREIGN KEY (id_telefono_tipo)
 REFERENCES cat_telefono_tipo(id)
 ON DELETE RESTRICT
+ON UPDATE CASCADE;
+
+ALTER TABLE tbl_password_resets
+ADD CONSTRAINT fk_tbl_password_resets_persona
+FOREIGN KEY (id_persona)
+REFERENCES tbl_persona(id_persona)
+ON DELETE CASCADE
 ON UPDATE CASCADE;
 
 -- Densidad Aparente

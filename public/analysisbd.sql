@@ -442,6 +442,17 @@ END $$
 
 
 
+CREATE PROCEDURE sp_obtener_contrasena_persona (
+    IN p_id_persona INT UNSIGNED
+)
+BEGIN
+    SELECT contrasena
+    FROM tbl_persona
+    WHERE id_persona = p_id_persona;
+END $$
+
+
+
 
 CREATE PROCEDURE sp_editar_persona_correo (
     IN p_id INT UNSIGNED,

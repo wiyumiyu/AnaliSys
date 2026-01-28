@@ -9,7 +9,9 @@
 
     {{-- JS FABKIN --}}
     <!-- layout setup -->
-    <script type="module" src="/js/layout-setup.js"></script>
+    <script type="module" src="{{ asset('js/layout-setup.js') }}"></script>
+
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 

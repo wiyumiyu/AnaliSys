@@ -16,6 +16,10 @@
 <!-- App Css -->
 <link rel="stylesheet" href="{{ asset('css/app.min.css') }}" id="app-style" type="text/css">
 
+<link rel="stylesheet" href="{{ asset('css/custom.css') }}" id="app-style2" type="text/css">
+
+
+
 
 
 

@@ -31,13 +31,13 @@
 
                 {{-- MODO CLARO / OSCURO --}}
                 <div class="dark-mode-btn" id="toggleMode">
-
-                    <button class="btn header-btn active" id="darkModeBtn">
+                    <button class="btn header-btn active" id="lightModeBtn">
+                        <i class="bi bi-brightness-high"></i>
+                    </button>  
+                    <button class="btn header-btn " id="darkModeBtn">
                         <i class="bi bi-moon-stars"></i>
                     </button>
-                    <button class="btn header-btn " id="lightModeBtn">
-                        <i class="bi bi-brightness-high"></i>
-                    </button>                    
+                  
                 </div>
 
                 {{-- PERFIL --}}

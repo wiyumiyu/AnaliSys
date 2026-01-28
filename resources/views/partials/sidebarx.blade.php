@@ -2,12 +2,12 @@
 <aside class="pe-app-sidebar" id="sidebar">
     <div class="pe-app-sidebar-logo px-3 d-flex align-items-center position-relative">
         <!--begin::Brand Image-->
-<a href="/pages/dashboard.php" class="fs-18 fw-semibold">
-    <img height="45" class="pe-app-sidebar-logo-default d-none" alt="Logo" src="/images/logo-light.svg">
-    <img height="45" class="pe-app-sidebar-logo-light d-none" alt="Logo" src="/images/logo-dark.svg">
-    <img height="45" class="pe-app-sidebar-logo-minimize d-none" alt="Logo" src="/images/logo-md-light.svg">
-    <img height="45" class="pe-app-sidebar-logo-minimize-light d-none" alt="Logo" src="/images/logo-md.svg">
-</a>
+        <a href="/pages/dashboard.php" class="fs-18 fw-semibold">
+            <img height="45" class="pe-app-sidebar-logo-default d-none" alt="Logo" src="/images/logo-light.svg">
+            <img height="45" class="pe-app-sidebar-logo-light d-none" alt="Logo" src="/images/logo-dark.svg">
+            <img height="45" class="pe-app-sidebar-logo-minimize d-none" alt="Logo" src="/images/logo-md-light.svg">
+            <img height="45" class="pe-app-sidebar-logo-minimize-light d-none" alt="Logo" src="/images/logo-md.svg">
+        </a>
         <!--end::Brand Image-->
     </div> 
     <nav class="pe-app-sidebar-menu nav nav-pills" data-simplebar id="sidebar-simplebar">
@@ -81,12 +81,12 @@
                     </li>
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/permeabilidad_aire/listado.php" class="pe-nav-link">
-                           Permeabilidad del aire
+                            Permeabilidad del aire
                         </a>
                     </li>
                 </ul>
             </li>
-            
+
             <li class="pe-slide pe-has-sub">
                 <a href="#collapseInvoices" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseInvoices">
                     <i class="bi bi-receipt pe-nav-icon"></i>
@@ -115,22 +115,37 @@
                 </ul>
             </li>
 
-          
-            <li class="pe-slide pe-has-sub">
-                <a href="#collapseAuth" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseAuth">
+
+            @php
+            $usuariosActive = request()->routeIs('usuarios.*');
+            @endphp
+
+            <li class="pe-slide pe-has-sub {{ $usuariosActive ? 'active' : '' }}">
+                <a href="#collapseAuth"
+                   class="pe-nav-link {{ $usuariosActive ? '' : 'collapsed' }}"
+                   data-bs-toggle="collapse"
+                   aria-expanded="{{ $usuariosActive ? 'true' : 'false' }}"
+                   aria-controls="collapseAuth">
+
                     <i class="bi bi-person pe-nav-icon"></i>
                     <span class="pe-nav-content">Administración</span>
                     <i class="ri-arrow-down-s-line pe-nav-arrow"></i>
                 </a>
-                <ul class="pe-slide-menu collapse" id="collapseAuth">
+
+                <ul class="pe-slide-menu collapse {{ $usuariosActive ? 'show' : '' }}"
+                    id="collapseAuth">
+
                     <li class="slide pe-nav-content1">
                         <a href="javascript:void(0)">Administración</a>
                     </li>
+
                     <li class="pe-slide-item">
-                        <a href="{{ route('usuarios.index') }}" class="pe-nav-link">
+                        <a href="{{ route('usuarios.index') }}"
+                           class="pe-nav-link {{ $usuariosActive ? 'active' : '' }}">
                             Usuario
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/bitacora/listado.php" class="pe-nav-link">
                             Bitácora
@@ -138,7 +153,12 @@
                     </li>
                 </ul>
             </li>
-      
+
+
+
+
+
+
         </ul>
     </nav>
 </aside>

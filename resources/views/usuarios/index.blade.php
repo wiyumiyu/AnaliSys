@@ -3,35 +3,49 @@
 @section('title', 'Gestión de Usuarios')
 
 @section('css')
-    <!-- Datatables CSS (FabKin style) -->
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
+<!-- Datatables CSS (FabKin style) -->
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
 @endsection
 
 @section('content')
 
+
 <div class="row">
     <div class="col-lg-12">
 
-        {{-- HEADER --}}
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0 fw-semibold">Usuarios del sistema</h4>
+        <br>
+     
 
-            <a href="{{ route('usuarios.create') }}"
-               class="btn btn-primary">
-                <i class="ri-user-add-line me-1"></i>
-                Nuevo usuario
-            </a>
-        </div>
 
         {{-- CARD --}}
         <div class="card">
+            <div class="card-header">
+                <div class="d-flex flex-wrap gap-4 justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold">Usuarios del sistema</h5>
+                    <div class="d-flex flex-wrap gap-3 align-items-center">
+                        <div class="form-icon">
+                            <input type="text" class="form-control form-control-icon" id="firstNameLayout4"
+                                   placeholder="Buscar ..." required>
+                            <i class="ri-search-2-line text-muted"></i>
+                        </div>
+                        <a href="{{ route('usuarios.create') }}"
+                           class="btn btn-primary">
+                            <i class="ri-user-add-line me-1"></i>
+                            Nuevo usuario
+                        </a>
+
+                    </div>
+                </div>
+            </div>            
+
+
             <div class="card-body">
 
                 {{-- TABLE --}}
-              <table id="default_datatable" class="table table-nowrap align-middle">
+                <table id="default_datatable" class="table table-nowrap align-middle">
 
                     <thead>
                         <tr>
@@ -77,13 +91,13 @@
                             {{-- ESTADO --}}
                             <td>
                                 @if($u->id_estado == 1)
-                                    <span class="badge bg-success-subtle text-success">
-                                        Activo
-                                    </span>
+                                <span class="badge bg-success-subtle text-success">
+                                    Activo
+                                </span>
                                 @else
-                                    <span class="badge bg-danger-subtle text-danger">
-                                        Inactivo
-                                    </span>
+                                <span class="badge bg-danger-subtle text-danger">
+                                    Inactivo
+                                </span>
                                 @endif
                             </td>
 
@@ -162,8 +176,8 @@
         </div>
     </div>
 </div>
-        </div><!--End container-fluid-->
-    </main><!--End app-wrapper-->
+</div><!--End container-fluid-->
+</main><!--End app-wrapper-->
 
 
 @endsection
@@ -172,18 +186,23 @@
 
 @section('js')
 
-<!-- Bootstrap (necesario para sidebar, modales, etc) -->
-<script src="/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap -->
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 
-<!-- DataTables CORE (OBLIGATORIO) -->
+<!-- DataTables CORE -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
-<!-- FabKin Datatable Init (usa $ y DataTable) -->
-<script src="/js/table/datatable.init.js"></script>
+<!-- FabKin Datatable Init -->
+<script src="{{ asset('js/table/datatable.init.js') }}"></script>
 
-<!-- FabKin App (sidebar, toggles, theme, etc) -->
-<script src="/js/app.js"></script>
+<!-- FabKin App -->
+<script src="{{ asset('js/app.js') }}"></script>
 
 @endsection
+
+<!-- buscar elemento de la tabla -->
+<script src="{{ asset('js/table/buscarEnTabla.js') }}"></script>
+
+

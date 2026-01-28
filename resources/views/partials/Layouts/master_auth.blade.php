@@ -8,9 +8,9 @@
 <meta content="Pixeleyez" name="author" />
 
 <!-- layout setup -->
-<script type="module" src="assets/js/layout-setup.js"></script>
+<!--<script type="module" src="js/layout-setup.js"></script>-->
 
-<!-- App favicon -->
+<!-- App faviconx -->
 <link rel="shortcut icon" href="images/k_favicon_32x.png">
 
 @yield('css')

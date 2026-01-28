@@ -77,5 +77,12 @@ Route::middleware(['rol:ADMIN'])->group(function () {
 
     Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy'])
         ->name('usuarios.destroy');
+    
+        Route::post('/usuarios', [UsuarioController::class, 'store'])
+        ->name('usuarios.store');
+        
+            
+    
+
 });
 

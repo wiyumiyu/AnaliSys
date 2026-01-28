@@ -1,102 +1,148 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Editar Usuario')
+@section('title', 'Nuevo Usuario')
 
 @section('content')
 
 <div class="row">
     <div class="col-lg-12">
-
-        {{-- HEADER --}}
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-semibold mb-0">Editar usuario</h4>
-
-            <a href="{{ route('usuarios.index') }}"
-               class="btn btn-light">
-                ← Volver
-            </a>
-        </div>
-
+        <br>
         <div class="card">
+
+            <div class="card-header">
+                <div class="d-flex flex-wrap gap-4 justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold">Nuevo usuario</h5>
+                    <a href="{{ route('usuarios.index') }}" class="btn btn-primary">
+                        ← Volver
+                    </a>
+                </div>
+            </div>
+
             <div class="card-body">
 
-                <form method="POST">
-                    @csrf
-                    @method('PUT')
+                {{-- ERRORES --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-                    {{-- DATOS PERSONALES --}}
+                <form method="POST" action="{{ route('usuarios.store') }}">
+                    @csrf
+
+                    {{-- ================= DATOS PERSONALES ================= --}}
                     <h5 class="fw-semibold mb-3">Datos personales</h5>
 
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Nombre</label>
-                            <input name="nombre" class="form-control"
-                                   value="{{ $usuario->nombre }}" required>
+                            <input name="nombre"
+                                   class="form-control"
+                                   value="{{ old('nombre') }}"
+                                   required>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label">Primer apellido</label>
-                            <input name="apellido1" class="form-control"
-                                   value="{{ $usuario->apellido1 }}" required>
+                            <input name="apellido1"
+                                   class="form-control"
+                                   value="{{ old('apellido1') }}"
+                                   required>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label">Segundo apellido</label>
-                            <input name="apellido2" class="form-control"
-                                   value="{{ $usuario->apellido2 }}">
+                            <input name="apellido2"
+                                   class="form-control"
+                                   value="{{ old('apellido2') }}"
+                                   required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Cédula</label>
-                            <input name="cedula" class="form-control"
-                                   value="{{ $usuario->cedula }}" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Estado</label>
-                            <select name="estado" class="form-select">
-                                <option value="1" @selected($usuario->id_estado == 1)>Activo</option>
-                                <option value="0" @selected($usuario->id_estado == 0)>Inactivo</option>
-                            </select>
+                            <input name="cedula"
+                                   class="form-control"
+                                   value="{{ old('cedula') }}"
+                                   required>
                         </div>
                     </div>
 
-                    {{-- ROL (solo admin) --}}
-                    @unless($fromPerfil)
-                        <hr class="my-4">
+                    {{-- ================= ROL ================= --}}
+                    <br>
+                    <h5 class="fw-semibold mb-3">Rol del usuario</h5>
 
-                        <h5 class="fw-semibold mb-3">Rol del usuario</h5>
+                    <div class="col-md-6">
+                        <select name="rol_id" class="form-select" required>
+                            <option value="">Seleccione un rol</option>
+                            @foreach($roles as $rol)
+                                <option value="{{ $rol->id }}"
+                                    @selected(old('rol_id') == $rol->id)>
+                                    {{ $rol->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- ================= CONTRASEÑA ================= --}}
+                    <br><br>
+                    <h5 class="fw-semibold">Contraseña</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password"
+                                   name="password_nueva"
+                                   class="form-control"
+                                   required>
+                        </div>
 
                         <div class="col-md-6">
-                            <select name="rol_id" class="form-select">
-                                @foreach($roles as $rol)
-                                    <option value="{{ $rol->id }}"
-                                        @selected($rol->id == $rolActualId)>
-                                        {{ $rol->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="form-label">Confirmar contraseña</label>
+                            <input type="password"
+                                   name="password_confirmar"
+                                   class="form-control"
+                                   required>
                         </div>
-                    @endunless
+                    </div>
 
+                    <small class="text-muted d-block mt-2">
+                        Mínimo 8 caracteres, una mayúscula, un número y un símbolo.
+                    </small>
+
+                    {{-- ================= CORREOS ================= --}}
+                    <br><br>
+                    <h5 class="fw-semibold">Correos electrónicos</h5>
+
+                    <div id="correos-container"></div>
+
+                    <button type="button"
+                            class="btn btn-outline-primary btn-sm mt-2"
+                            onclick="agregarCorreo()">
+                        Agregar correo
+                    </button>
+
+                    {{-- ================= TELÉFONOS ================= --}}
+                    <br><br><br>
+                    <h5 class="fw-semibold">Teléfonos</h5>
+
+                    <div id="telefonos-container"></div>
+
+                    <button type="button"
+                            class="btn btn-outline-primary btn-sm mt-2"
+                            onclick="agregarTelefono()">
+                        Agregar teléfono
+                    </button>
+
+                    {{-- ================= BOTONES ================= --}}
+                    <br><br>
                     <hr class="my-4">
-
-                    {{-- CORREOS --}}
-                    @include('usuarios.partials.correos')
-
-                    <hr class="my-4">
-
-                    {{-- TELÉFONOS --}}
-                    @include('usuarios.partials.telefonos')
-
-                    {{-- CONTRASEÑA --}}
-                    @if(auth()->id() == $usuario->id_persona)
-                        <hr class="my-4">
-                        @include('usuarios.partials.password')
-                    @endif
 
                     <div class="mt-4 d-flex gap-2">
-                        <button class="btn btn-primary">Guardar cambios</button>
+                        <button class="btn btn-primary">Crear usuario</button>
                         <a href="{{ route('usuarios.index') }}" class="btn btn-light">Cancelar</a>
                     </div>
 
@@ -107,14 +153,69 @@
     </div>
 </div>
 
-{{-- MODALES --}}
-@include('usuarios.partials.modal-delete')
-@if($passwordError)
-    @include('usuarios.partials.modal-password-error')
-@endif
+
+
+</div><!--End container-fluid-->
+</main><!--End app-wrapper-->
 
 @endsection
 
 @section('js')
-    <script src="/js/users/user-edit.init.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+
+<script>
+/* ==========================================================
+   AGREGAR CORREO
+========================================================== */
+function agregarCorreo() {
+    document.getElementById('correos-container').insertAdjacentHTML('beforeend', `
+        <div class="row g-2 mb-2">
+            <div class="col-md-6">
+                <input type="email" name="nuevo_correo[]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <select name="correo_desc[]" class="form-select">
+                    <option value="SECUNDARIO">Secundario</option>
+                    <option value="PRINCIPAL">Principal</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button"
+                        class="btn btn-outline-secondary w-100"
+                        onclick="this.closest('.row').remove()">—</button>
+            </div>
+        </div>
+    `);
+}
+
+/* ==========================================================
+   AGREGAR TELÉFONO
+========================================================== */
+const opcionesTelefono = `
+@foreach($tiposTelefono as $tt)
+    <option value="{{ $tt->id }}">{{ $tt->nombre }}</option>
+@endforeach
+`;
+
+function agregarTelefono() {
+    document.getElementById('telefonos-container').insertAdjacentHTML('beforeend', `
+        <div class="row g-2 mb-2">
+            <div class="col-md-5">
+                <input name="nuevo_telefono[]" class="form-control" required>
+            </div>
+            <div class="col-md-5">
+                <select name="telefono_tipo[]" class="form-select" required>
+                    ${opcionesTelefono}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button"
+                        class="btn btn-outline-secondary w-100"
+                        onclick="this.closest('.row').remove()">—</button>
+            </div>
+        </div>
+    `);
+}
+</script>
 @endsection

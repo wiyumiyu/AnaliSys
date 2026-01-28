@@ -440,6 +440,41 @@ BEGIN
     WHERE id_persona = p_id_persona;
 END $$
 
+
+
+
+CREATE PROCEDURE sp_editar_persona_correo (
+    IN p_id INT UNSIGNED,
+    IN p_descripcion ENUM('PRINCIPAL','SECUNDARIO'),
+    IN p_correo VARCHAR(100)
+)
+BEGIN
+    DECLARE v_id_persona INT UNSIGNED;
+
+    -- Obtener persona dueña del correo
+    SELECT id_persona
+    INTO v_id_persona
+    FROM trn_persona_correo
+    WHERE id = p_id;
+
+    -- Si se marca como PRINCIPAL, bajar el resto
+    IF p_descripcion = 'PRINCIPAL' THEN
+        UPDATE trn_persona_correo
+        SET descripcion = 'SECUNDARIO'
+        WHERE id_persona = v_id_persona
+          AND descripcion = 'PRINCIPAL';
+    END IF;
+
+    -- Actualizar correo
+    UPDATE trn_persona_correo
+    SET
+        correo = p_correo,
+        descripcion = p_descripcion
+    WHERE id = p_id;
+END$$
+
+
+
 /* ============================================================
    5.5 PERSONAS – CORREOS
    ============================================================ */
@@ -480,7 +515,6 @@ BEGIN
     FROM trn_persona_correo
     WHERE id_persona = p_id_persona;
 END $$
-
 
 /* ============================================================
    5.6 PERSONAS – TELÉFONOS

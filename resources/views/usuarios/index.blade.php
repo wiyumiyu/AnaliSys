@@ -17,7 +17,7 @@
     <div class="col-lg-12">
 
         <br>
-     
+
 
 
         {{-- CARD --}}
@@ -167,8 +167,9 @@
                 <form method="POST" id="deleteUserForm">
                     @csrf
                     @method('DELETE')
+
                     <button class="btn btn-danger">
-                        Eliminar
+                        Inactivar
                     </button>
                 </form>
             </div>
@@ -176,10 +177,12 @@
         </div>
     </div>
 </div>
+
+
+
+
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
-
-
 @endsection
 
 
@@ -206,3 +209,22 @@
 <script src="{{ asset('js/table/buscarEnTabla.js') }}"></script>
 
 
+<script>
+    let deleteUserModal;
+    let deleteForm;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        deleteUserModal = new bootstrap.Modal(
+            document.getElementById('confirmDeleteUserModal')
+        );
+
+        deleteForm = document.getElementById('deleteUserForm');
+    });
+
+    function confirmarEliminacionUsuario(id) {
+        // 👇 seteamos la ruta correcta
+        deleteForm.action = `/usuarios/${id}`;
+
+        deleteUserModal.show();
+    }
+</script>

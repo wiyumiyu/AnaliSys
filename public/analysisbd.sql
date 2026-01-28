@@ -584,6 +584,21 @@ BEGIN
     VALUES (p_id_persona, p_rol_id);
 END$$
 
+CREATE PROCEDURE sp_validar_correo_principal (
+    IN p_correo VARCHAR(100)
+)
+BEGIN
+    SELECT
+        p.id_persona
+    FROM tbl_persona p
+    INNER JOIN trn_persona_correo pc
+        ON pc.id_persona = p.id_persona
+    WHERE pc.correo COLLATE utf8mb4_unicode_ci
+          = p_correo COLLATE utf8mb4_unicode_ci
+      AND pc.descripcion = 'PRINCIPAL'
+      AND p.id_estado = 1;
+END $$
+
 DELIMITER ;
 /* ============================================================
    6. DATOS INICIALES
@@ -676,6 +691,36 @@ VALUES
 (3, 2); -- ANALISTA
 
 
+INSERT INTO tbl_persona (
+  nombre,
+  apellido1,
+  apellido2,
+  id_persona_grado_academico,
+  cedula,
+  fecha_nacimiento,
+  contrasena,
+  id_estado,
+  imagen
+) VALUES
+
+(
+  'YSDCSD',
+  'Pérez',
+  'Mora',
+  2,
+  'ANALISTA-004',
+  '1995-03-22',
+  '$2y$10$f4Onfc5ENSM9.ov.sbft4.3ajT5lRVxbxVnehUKEKLosqR7UllzBq',
+  1,
+  ''
+);
+
+INSERT INTO trn_persona_correo (id_persona, correo, descripcion)
+VALUES
+(4, 'mtorres70208@ufide.ac.cr', 'PRINCIPAL');
+INSERT INTO trn_persona_roles (id_persona, rol_id)
+VALUES
+(4, 2); -- ANALISTA
 
 
 

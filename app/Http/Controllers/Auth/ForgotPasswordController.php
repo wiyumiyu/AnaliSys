@@ -25,17 +25,18 @@ class ForgotPasswordController extends Controller
 
         // 1️⃣ Obtener usuario desde TU SP
         $result = DB::select(
-            'CALL sp_login_persona(?)',
+            'CALL sp_validar_correo_principal(?)',
             [$request->email]
         );
 
         if (empty($result)) {
             return back()->withErrors([
-                'email' => 'El correo no está registrado'
+                'email' => 'El correo no está registrado o no es el principal'
             ]);
         }
 
         $persona = $result[0];
+
 
         // 2️⃣ Generar token seguro
         $token = Str::random(64);

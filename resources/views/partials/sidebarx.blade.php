@@ -1,5 +1,5 @@
 
-<aside class="pe-app-sidebar" id="sidebar">
+<aside class="pe-app-sidebar d-flex flex-column vh-100" id="sidebar">
     <div class="pe-app-sidebar-logo px-3 d-flex align-items-center position-relative">
         <!--begin::Brand Image-->
         <a href="/pages/dashboard.php" class="fs-18 fw-semibold">
@@ -10,7 +10,7 @@
         </a>
         <!--end::Brand Image-->
     </div> 
-    <nav class="pe-app-sidebar-menu nav nav-pills" data-simplebar id="sidebar-simplebar">
+<nav class="pe-app-sidebar-menu nav nav-pills flex-grow-1" data-simplebar id="sidebar-simplebar">
         <ul class="pe-main-menu list-unstyled">
 
             <li class="pe-slide pe-has-sub">

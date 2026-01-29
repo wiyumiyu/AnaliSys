@@ -1,6 +1,8 @@
 <!-- Simplebar Css -->
 <link rel="stylesheet" href="{{ asset('libs/simplebar/simplebar.min.css') }}">
 
+
+
 <!-- Swiper Css -->
 <link rel="stylesheet" href="{{ asset('libs/swiper/swiper-bundle.min.css') }}">
 
@@ -17,6 +19,8 @@
 <link rel="stylesheet" href="{{ asset('css/app.min.css') }}" id="app-style" type="text/css">
 
 <link rel="stylesheet" href="{{ asset('css/custom.css') }}" id="app-style2" type="text/css">
+
+
 
 
 

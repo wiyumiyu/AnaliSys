@@ -331,15 +331,41 @@ class UsuarioController extends Controller {
      * ELIMINAR USUARIO
      * =============================== */
 
+//    public function destroy($id) {
+//        DB::statement('CALL sp_eliminar_persona(?)', [$id]);
+//
+//        return redirect()
+//                        ->route('usuarios.index')
+//                        ->with('success', 'Usuario inactivado correctamente');
+//    }
 
-    
-    public function destroy($id)
-{
-    DB::statement('CALL sp_eliminar_persona(?)', [$id]);
+    public function cambiarEstado($id)
+    {
+        $usuario = collect(
+            DB::select('CALL sp_obtener_persona(?)', [$id])
+        )->first();
 
-    return redirect()
-        ->route('usuarios.index')
-        ->with('success', 'Usuario inactivado correctamente');
-}
+        if (!$usuario) {
+            abort(404);
+        }
 
-}
+        $nuevoEstado = $usuario->id_estado == 1 ? 0 : 1;
+
+        DB::statement('CALL sp_actualizar_estado_persona(?, ?)', [
+            $id,
+            $nuevoEstado
+        ]);
+
+        return redirect()
+            ->route('usuarios.index')
+            ->with(
+                'success',
+                $nuevoEstado == 1
+                    ? 'Usuario activado correctamente.'
+                    : 'Usuario inactivado correctamente.'
+            );
+    }
+
+} // 👈 ESTA LLAVE CIERRA LA CLASE
+
+

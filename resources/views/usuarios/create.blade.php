@@ -120,7 +120,7 @@
                     <div id="correos-container"></div>
 
                     <button type="button"
-                            class="btn btn-outline-primary btn-sm mt-2"
+                            class="btn btn btn-outline-secondary btn-sm mt-2"
                             onclick="agregarCorreo()">
                         Agregar correo
                     </button>
@@ -132,7 +132,7 @@
                     <div id="telefonos-container"></div>
 
                     <button type="button"
-                            class="btn btn-outline-primary btn-sm mt-2"
+                            class="btn btn-outline-secondary btn-sm mt-2"
                             onclick="agregarTelefono()">
                         Agregar teléfono
                     </button>
@@ -143,7 +143,7 @@
 
                     <div class="mt-4 d-flex gap-2">
                         <button class="btn btn-primary">Crear usuario</button>
-                        <a href="{{ route('usuarios.index') }}" class="btn btn-light">Cancelar</a>
+                        <a href="{{ route('usuarios.index') }}" class="btn btn-light-primary">Cancelar</a>
                     </div>
 
                 </form>
@@ -160,9 +160,33 @@
 
 @endsection
 
+
 @section('js')
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/app.js"></script>
+
+<!-- Bootstrap -->
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+
+<!-- DataTables CORE -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<!-- FabKin Datatable Init -->
+<script src="{{ asset('js/table/datatable.init.js') }}"></script>
+
+<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
+<!-- FabKin App -->
+<script src="{{ asset('js/app.js') }}"></script>
+
+@endsection
+
+
+@section('js')
+<!-- Bootstrap -->
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
+<!-- FabKin App -->
+<script src="{{ asset('js/app.js') }}"></script>
 
 <script>
 /* ==========================================================

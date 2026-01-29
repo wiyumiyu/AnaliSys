@@ -81,7 +81,8 @@ Route::middleware(['rol:ADMIN'])->group(function () {
         Route::post('/usuarios', [UsuarioController::class, 'store'])
         ->name('usuarios.store');
         
-            
+    Route::patch('/usuarios/{id}/estado', [UsuarioController::class, 'cambiarEstado'])
+    ->name('usuarios.cambiarEstado');        
     
 
 });

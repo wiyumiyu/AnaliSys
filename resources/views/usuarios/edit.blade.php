@@ -135,7 +135,7 @@
 
                     {{-- AGREGAR NUEVO --}}
                     <button type="button"
-                            class="btn btn-outline-primary btn-sm mt-2"
+                            class="btn btn-outline-secondary btn-sm mt-2"
                             onclick="agregarCorreo()">
                         Agregar correo
                     </button>
@@ -180,7 +180,7 @@
 
 
                     <button type="button"
-                            class="btn btn-outline-primary btn-sm mt-2"
+                            class="btn btn-outline-secondary btn-sm mt-2"
                             onclick="agregarTelefono()">
                         Agregar teléfono
                     </button>
@@ -229,7 +229,7 @@
                     <hr class="my-4">
                     <div class="mt-4 d-flex gap-2">
                         <button class="btn btn-primary">Guardar cambios</button>
-                        <a href="{{ route('usuarios.index') }}" class="btn btn-light">Cancelar</a>
+                        <a href="{{ route('usuarios.index') }}" class="btn btn-light-primary">Cancelar</a>
                     </div>
 
                 </form>
@@ -291,10 +291,19 @@
 </main><!--End app-wrapper-->
 @endsection
 
+
+
+
+
+
+
 @section('js')
 
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/app.js"></script>
+<!-- Bootstrap -->
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
+<!-- FabKin App -->
+<script src="{{ asset('js/app.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

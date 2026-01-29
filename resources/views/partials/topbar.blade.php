@@ -33,11 +33,10 @@
                 <div class="dark-mode-btn" id="toggleMode">
                     <button class="btn header-btn active" id="lightModeBtn">
                         <i class="bi bi-brightness-high"></i>
-                    </button>  
-                    <button class="btn header-btn " id="darkModeBtn">
+                    </button>
+                    <button class="btn header-btn" id="darkModeBtn">
                         <i class="bi bi-moon-stars"></i>
                     </button>
-                  
                 </div>
 
                 {{-- PERFIL --}}

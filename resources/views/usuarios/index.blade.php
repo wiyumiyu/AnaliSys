@@ -111,11 +111,19 @@
                                         <i class="ri-edit-line"></i>
                                     </a>
 
-                                    {{-- ELIMINAR --}}
+                                    @if($u->id_estado == 1)
+                                    {{-- INACTIVAR --}}
                                     <button class="btn bg-danger-subtle text-danger btn-sm"
-                                            onclick="confirmarEliminacionUsuario({{ $u->id_persona }})">
+                                            onclick="confirmarCambioEstado({{ $u->id_persona }}, 'inactivar')">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
+                                    @else
+                                    {{-- ACTIVAR --}}
+                                    <button class="btn bg-success-subtle text-success btn-sm"
+                                            onclick="confirmarCambioEstado({{ $u->id_persona }}, 'activar')">
+                                        <i class="ri-refresh-line"></i>
+                                    </button>
+                                    @endif
 
                                 </div>
                             </td>
@@ -138,39 +146,28 @@
     </div>
 </div>
 
-{{-- MODAL CONFIRMAR ELIMINACIÓN --}}
-<div class="modal fade" id="confirmDeleteUserModal" tabindex="-1">
+{{-- MODAL CONFIRMAR CAMBIO DE ESTADO --}}
+<div class="modal fade" id="confirmUserStatusModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title text-danger">Eliminar usuario</h5>
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <div class="modal-body">
-                ¿Está seguro que desea inactivar este usuario?
-                <br>
-                <small class="text-muted">
-                    El usuario no podrá acceder al sistema.
-                </small>
-            </div>
+            <div class="modal-body" id="modalBody"></div>
 
             <div class="modal-footer">
-                <button class="btn btn-light"
-                        data-bs-dismiss="modal">
+                <button class="btn btn-light" data-bs-dismiss="modal">
                     Cancelar
                 </button>
 
-                <form method="POST" id="deleteUserForm">
+                <form method="POST" id="userStatusForm">
                     @csrf
-                    @method('DELETE')
+                    @method('PATCH')
 
-                    <button class="btn btn-danger">
-                        Inactivar
-                    </button>
+                    <button class="btn" id="modalConfirmBtn"></button>
                 </form>
             </div>
 
@@ -200,6 +197,7 @@
 <!-- FabKin Datatable Init -->
 <script src="{{ asset('js/table/datatable.init.js') }}"></script>
 
+<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <!-- FabKin App -->
 <script src="{{ asset('js/app.js') }}"></script>
 
@@ -210,21 +208,56 @@
 
 
 <script>
-    let deleteUserModal;
-    let deleteForm;
+    let statusModal;
+    let statusForm;
 
     document.addEventListener('DOMContentLoaded', function () {
-        deleteUserModal = new bootstrap.Modal(
-            document.getElementById('confirmDeleteUserModal')
+        statusModal = new bootstrap.Modal(
+            document.getElementById('confirmUserStatusModal')
         );
 
-        deleteForm = document.getElementById('deleteUserForm');
+        statusForm = document.getElementById('userStatusForm');
     });
 
-    function confirmarEliminacionUsuario(id) {
-        // 👇 seteamos la ruta correcta
-        deleteForm.action = `/usuarios/${id}`;
+    function confirmarCambioEstado(id, accion) {
 
-        deleteUserModal.show();
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+        const btn = document.getElementById('modalConfirmBtn');
+
+        statusForm.action = `/usuarios/${id}/estado`;
+
+        if (accion === 'inactivar') {
+            title.textContent = 'Inactivar usuario';
+            title.className = 'modal-title text-danger';
+
+            body.innerHTML = `
+                ¿Está seguro que desea inactivar este usuario?
+                <br>
+                <small class="text-muted">
+                    El usuario no podrá acceder al sistema.
+                </small>
+            `;
+
+            btn.textContent = 'Inactivar';
+            btn.className = 'btn btn-danger';
+
+        } else {
+            title.textContent = 'Activar usuario';
+            title.className = 'modal-title text-success';
+
+            body.innerHTML = `
+                ¿Desea activar nuevamente este usuario?
+                <br>
+                <small class="text-muted">
+                    El usuario recuperará el acceso al sistema.
+                </small>
+            `;
+
+            btn.textContent = 'Activar';
+            btn.className = 'btn btn-success';
+        }
+
+        statusModal.show();
     }
 </script>

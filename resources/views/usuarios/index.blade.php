@@ -18,8 +18,6 @@
 
         <br>
 
-
-
         {{-- CARD --}}
         <div class="card">
             <div class="card-header">

@@ -16,4 +16,19 @@ class BitacoraController extends Controller
 
         return view('bitacora.index', compact('bitacoras'));
     }
+    
+    public function show($id)
+    {
+        $data = DB::select(
+            'CALL sp_obtener_bitacora_completa(?)',
+            [$id]
+        );
+
+        if (empty($data)) {
+            return response()->json(['error' => 'No encontrado'], 404);
+        }
+
+        return response()->json($data[0]);
+    }
+
 }

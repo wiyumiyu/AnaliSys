@@ -88,14 +88,12 @@ Route::middleware(['rol:ADMIN'])->group(function () {
     // ===============================
     Route::get('/bitacora', [BitacoraController::class, 'index'])
             ->name('bitacora.index');
-    
+    Route::get(
+        '/bitacora/{id}',
+        [\App\Http\Controllers\Administracion\BitacoraController::class, 'show']
+        )->name('bitacora.show');
 
 });
-        // ===============================
-    // BITÁCORA
-    // ===============================
-    Route::get('/bitacora', [BitacoraController::class, 'index'])
-            ->name('bitacora.index');
 
 //------------------------------------------------------------------------------
 // TEXTURA

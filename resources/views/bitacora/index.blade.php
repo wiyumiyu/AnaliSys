@@ -96,8 +96,65 @@
     </div>
 </div>
 
+{{-- ================= MODAL DETALLE BITÁCORA ================= --}}
+<div class="modal fade"
+     id="detalleBitacoraModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Detalle de Bitácora</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Usuario</strong>
+                        <div id="bd-usuario" class="text-muted"></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Tabla</strong>
+                        <div id="bd-tabla" class="text-muted"></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <strong>Acción</strong>
+                        <div id="bd-accion" class="text-muted"></div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h6 class="fw-semibold">Antes</h6>
+                <pre class="bg-light p-3 rounded small"
+                     id="bd-antes">—</pre>
+
+                <h6 class="fw-semibold mt-4">Después</h6>
+                <pre class="bg-light p-3 rounded small"
+                     id="bd-despues">—</pre>
+
+            </div>
+
+            <div class="modal-footer border-0">
+                <button class="btn btn-light"
+                        data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+
+        </div>
     </div>
-</main>
+</div>
+
 
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
@@ -123,9 +180,46 @@
 @endsection
 
 <script>
-    function verDetalle(id) {
-        // 🔜 aquí luego abrís el modal
-        console.log('Ver detalle bitácora ID:', id);
-    }
+function verDetalle(id) {
+
+    fetch(`/bitacora/${id}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar detalle');
+            }
+            return response.json();
+        })
+        .then(b => {
+
+            document.getElementById('bd-usuario').textContent =
+                b.usuario ?? '—';
+
+            document.getElementById('bd-tabla').textContent =
+                b.tabla ?? '—';
+
+            document.getElementById('bd-accion').textContent =
+                b.accion ?? '—';
+
+            document.getElementById('bd-antes').textContent =
+                b.datos_antes
+                    ? JSON.stringify(JSON.parse(b.datos_antes), null, 2)
+                    : 'Sin datos';
+
+            document.getElementById('bd-despues').textContent =
+                b.datos_despues
+                    ? JSON.stringify(JSON.parse(b.datos_despues), null, 2)
+                    : 'Sin datos';
+
+            const modal = new bootstrap.Modal(
+                document.getElementById('detalleBitacoraModal')
+            );
+            modal.show();
+        })
+        .catch(error => {
+            console.error(error);
+            alert('No se pudo cargar el detalle de la bitácora');
+        });
+}
 </script>
+
 

@@ -1370,6 +1370,39 @@ END$$
 
 DELIMITER ;
 
+DELIMITER $$
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_bitacora_completa (
+    IN p_id BIGINT
+)
+BEGIN
+    SELECT
+        b.id,
+        b.tabla,
+        SUBSTRING_INDEX(
+            COALESCE(c.correo, b.usuario),
+            '@',
+            1
+        ) AS usuario,
+        b.usuario AS usuario_real,
+
+        b.ip,
+        b.accion,
+        b.fecha,
+        b.datos_antes,
+        b.datos_despues
+    FROM tbl_bitacora b
+    LEFT JOIN trn_persona_correo c
+        ON c.id_persona = b.usuario
+        AND c.descripcion = 'PRINCIPAL'
+    WHERE b.id = p_id;
+END$$
+
+DELIMITER ;
+
+
+
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */

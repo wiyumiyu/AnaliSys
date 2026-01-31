@@ -633,19 +633,29 @@ BEGIN
     WHERE pr.id_persona = p_id_persona;
 END$$
 
-
-
 CREATE PROCEDURE sp_actualizar_rol_persona (
     IN p_id_persona INT UNSIGNED,
     IN p_rol_id INT UNSIGNED
 )
 BEGIN
-    DELETE FROM trn_persona_roles
-    WHERE id_persona = p_id_persona;
+    IF EXISTS (
+        SELECT 1
+        FROM trn_persona_roles
+        WHERE id_persona = p_id_persona
+          AND rol_id = p_rol_id
+    ) THEN
+        -- No hacer nada: el rol ya es el mismo
+        SELECT 'SIN_CAMBIOS' AS resultado;
+    ELSE
+        DELETE FROM trn_persona_roles
+        WHERE id_persona = p_id_persona;
 
-    INSERT INTO trn_persona_roles (id_persona, rol_id)
-    VALUES (p_id_persona, p_rol_id);
-END$$
+        INSERT INTO trn_persona_roles (id_persona, rol_id)
+        VALUES (p_id_persona, p_rol_id);
+
+        SELECT 'ACTUALIZADO' AS resultado;
+    END IF;
+END;
 
 CREATE PROCEDURE sp_validar_correo_principal (
     IN p_correo VARCHAR(100)
@@ -695,6 +705,31 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_bitacora()
+BEGIN
+    SELECT
+        b.id,
+        b.tabla,
+        COALESCE(c.correo, b.usuario) AS usuario,
+        b.ip,
+        b.accion,
+        b.fecha,
+        IF(b.datos_antes IS NOT NULL, 1, 0)   AS tiene_antes,
+        IF(b.datos_despues IS NOT NULL, 1, 0) AS tiene_despues
+    FROM tbl_bitacora b
+    LEFT JOIN trn_persona_correo c
+        ON c.id_persona = b.usuario
+        AND c.descripcion = 'PRINCIPAL'
+    ORDER BY b.fecha DESC;
+END$$
+
+DELIMITER ;
+
+
+
 
 
 

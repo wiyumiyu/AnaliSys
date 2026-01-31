@@ -192,12 +192,12 @@
                     </li>
 
                     <li class="pe-slide-item">
-
-                        <a href=""
-                           class="pe-nav-link ">
-                            bitacora
+                        <a href="{{ route('bitacora.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('bitacora.*') ? 'active' : '' }}">
+                            Bitácora
                         </a>
                     </li>
+
                 </ul>
             </li>
 

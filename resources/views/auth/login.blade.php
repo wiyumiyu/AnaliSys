@@ -1,6 +1,6 @@
 @extends('partials.layouts.master_auth')
 
-@section('title', 'Iniciar Sesión  | AnaliSys')
+@section('title', 'Iniciar Sesión | AnaliSys')
 
 @section('content')
 
@@ -12,9 +12,9 @@
 
 <div>
     <img src="{{ asset('/images/auth/login_bg.jpg') }}" alt="Auth Background"
-        class="auth-bg light w-full h-full opacity-60 position-absolute top-0">
+         class="auth-bg light w-full h-full opacity-60 position-absolute top-0">
     <img src="{{ asset('/images/auth/auth_bg_dark.jpg') }}" alt="Auth Background"
-        class="auth-bg d-none dark">
+         class="auth-bg d-none dark">
 
     <div class="container">
         <div class="row justify-content-center align-items-center min-vh-100 py-10">
@@ -22,8 +22,8 @@
                 <div class="card mx-xxl-8">
                     <div class="card-body py-12 px-8">
 
-                        <img src="{{ asset("/images/logo-light.svg") }}" alt="Logo"
-                            height="70" class="mb-4 mx-auto d-block">
+                        <img src="{{ asset('/images/logo-light.svg') }}" alt="Logo"
+                             height="70" class="mb-4 mx-auto d-block">
 
                         <h6 class="mb-3 mb-8 fw-medium text-center">
                             Inicia sesión para continuar
@@ -35,17 +35,25 @@
 
                             <div class="row g-4">
 
-                                <!-- EMAIL -->
+                                <!-- USUARIO / CORREO -->
                                 <div class="col-12">
                                     <label class="form-label">
-                                        Correo electrónico <span class="text-danger">*</span>
+                                        Usuario o correo <span class="text-danger">*</span>
                                     </label>
-                                    <input type="email"
-                                           name="email"
-                                           class="form-control"
-                                           placeholder="correo@ejemplo.com"
-                                           value="{{ old('email') }}"
-                                           required>
+
+                                    <div class="input-group">
+                                        <input type="text"
+                                               name="email"
+                                               class="form-control"
+                                               placeholder="usuario"
+                                               value="{{ old('email') }}"
+                                               required>
+                                        
+                                    </div>
+
+                                    <small class="text-muted">
+                                        Si es correo UCR, puede escribir solo el usuario
+                                    </small>
                                 </div>
 
                                 <!-- PASSWORD -->
@@ -60,16 +68,12 @@
                                            required>
                                 </div>
 
-                                <!-- REMEMBER + FORGOT -->
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="form-text">
-                                            <a href="{{ route('password.request') }}"
-                                               class="link link-primary text-muted text-decoration-underline">
-                                                ¿Olvidaste tu contraseña?
-                                            </a>
-                                        </div>
-                                    </div>
+                                <!-- FORGOT -->
+                                <div class="col-12 text-end">
+                                    <a href="{{ route('password.request') }}"
+                                       class="link link-primary text-muted text-decoration-underline">
+                                        ¿Olvidaste tu contraseña?
+                                    </a>
                                 </div>
 
                                 <!-- SUBMIT -->
@@ -79,10 +83,9 @@
                                         <i class="bi bi-box-arrow-in-right ms-1 fs-16"></i>
                                     </button>
                                 </div>
+
                             </div>
                         </form>
-
-
 
                     </div>
                 </div>

@@ -111,6 +111,32 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE
 //-------------------------------------------------------------------------------
+use App\Http\Controllers\DensidadAparenteController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/densidad-aparente',
+        [DensidadAparenteController::class, 'archivos']
+    )->name('densidad_aparente.index');
+
+    Route::get(
+        '/ingreso-datos/densidad-aparente/{archivo}/muestras',
+        [DensidadAparenteController::class, 'muestras']
+    )->name('densidad_aparente.muestras');
+
+    Route::get(
+        '/ingreso-datos/densidad-aparente/muestra/{id}/editar',
+        [DensidadAparenteController::class, 'edit']
+    )->name('densidad_aparente.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/densidad-aparente/muestra/{id}',
+        [DensidadAparenteController::class, 'update']
+    )->name('densidad_aparente.muestra.update');
+
+});
+
 //------------------------------------------------------------------------------
 // Permeabilidad de Aire PLANTILLA
 //-------------------------------------------------------------------------------

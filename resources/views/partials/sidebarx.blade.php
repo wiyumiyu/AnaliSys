@@ -58,9 +58,10 @@
                         </a>
                     </li>
 
-                    {{-- LEGACY PHP --}}
+                    {{-- DENSIDAD APARENTE (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/densidad_aparente/listado.php" class="pe-nav-link">
+                        <a href="{{ route('densidad_aparente.index') }}"
+                            class="pe-nav-link {{ request()->routeIs('densidad_aparente.*') ? 'active' : '' }}">
                             Densidad Aparente
                         </a>
                     </li>

@@ -99,16 +99,28 @@
     </div>
 </main>
 
+</div><!--End container-fluid-->
+</main><!--End app-wrapper-->
 @endsection
 
 @section('js')
+
+<!-- Bootstrap -->
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 
+<!-- DataTables CORE -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
+<!-- FabKin Datatable Init -->
 <script src="{{ asset('js/table/datatable.init.js') }}"></script>
+
+<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
+<!-- FabKin App -->
+<script src="{{ asset('js/app.js') }}"></script>
+
+@endsection
 
 <script>
     function verDetalle(id) {
@@ -116,4 +128,4 @@
         console.log('Ver detalle bitácora ID:', id);
     }
 </script>
-@endsection
+

@@ -5,13 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class UsuarioController extends Controller
-{
+class UsuarioController extends Controller {
     /* ===============================
      * LISTADO
      * =============================== */
-    public function index()
-    {
+
+    public function index() {
         $users = DB::select('CALL sp_listado_usuarios()');
         return view('usuarios.index', compact('users'));
     }
@@ -19,13 +18,13 @@ class UsuarioController extends Controller
     /* ===============================
      * EDITAR (GET)
      * =============================== */
-    public function edit(Request $request, $id)
-    {
+
+    public function edit(Request $request, $id) {
         $esPerfilPropio = session('id_persona') == $id;
 
         $usuario = collect(
-            DB::select('CALL sp_obtener_persona(?)', [$id])
-        )->first();
+                DB::select('CALL sp_obtener_persona(?)', [$id])
+                )->first();
 
         if (!$usuario) {
             abort(404);
@@ -37,51 +36,50 @@ class UsuarioController extends Controller
         $roles = DB::select('CALL sp_listar_roles()');
 
         $rolActual = collect(
-            DB::select('CALL sp_obtener_roles_persona(?)', [$id])
-        )->first();
+                DB::select('CALL sp_obtener_roles_persona(?)', [$id])
+                )->first();
 
         $rolActualId = $rolActual->id ?? null;
 
         return view('usuarios.edit', compact(
-            'usuario',
-            'correos',
-            'telefonos',
-            'tiposTelefono',
-            'roles',
-            'rolActualId',
-            'esPerfilPropio'
-        ));
+                        'usuario',
+                        'correos',
+                        'telefonos',
+                        'tiposTelefono',
+                        'roles',
+                        'rolActualId',
+                        'esPerfilPropio'
+                ));
     }
 
     /* ===============================
      * EDITAR (POST)
      * =============================== */
-    public function update(Request $request, $id)
-    {
+
+    public function update(Request $request, $id) {
         /* 🔐 CONTEXTO BITÁCORA */
-        DB::statement('SET @usuario = ?', [session('id_persona')]);
-        DB::statement('SET @ip = ?', [$request->ip()]);
-        DB::statement('SET @operacion_id = UUID()');
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
 
         $esPerfilPropio = session('id_persona') == $id;
 
         /* ===============================
          * ELIMINAR CORREO (AJAX)
          * =============================== */
-if ($request->has('del_correo')) {
+        if ($request->has('del_correo')) {
 
-    DB::statement('CALL sp_eliminar_persona_correo(?)', [
-        $request->del_correo
-    ]);
+            DB::statement('CALL sp_eliminar_persona_correo(?)', [
+                $request->del_correo
+            ]);
 
-    // 🔒 FORZAR SNAPSHOT
-    DB::statement(
-        'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
-        [$id]
-    );
+            // 🔒 FORZAR SNAPSHOT
+            DB::statement(
+                    'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+                    [$id]
+            );
 
-    return response()->noContent();
-}
+            return response()->noContent();
+        }
 
 
         /* ===============================
@@ -89,18 +87,18 @@ if ($request->has('del_correo')) {
          * =============================== */
         if ($request->has('del_tel')) {
 
-    DB::statement('CALL sp_eliminar_persona_telefono(?)', [
-        $request->del_tel
-    ]);
+            DB::statement('CALL sp_eliminar_persona_telefono(?)', [
+                $request->del_tel
+            ]);
 
-    // 🔒 FORZAR SNAPSHOT
-    DB::statement(
-        'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
-        [$id]
-    );
+            // 🔒 FORZAR SNAPSHOT
+            DB::statement(
+                    'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+                    [$id]
+            );
 
-    return response()->noContent();
-}
+            return response()->noContent();
+        }
 
 
         /* ===============================
@@ -188,16 +186,16 @@ if ($request->has('del_correo')) {
          * CAMBIO DE CONTRASEÑA
          * =============================== */
         if (
-            $esPerfilPropio &&
-            $request->filled(['password_actual', 'password_nueva', 'password_confirmar'])
+                $esPerfilPropio &&
+                $request->filled(['password_actual', 'password_nueva', 'password_confirmar'])
         ) {
             if ($request->password_nueva !== $request->password_confirmar) {
                 return back()->withErrors(['password' => 'Las contraseñas no coinciden.']);
             }
 
             $actual = collect(
-                DB::select('CALL sp_obtener_contrasena_persona(?)', [$id])
-            )->first();
+                    DB::select('CALL sp_obtener_contrasena_persona(?)', [$id])
+                    )->first();
 
             if (!$actual || !password_verify($request->password_actual, $actual->contrasena)) {
                 return back()->withErrors(['password' => 'Contraseña actual incorrecta.']);
@@ -211,20 +209,20 @@ if ($request->has('del_correo')) {
          * 🔒 COMMIT LÓGICO (BITÁCORA)
          * =============================== */
         DB::statement(
-            'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
-            [$id]
+                'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+                [$id]
         );
 
         return redirect()
-            ->route('usuarios.index')
-            ->with('success', 'Usuario actualizado correctamente');
+                        ->route('usuarios.index')
+                        ->with('success', 'Usuario actualizado correctamente');
     }
 
     /* ===============================
      * CREAR (GET)
      * =============================== */
-    public function create()
-    {
+
+    public function create() {
         $roles = DB::select('CALL sp_listar_roles()');
         $tiposTelefono = DB::select('CALL sp_listar_tipos_telefono()');
 
@@ -234,11 +232,10 @@ if ($request->has('del_correo')) {
     /* ===============================
      * CREAR (POST)
      * =============================== */
-    public function store(Request $request)
-    {
-        DB::statement('SET @usuario = ?', [session('id_persona')]);
-        DB::statement('SET @ip = ?', [$request->ip()]);
-        DB::statement('SET @operacion_id = UUID()');
+
+    public function store(Request $request) {
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
 
         $request->validate([
             'nombre' => 'required',
@@ -275,27 +272,26 @@ if ($request->has('del_correo')) {
         ]);
 
         DB::statement(
-            'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
-            [$id_persona]
+                'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+                [$id_persona]
         );
 
         return redirect()
-            ->route('usuarios.index')
-            ->with('success', 'Usuario creado correctamente');
+                        ->route('usuarios.index')
+                        ->with('success', 'Usuario creado correctamente');
     }
 
     /* ===============================
      * CAMBIAR ESTADO
      * =============================== */
-    public function cambiarEstado(Request $request, $id)
-    {
-        DB::statement('SET @usuario = ?', [session('id_persona')]);
-        DB::statement('SET @ip = ?', [$request->ip()]);
-        DB::statement('SET @operacion_id = UUID()');
+
+    public function cambiarEstado(Request $request, $id) {
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
 
         $usuario = collect(
-            DB::select('CALL sp_obtener_persona(?)', [$id])
-        )->first();
+                DB::select('CALL sp_obtener_persona(?)', [$id])
+                )->first();
 
         if (!$usuario) {
             abort(404);
@@ -309,12 +305,10 @@ if ($request->has('del_correo')) {
         ]);
 
         return redirect()
-            ->route('usuarios.index')
-            ->with(
-                'success',
-                $nuevoEstado == 1
-                    ? 'Usuario activado correctamente.'
-                    : 'Usuario inactivado correctamente.'
-            );
+                        ->route('usuarios.index')
+                        ->with(
+                                'success',
+                                $nuevoEstado == 1 ? 'Usuario activado correctamente.' : 'Usuario inactivado correctamente.'
+                        );
     }
 }

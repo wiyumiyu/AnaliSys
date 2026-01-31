@@ -1371,7 +1371,6 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
-DELIMITER $$
 
 CREATE PROCEDURE sp_obtener_bitacora_completa (
     IN p_id BIGINT

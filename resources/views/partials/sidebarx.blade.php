@@ -10,7 +10,7 @@
         </a>
         <!--end::Brand Image-->
     </div> 
-<nav class="pe-app-sidebar-menu nav nav-pills flex-grow-1" data-simplebar id="sidebar-simplebar">
+    <nav class="pe-app-sidebar-menu nav nav-pills flex-grow-1" data-simplebar id="sidebar-simplebar">
         <ul class="pe-main-menu list-unstyled">
 
             <li class="pe-slide pe-has-sub">
@@ -24,7 +24,7 @@
                         <a href="javascript:void(0)">Ingreso de Datos</a>
                     </li>
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/textura/listado.php" class="pe-nav-link">
+                        <a href="{{ route('textura.index') }}" class="pe-nav-link">
                             Textura
                         </a>
                     </li>
@@ -80,9 +80,9 @@
                         </a>
                     </li>
                     <li class="pe-slide-item">
-<a href="{{ route('pa.index') }}" class="pe-nav-link">
-    Permeabilidad del aire
-</a>
+                        <a href="{{ route('pa.index') }}" class="pe-nav-link">
+                            Permeabilidad del aire
+                        </a>
                     </li>
                 </ul>
             </li>

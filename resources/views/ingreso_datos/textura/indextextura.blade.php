@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Permeabilidad del aire - Lotes')
+@section('title', 'Textura - Archivos')
 
 @section('css')
 <!-- Datatables CSS (FabKin style) -->
@@ -24,7 +24,7 @@
 
         {{-- TÍTULO --}}
         <h5 class="mb-0 fw-semibold">
-            Permeabilidad del aire
+            Textura
         </h5>
 
         {{-- ACCIONES --}}
@@ -76,18 +76,18 @@
                     </thead>
 
                     <tbody>
-                        @forelse($lotes as $l)
+                        @forelse($archivos as $l)
                         <tr>
 
                             {{-- LOTE --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('pa.muestras', $l->id_lote) }}">
-                                        {{ $l->lote }}
+                                    <a href="{{ route('pa.muestras', $l->id_archivo) }}">
+                                        {{ $l->archivo }}
                                     </a>
                                 </h6>
                                 <small class="text-muted">
-                                    ID {{ $l->id_lote }}
+                                    ID {{ $l->id_archivo}}
                                 </small>
                             </td>
 
@@ -101,7 +101,7 @@
                             <td class="text-end">
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
-                                    <a href="{{ route('pa.muestras', $l->id_lote) }}"
+                                    <a href="{{ route('pa.muestras', $l->id_archivo) }}"
                                        class="btn bg-primary-subtle text-primary btn-sm">
                                         <i class="ri-eye-line"></i>
                                     </a>

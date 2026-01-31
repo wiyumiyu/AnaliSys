@@ -24,7 +24,7 @@
 
                     {{-- TÍTULO --}}
                     <h5 class="mb-0 fw-semibold">
-                        Lote {{ $lote }} – Muestras
+                        Lote {{ $archivo }} – Muestras
                     </h5>
 
                     {{-- ACCIONES --}}

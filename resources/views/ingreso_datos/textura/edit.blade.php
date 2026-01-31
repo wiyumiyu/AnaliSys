@@ -1,8 +1,19 @@
+
 @extends('partials.layouts.master')
 
 @section('title', 'Editar muestra')
 
+@section('css')
+<!-- Datatables CSS (FabKin style) -->
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
+@endsection
+
 @section('content')
+
+
 
 <div class="row">
     <div class="col-lg-12">
@@ -139,4 +150,26 @@
 </div>
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
+@endsection
+
+
+@section('js')
+
+<!-- Bootstrap -->
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+
+<!-- DataTables CORE -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<!-- FabKin Datatable Init -->
+<script src="{{ asset('js/table/datatable.init.js') }}"></script>
+
+<!-- Buscar en tabla -->
+<script src="{{ asset('js/table/buscarEnTabla.js') }}"></script>
+
+<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
+<script src="{{ asset('js/app.js') }}"></script>
+
 @endsection

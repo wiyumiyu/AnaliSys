@@ -13,79 +13,123 @@
     <nav class="pe-app-sidebar-menu nav nav-pills flex-grow-1" data-simplebar id="sidebar-simplebar">
         <ul class="pe-main-menu list-unstyled">
 
-            <li class="pe-slide pe-has-sub">
-                <a href="#collapseAdvancedUI" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseAdvancedUI">
+
+            @php
+            use Illuminate\Support\Facades\Route;
+
+            $ingresoDatosActive =
+            (Route::has('textura.index') && request()->routeIs('textura.*'))
+            || (Route::has('pa.index') && request()->routeIs('pa.*'))
+            || (Route::has('densidad_aparente.index') && request()->routeIs('densidad_aparente.*'))
+            || (Route::has('densidad_particulas.index') && request()->routeIs('densidad_particulas.*'))
+            || (Route::has('porosidad.index') && request()->routeIs('porosidad.*'))
+            || (Route::has('humedad.index') && request()->routeIs('humedad.*'))
+            || (Route::has('conductividad.index') && request()->routeIs('conductividad.*'))
+            || (Route::has('retencion.index') && request()->routeIs('retencion.*'))
+            || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
+            || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
+            || (Route::has('estabilidad.index') && request()->routeIs('estabilidad.*'))
+            || (Route::has('coel.index') && request()->routeIs('coel.*'));
+            @endphp
+            <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
+                <a href="#collapseAdvancedUI"
+                   class="pe-nav-link {{ $ingresoDatosActive ? '' : 'collapsed' }}"
+                   data-bs-toggle="collapse"
+                   aria-expanded="{{ $ingresoDatosActive ? 'true' : 'false' }}"
+                   aria-controls="collapseAdvancedUI">
+
                     <i class="bi bi-feather pe-nav-icon"></i>
                     <span class="pe-nav-content">Ingreso de Datos</span>
                     <i class="ri-arrow-down-s-line pe-nav-arrow"></i>
                 </a>
-                <ul class="pe-slide-menu collapse" id="collapseAdvancedUI">
+
+                <ul class="pe-slide-menu collapse {{ $ingresoDatosActive ? 'show' : '' }}"
+                    id="collapseAdvancedUI">
+
                     <li class="slide pe-nav-content1">
                         <a href="javascript:void(0)">Ingreso de Datos</a>
                     </li>
+
+                    {{-- TEXTURA (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="{{ route('textura.index') }}" class="pe-nav-link">
+                        <a href="{{ route('textura.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('textura.*') ? 'active' : '' }}">
                             Textura
                         </a>
                     </li>
 
+                    {{-- LEGACY PHP --}}
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/densidad_aparente/listado.php" class="pe-nav-link">
                             Densidad Aparente
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/densidad_particulas/listado.php" class="pe-nav-link">
                             Densidad de Partículas
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/porosidad_total/listado.php" class="pe-nav-link">
                             Porosidad total
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/humedad_gravimetrica/listado.php" class="pe-nav-link">
                             Humedad Gravimétrica
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/conductividad_hidraulica/listado.php" class="pe-nav-link">
                             Conductividad Hidráulica
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/retencion_humedad/listado.php" class="pe-nav-link">
                             Retención de humedad
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/curvatura_retencion/listado.php" class="pe-nav-link">
                             Curvatura de Retención de Humedad
                         </a>
-                    </li>                    
+                    </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/granulometria_gruesa/listado.php" class="pe-nav-link">
                             Granulometría de la fracción gruesa
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/estabilidad_agregados/listado.php" class="pe-nav-link">
                             Estabilidad de agregados
                         </a>
                     </li>
+
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/coel/listado.php" class="pe-nav-link">
                             Coeficiente de extensibilidad lineal (COEL)
                         </a>
                     </li>
+
+                    {{-- PERMEABILIDAD (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="{{ route('pa.index') }}" class="pe-nav-link">
+                        <a href="{{ route('pa.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('pa.*') ? 'active' : '' }}">
                             Permeabilidad del aire
                         </a>
                     </li>
+
                 </ul>
             </li>
+
 
             <li class="pe-slide pe-has-sub">
                 <a href="#collapseInvoices" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseInvoices">
@@ -117,14 +161,15 @@
 
 
             @php
-            $usuariosActive = request()->routeIs('usuarios.*');
+            $adminActive = request()->routeIs('usuarios.*')
+            || request()->routeIs('bitacora.*');
             @endphp
 
-            <li class="pe-slide pe-has-sub {{ $usuariosActive ? 'active' : '' }}">
+            <li class="pe-slide pe-has-sub {{ $adminActive ? 'active' : '' }}">
                 <a href="#collapseAuth"
-                   class="pe-nav-link {{ $usuariosActive ? '' : 'collapsed' }}"
+                   class="pe-nav-link {{ $adminActive ? '' : 'collapsed' }}"
                    data-bs-toggle="collapse"
-                   aria-expanded="{{ $usuariosActive ? 'true' : 'false' }}"
+                   aria-expanded="{{ $adminActive ? 'true' : 'false' }}"
                    aria-controls="collapseAuth">
 
                     <i class="bi bi-person pe-nav-icon"></i>
@@ -132,7 +177,7 @@
                     <i class="ri-arrow-down-s-line pe-nav-arrow"></i>
                 </a>
 
-                <ul class="pe-slide-menu collapse {{ $usuariosActive ? 'show' : '' }}"
+                <ul class="pe-slide-menu collapse {{ $adminActive ? 'show' : '' }}"
                     id="collapseAuth">
 
                     <li class="slide pe-nav-content1">
@@ -141,14 +186,16 @@
 
                     <li class="pe-slide-item">
                         <a href="{{ route('usuarios.index') }}"
-                           class="pe-nav-link {{ $usuariosActive ? 'active' : '' }}">
+                           class="pe-nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
                             Usuario
                         </a>
                     </li>
 
                     <li class="pe-slide-item">
-                        <a href="/pages/bitacora/listado.php" class="pe-nav-link">
-                            Bitácora
+
+                        <a href=""
+                           class="pe-nav-link ">
+                            bitacora
                         </a>
                     </li>
                 </ul>

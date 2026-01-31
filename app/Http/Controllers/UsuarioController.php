@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class UsuarioController extends Controller {
+class UsuarioController extends Controller
+{
     /* ===============================
      * LISTADO
      * =============================== */
-
-    public function index() {
+    public function index()
+    {
         $users = DB::select('CALL sp_listado_usuarios()');
         return view('usuarios.index', compact('users'));
     }
@@ -18,13 +19,13 @@ class UsuarioController extends Controller {
     /* ===============================
      * EDITAR (GET)
      * =============================== */
-
-    public function edit(Request $request, $id) {
+    public function edit(Request $request, $id)
+    {
         $esPerfilPropio = session('id_persona') == $id;
 
         $usuario = collect(
-                DB::select('CALL sp_obtener_persona(?)', [$id])
-                )->first();
+            DB::select('CALL sp_obtener_persona(?)', [$id])
+        )->first();
 
         if (!$usuario) {
             abort(404);
@@ -36,54 +37,75 @@ class UsuarioController extends Controller {
         $roles = DB::select('CALL sp_listar_roles()');
 
         $rolActual = collect(
-                DB::select('CALL sp_obtener_roles_persona(?)', [$id])
-                )->first();
+            DB::select('CALL sp_obtener_roles_persona(?)', [$id])
+        )->first();
 
         $rolActualId = $rolActual->id ?? null;
 
         return view('usuarios.edit', compact(
-                        'usuario',
-                        'correos',
-                        'telefonos',
-                        'tiposTelefono',
-                        'roles',
-                        'rolActualId',
-                        'esPerfilPropio'
-                ));
+            'usuario',
+            'correos',
+            'telefonos',
+            'tiposTelefono',
+            'roles',
+            'rolActualId',
+            'esPerfilPropio'
+        ));
     }
 
     /* ===============================
      * EDITAR (POST)
      * =============================== */
-
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
+        /* 🔐 CONTEXTO BITÁCORA */
+        DB::statement('SET @usuario = ?', [session('id_persona')]);
+        DB::statement('SET @ip = ?', [$request->ip()]);
+        DB::statement('SET @operacion_id = UUID()');
 
         $esPerfilPropio = session('id_persona') == $id;
 
         /* ===============================
-         * ELIMINAR CORREO
+         * ELIMINAR CORREO (AJAX)
          * =============================== */
-        if ($request->has('del_correo')) {
-            DB::statement('CALL sp_eliminar_persona_correo(?)', [
-                $request->del_correo
-            ]);
+if ($request->has('del_correo')) {
 
-            return response()->noContent(); // <- para fetch()
-        }
+    DB::statement('CALL sp_eliminar_persona_correo(?)', [
+        $request->del_correo
+    ]);
+
+    // 🔒 FORZAR SNAPSHOT
+    DB::statement(
+        'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+        [$id]
+    );
+
+    return response()->noContent();
+}
 
 
         /* ===============================
-         * ELIMINAR TELÉFONO
+         * ELIMINAR TELÉFONO (AJAX)
          * =============================== */
         if ($request->has('del_tel')) {
-            DB::statement('CALL sp_eliminar_persona_telefono(?)', [
-                $request->del_tel
-            ]);
 
-            return response()->noContent(); // <- para fetch()
-        }
+    DB::statement('CALL sp_eliminar_persona_telefono(?)', [
+        $request->del_tel
+    ]);
 
-        /* DATOS GENERALES */
+    // 🔒 FORZAR SNAPSHOT
+    DB::statement(
+        'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+        [$id]
+    );
+
+    return response()->noContent();
+}
+
+
+        /* ===============================
+         * DATOS GENERALES
+         * =============================== */
         DB::statement('CALL sp_editar_persona(?, ?, ?, ?, ?, ?, ?, ?)', [
             $id,
             $request->nombre,
@@ -100,7 +122,9 @@ class UsuarioController extends Controller {
             $request->estado
         ]);
 
-        /* ROL */
+        /* ===============================
+         * ROL
+         * =============================== */
         if (!$esPerfilPropio && $request->filled('rol_id')) {
             DB::statement('CALL sp_actualizar_rol_persona(?, ?)', [
                 $id,
@@ -108,7 +132,9 @@ class UsuarioController extends Controller {
             ]);
         }
 
-        /* CORREOS */
+        /* ===============================
+         * NUEVOS CORREOS
+         * =============================== */
         if ($request->nuevo_correo) {
             foreach ($request->nuevo_correo as $i => $correo) {
                 DB::statement('CALL sp_agregar_persona_correo(?, ?, ?)', [
@@ -119,9 +145,8 @@ class UsuarioController extends Controller {
             }
         }
 
-
         /* ===============================
-         * CORREOS EXISTENTES (EDICIÓN)
+         * EDITAR CORREOS EXISTENTES
          * =============================== */
         if ($request->correo_existente) {
             foreach ($request->correo_existente as $idCorreo => $valor) {
@@ -133,8 +158,9 @@ class UsuarioController extends Controller {
             }
         }
 
-
-        /* TELÉFONOS */
+        /* ===============================
+         * NUEVOS TELÉFONOS
+         * =============================== */
         if ($request->nuevo_telefono) {
             foreach ($request->nuevo_telefono as $i => $telefono) {
                 DB::statement('CALL sp_agregar_persona_telefono(?, ?, ?)', [
@@ -146,7 +172,7 @@ class UsuarioController extends Controller {
         }
 
         /* ===============================
-         * TELÉFONOS EXISTENTES (EDICIÓN)
+         * EDITAR TELÉFONOS EXISTENTES
          * =============================== */
         if ($request->telefono_existente) {
             foreach ($request->telefono_existente as $idTel => $valor) {
@@ -159,188 +185,114 @@ class UsuarioController extends Controller {
         }
 
         /* ===============================
-         * CAMBIO DE CONTRASEÑA (SOLO PERFIL PROPIO)
+         * CAMBIO DE CONTRASEÑA
          * =============================== */
-        $esPerfilPropio = session('id_persona') == $id;
-
-        if ($esPerfilPropio && $request->filled([
-                    'password_actual',
-                    'password_nueva',
-                    'password_confirmar'
-                ])) {
-
+        if (
+            $esPerfilPropio &&
+            $request->filled(['password_actual', 'password_nueva', 'password_confirmar'])
+        ) {
             if ($request->password_nueva !== $request->password_confirmar) {
-                return back()->withErrors([
-                            'password' => 'Las contraseñas nuevas no coinciden.'
-                ]);
+                return back()->withErrors(['password' => 'Las contraseñas no coinciden.']);
             }
 
             $actual = collect(
-                    DB::select('CALL sp_obtener_contrasena_persona(?)', [$id])
-                    )->first();
+                DB::select('CALL sp_obtener_contrasena_persona(?)', [$id])
+            )->first();
 
             if (!$actual || !password_verify($request->password_actual, $actual->contrasena)) {
-                return back()->withErrors([
-                            'password' => 'La contraseña actual es incorrecta.'
-                ]);
-            }
-
-            $regex = '/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/';
-            if (!preg_match($regex, $request->password_nueva)) {
-                return back()->withErrors([
-                            'password' => 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.'
-                ]);
+                return back()->withErrors(['password' => 'Contraseña actual incorrecta.']);
             }
 
             $hash = password_hash($request->password_nueva, PASSWORD_DEFAULT);
-
             DB::statement('CALL sp_actualizar_contrasena(?, ?)', [$id, $hash]);
         }
 
+        /* ===============================
+         * 🔒 COMMIT LÓGICO (BITÁCORA)
+         * =============================== */
+        DB::statement(
+            'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+            [$id]
+        );
 
-        $rolUsuario = session('rol'); // ADMIN | ANALISTA
-
-        if ($esPerfilPropio) {
-
-            if ($rolUsuario === 'ANALISTA') {
-                return redirect()
-                                ->route('dashboard')
-                                ->with('success', 'Perfil actualizado correctamente');
-            }
-
-            // ADMIN editando su propio perfil
-            return redirect()
-                            ->route('usuarios.index')
-                            ->with('success', 'Perfil actualizado correctamente');
-        }
-
-// Admin editando a otro usuario
         return redirect()
-                        ->route('usuarios.index')
-                        ->with('success', 'Usuario actualizado correctamente');
+            ->route('usuarios.index')
+            ->with('success', 'Usuario actualizado correctamente');
     }
 
-    public function create() {
+    /* ===============================
+     * CREAR (GET)
+     * =============================== */
+    public function create()
+    {
         $roles = DB::select('CALL sp_listar_roles()');
         $tiposTelefono = DB::select('CALL sp_listar_tipos_telefono()');
 
-        return view('usuarios.create', compact(
-                        'roles',
-                        'tiposTelefono'
-                ));
+        return view('usuarios.create', compact('roles', 'tiposTelefono'));
     }
 
-    public function store(Request $request) {
-        /* ===============================
-         * VALIDACIONES BÁSICAS
-         * =============================== */
+    /* ===============================
+     * CREAR (POST)
+     * =============================== */
+    public function store(Request $request)
+    {
+        DB::statement('SET @usuario = ?', [session('id_persona')]);
+        DB::statement('SET @ip = ?', [$request->ip()]);
+        DB::statement('SET @operacion_id = UUID()');
+
         $request->validate([
-            'nombre' => 'required|string',
-            'apellido1' => 'required|string',
-            'apellido2' => 'required|string',
-            'cedula' => 'required|string',
+            'nombre' => 'required',
+            'apellido1' => 'required',
+            'apellido2' => 'required',
+            'cedula' => 'required',
             'rol_id' => 'required',
             'password_nueva' => 'required',
             'password_confirmar' => 'required'
         ]);
 
         if ($request->password_nueva !== $request->password_confirmar) {
-            return back()->withErrors([
-                        'password' => 'Las contraseñas no coinciden.'
-                    ])->withInput();
-        }
-
-        $regex = '/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/';
-        if (!preg_match($regex, $request->password_nueva)) {
-            return back()->withErrors([
-                        'password' => 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.'
-                    ])->withInput();
+            return back()->withErrors(['password' => 'Las contraseñas no coinciden.']);
         }
 
         $hash = password_hash($request->password_nueva, PASSWORD_DEFAULT);
 
-        try {
+        $result = DB::select('CALL sp_crear_persona(?, ?, ?, ?, ?, ?, ?, ?)', [
+            $request->nombre,
+            $request->apellido1,
+            $request->apellido2,
+            0,
+            $request->cedula,
+            '1990-01-01',
+            $hash,
+            ''
+        ]);
 
-            /* ===============================
-             * CREAR PERSONA
-             * =============================== */
-            $result = DB::select('CALL sp_crear_persona(?, ?, ?, ?, ?, ?, ?, ?)', [
-                $request->nombre,
-                $request->apellido1,
-                $request->apellido2,
-                0,
-                $request->cedula,
-                '1990-01-01',
-                $hash,
-                ''
-            ]);
+        $id_persona = $result[0]->id_persona;
 
-            $id_persona = $result[0]->id_persona;
+        DB::statement('CALL sp_asignar_rol_persona(?, ?)', [
+            $id_persona,
+            $request->rol_id
+        ]);
 
-            /* ===============================
-             * ASIGNAR ROL
-             * =============================== */
-            DB::statement('CALL sp_asignar_rol_persona(?, ?)', [
-                $id_persona,
-                $request->rol_id
-            ]);
+        DB::statement(
+            'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+            [$id_persona]
+        );
 
-            /* ===============================
-             * CORREOS
-             * =============================== */
-            if ($request->nuevo_correo) {
-                foreach ($request->nuevo_correo as $i => $correo) {
-                    DB::statement('CALL sp_agregar_persona_correo(?, ?, ?)', [
-                        $id_persona,
-                        $correo,
-                        $request->correo_desc[$i]
-                    ]);
-                }
-            }
-
-            /* ===============================
-             * TELÉFONOS
-             * =============================== */
-            if ($request->nuevo_telefono) {
-                foreach ($request->nuevo_telefono as $i => $telefono) {
-                    DB::statement('CALL sp_agregar_persona_telefono(?, ?, ?)', [
-                        $id_persona,
-                        $request->telefono_tipo[$i],
-                        $telefono
-                    ]);
-                }
-            }
-
-            return redirect()
-                            ->route('usuarios.index')
-                            ->with('success', 'Usuario creado correctamente');
-        } catch (\Illuminate\Database\QueryException $e) {
-
-            // Cédula duplicada
-            if ($e->getCode() === '23000') {
-                return back()->withErrors([
-                            'cedula' => 'Ya existe un usuario registrado con esa cédula.'
-                        ])->withInput();
-            }
-
-            throw $e;
-        }
+        return redirect()
+            ->route('usuarios.index')
+            ->with('success', 'Usuario creado correctamente');
     }
 
     /* ===============================
-     * ELIMINAR USUARIO
+     * CAMBIAR ESTADO
      * =============================== */
-
-//    public function destroy($id) {
-//        DB::statement('CALL sp_eliminar_persona(?)', [$id]);
-//
-//        return redirect()
-//                        ->route('usuarios.index')
-//                        ->with('success', 'Usuario inactivado correctamente');
-//    }
-
-    public function cambiarEstado($id)
+    public function cambiarEstado(Request $request, $id)
     {
+        DB::statement('SET @usuario = ?', [session('id_persona')]);
+        DB::statement('SET @ip = ?', [$request->ip()]);
+        DB::statement('SET @operacion_id = UUID()');
+
         $usuario = collect(
             DB::select('CALL sp_obtener_persona(?)', [$id])
         )->first();
@@ -365,7 +317,4 @@ class UsuarioController extends Controller {
                     : 'Usuario inactivado correctamente.'
             );
     }
-
-} // 👈 ESTA LLAVE CIERRA LA CLASE
-
-
+}

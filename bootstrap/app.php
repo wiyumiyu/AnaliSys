@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckRol;
+use App\Http\Middleware\SetBitacoraContext;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,13 +13,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
 
-    // ✅ EXCEPCIONES (ESTO ES LO QUE FALTABA)
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })
 
-    // ✅ MIDDLEWARES
     ->withMiddleware(function (Middleware $middleware) {
+
+        // 🔹 Middleware de bitácora SOLO para web (después de la sesión)
+        $middleware->appendToGroup(
+            'web',
+            SetBitacoraContext::class
+        );
+
+        // 🔹 Alias de roles
         $middleware->alias([
             'rol' => CheckRol::class,
         ]);

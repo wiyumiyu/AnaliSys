@@ -12,9 +12,12 @@
 
 @section('content')
 
+<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
+========
+
+>>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
 <div class="row">
     <div class="col-lg-12">
-
         <br>
 
         <div class="card">
@@ -27,12 +30,9 @@
                         Editar muestra – Densidad aparente ({{ $muestra->idlab }})
                     </h5>
 
-                    <div class="d-flex gap-3 align-items-center">
-                        <a href="{{ url()->previous() }}"
-                           class="btn btn-primary">
-                            ← Volver
-                        </a>
-                    </div>
+                    <a href="{{ url()->previous() }}" class="btn btn-primary">
+                        ← Volver
+                    </a>
 
                 </div>
             </div>
@@ -41,7 +41,11 @@
             <div class="card-body">
 
                 <form method="POST"
+<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
                       action="{{ route('densidad_aparente.muestra.update', $muestra->id) }}">
+========
+                      action="{{ route('textura.muestra.update', $muestra->id) }}">
+>>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
                     @csrf
                     @method('PUT')
 
@@ -74,53 +78,50 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Método</label>
-                            <input name="metodo"
-                                   class="form-control"
-                                   value="{{ $muestra->metodo }}">
-                        </div>
-
-                        <div class="col-md-4">
                             <label class="form-label">Tipo de muestra</label>
-                            <input name="tipomuestra"
+                            <input name="tipo"
                                    class="form-control"
-                                   value="{{ $muestra->tipomuestra }}">
+                                   value="{{ $muestra->tipo }}">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Longitud</label>
-                            <input name="longitud"
+                            <label class="form-label">Posición</label>
+                            <input name="posicion"
                                    class="form-control"
-                                   value="{{ $muestra->longitud }}">
+                                   value="{{ $muestra->posicion }}">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Diámetro interno</label>
-                            <input name="diametrointerno"
-                                   class="form-control"
-                                   value="{{ $muestra->diametrointerno }}">
+                            <label class="form-label">Estado</label>
+                            <select name="estado" class="form-select">
+                                <option value="1" @selected($muestra->estado == 1)>Activo</option>
+                                <option value="0" @selected($muestra->estado == 0)>Anulado</option>
+                            </select>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Área transversal</label>
-                            <input name="areatransversal"
-                                   class="form-control"
-                                   value="{{ $muestra->areatransversal }}">
-                        </div>
+                    </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Volumen</label>
-                            <input name="volumen"
-                                   class="form-control"
-                                   value="{{ $muestra->volumen }}">
-                        </div>
+                    {{-- ================= RESULTADOS DE TEXTURA ================= --}}
+                    <br><br>
+                    <h5 class="fw-semibold mb-3">
+                        Resultados de textura
+                    </h5>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Temperatura del aire</label>
-                            <input name="temperaturaaire"
-                                   class="form-control"
-                                   value="{{ $muestra->temperaturaaire }}">
-                        </div>
+                    <div class="row g-3">
+
+                        @foreach($resultados as $r)
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    {{ $r->analisis }}
+                                    <small class="text-muted">({{ $r->siglas }})</small>
+                                </label>
+
+                                <input type="text"
+                                       class="form-control"
+                                       name="resultados[{{ $r->id_resultado }}]"
+                                       value="{{ $r->resultado }}">
+                            </div>
+                        @endforeach
 
                     </div>
 
@@ -128,7 +129,7 @@
                     <br><br>
                     <hr class="my-4">
 
-                    <div class="mt-4 d-flex gap-2">
+                    <div class="d-flex gap-2">
                         <button class="btn btn-primary">
                             Guardar cambios
                         </button>
@@ -147,10 +148,19 @@
     </div>
 </div>
 
+<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
+========
+
+>>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
 @endsection
 
+<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
+========
+
+
+>>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
 @section('js')
 
 <!-- Bootstrap -->

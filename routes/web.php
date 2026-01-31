@@ -7,10 +7,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Administracion\BitacoraController;
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
 
 Route::get('/', function () {
     return redirect('/login');
@@ -176,10 +173,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     )->name('densidad_aparente.muestra.update');
 
 });
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
 //------------------------------------------------------------------------------
 // Permeabilidad de Aire PLANTILLA
 //-------------------------------------------------------------------------------

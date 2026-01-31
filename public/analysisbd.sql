@@ -706,6 +706,9 @@ END$$
 <<<<<<< Updated upstream
 =======
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 CREATE PROCEDURE sp_actualizar_rol_persona (
     IN p_id_persona INT UNSIGNED,
@@ -730,8 +733,11 @@ BEGIN
         SELECT 'ACTUALIZADO' AS resultado;
     END IF;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 END;
 =======
+=======
+>>>>>>> Stashed changes
 END$$
 >>>>>>> Stashed changes
 
@@ -786,6 +792,7 @@ DELIMITER ;
 
 DELIMITER $$
 
+<<<<<<< Updated upstream
 CREATE PROCEDURE sp_listar_bitacora()
 BEGIN
     SELECT
@@ -810,6 +817,8 @@ DELIMITER ;
 
 
 
+=======
+>>>>>>> Stashed changes
 DELIMITER $$
 
 CREATE PROCEDURE sp_listar_textura_por_periodo (

@@ -10,6 +10,7 @@
       href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
 @endsection
 
+
 @section('content')
 
 <div class="row">
@@ -24,22 +25,16 @@
 
                     {{-- TÍTULO --}}
                     <h5 class="mb-0 fw-semibold">
-                        Lote {{ $archivo }} – Muestras
+                        Archivo {{ $archivo }} – Muestras
                     </h5>
 
                     {{-- ACCIONES --}}
                     <div class="d-flex gap-3 align-items-center">
 
-                        {{-- BUSCAR --}}
-                        <div class="form-icon">
-                            <input type="text"
-                                   class="form-control form-control-icon"
-                                   placeholder="Buscar ...">
-                            <i class="ri-search-2-line text-muted"></i>
-                        </div>
+
 
                         {{-- VOLVER --}}
-                        <a href="{{ route('pa.index') }}"
+                        <a href="{{ route('textura.index') }}"
                            class="btn btn-primary">
                             ← Volver
                         </a>
@@ -58,81 +53,98 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Material</th>
-                            <th>Método</th>
-                            <th>Tipo muestra</th>
-                            <th>Longitud</th>
-                            <th>Diámetro</th>
-                            <th>Área</th>
-                            <th>Volumen</th>
-                            <th>Temp aire</th>
-                            <th>Prom</th>
-                            <th>Desv</th>
+                            <th>Peso seco</th>
+                            <th>R1</th>
+                            <th>R2</th>
+                            <th>R3</th>
+                            <th>R4</th>
+                            <th>Temp1</th>
+                            <th>Temp2</th>
+                            <th>Temp3</th>
+                            <th>Temp4</th>
+                            <th>Tiempo1</th>
+                            <th>Tiempo2</th>
+                            <th>Tiempo3</th>
+                            <th>Tiempo4</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
 
+
                     <tbody>
                         @forelse($muestras as $m)
+                        @php
+                        $filaInactiva = $m->estado == 0 ? 'opacity-40' : '';
+                        @endphp
+
                         <tr>
 
                             {{-- ID LAB --}}
-                            <td>
-                                <h6 class="mb-0">
-                                    <a href="{{ route('pa.muestra.edit', $m->id) }}">
-                                        {{ $m->idlab }}
-                                    </a>
-                                </h6>
-                                <small class="text-muted">
-                                    Rep {{ $m->rep }}
-                                </small>
+                            <td class="{{ $filaInactiva }}">
+                                <a href="{{ route('textura.muestra.edit', $m->id_muestra) }}"
+                                   class="text-reset fw-semibold fs-6 text-decoration-none">
+                                    {{ $m->idlab }}
+                                </a>
                             </td>
 
-                            <td>{{ $m->rep }}</td>
-                            <td>{{ $m->material }}</td>
-                            <td>{{ $m->metodo }}</td>
-                            <td>{{ $m->tipomuestra }}</td>
-                            <td>{{ $m->longitud }}</td>
-                            <td>{{ $m->diametrointerno }}</td>
-                            <td>{{ $m->areatransversal }}</td>
-                            <td>{{ $m->volumen }}</td>
-                            <td>{{ $m->temperaturaaire }}</td>
-                            <td>{{ $m->promedio }}</td>
-                            <td>{{ $m->desvEst }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
+
+                            <td class="{{ $filaInactiva }}">{{ $m->peso_seco }}</td>
+
+                            <td class="{{ $filaInactiva }}">{{ $m->R1 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->R2 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->R3 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->R4 }}</td>
+
+                            <td class="{{ $filaInactiva }}">{{ $m->Temp1 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->Temp2 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->Temp3 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->Temp4 }}</td>
+
+                            <td class="{{ $filaInactiva }}">{{ $m->Tiempo1 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->Tiempo2 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->Tiempo3 }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->Tiempo4 }}</td>
 
                             {{-- ACCIONES --}}
                             <td class="text-end">
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
 
-                                    {{-- ANULAR --}}
-                                    <button class="btn bg-warning-subtle text-warning btn-sm">
-                                        <i class="ri-close-circle-line"></i>
+
+                                    {{-- ANULAR / ACTIVAR --}}
+                                    <button type="button"
+                                            class="btn {{ $m->estado == 1
+            ? 'bg-warning-subtle text-warning'
+            : 'bg-success-subtle text-success' }} btn-sm"
+                                            onclick="confirmarEstadoMuestra(
+                                            {{ $m->id_muestra }},
+                                            {{ $m->estado }}
+        )">
+                                        <i class="{{ $m->estado == 1
+        ? 'ri-close-circle-line'
+        : 'ri-refresh-line' }}"></i>
                                     </button>
 
                                     {{-- ELIMINAR --}}
-                                    <button class="btn bg-danger-subtle text-danger btn-sm">
+                                    <button type="button"
+                                            class="btn bg-danger-subtle text-danger btn-sm"
+                                            onclick="confirmarEliminarMuestra({{ $m->id_muestra }})">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
-
-                                    {{-- TIMELINE --}}
-                                    <button class="btn bg-info-subtle text-info btn-sm">
-                                        <i class="ri-time-line"></i>
-                                    </button>
-
                                 </div>
                             </td>
 
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13"
-                                class="text-center text-muted py-4">
+                            <td colspan="16" class="text-center text-muted py-4">
                                 No hay muestras registradas para este lote.
                             </td>
                         </tr>
                         @endforelse
                     </tbody>
+
 
                 </table>
 
@@ -141,8 +153,47 @@
 
     </div>
 </div>
+
+
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
+
+
+{{-- MODAL CONFIRMACIÓN TEXTURA --}}
+<div class="modal fade" id="confirmMuestraModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            {{-- HEADER SIN LÍNEA --}}
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold" id="modalTitle"></h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            {{-- BODY --}}
+            <div class="modal-body" id="modalBody"></div>
+
+            {{-- FOOTER SIN LÍNEA --}}
+            <div class="modal-footer border-0">
+                <button class="btn btn-light"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <form method="POST" id="modalForm">
+                    @csrf
+                    <input type="hidden" name="_method" id="modalMethod">
+
+                    <button class="btn" id="modalConfirmBtn"></button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('js')
@@ -165,3 +216,90 @@
 <script src="{{ asset('js/app.js') }}"></script>
 
 @endsection
+<script>
+let muestraModal;
+let modalForm;
+let modalTitle;
+let modalBody;
+let modalBtn;
+let modalMethod;
+
+document.addEventListener('DOMContentLoaded', function () {
+    muestraModal = new bootstrap.Modal(
+        document.getElementById('confirmMuestraModal')
+    );
+
+    modalForm   = document.getElementById('modalForm');
+    modalTitle  = document.getElementById('modalTitle');
+    modalBody   = document.getElementById('modalBody');
+    modalBtn    = document.getElementById('modalConfirmBtn');
+    modalMethod = document.getElementById('modalMethod');
+});
+
+/* ===============================
+ * ANULAR / ACTIVAR
+ * =============================== */
+function confirmarEstadoMuestra(id, estado) {
+
+    modalForm.action = `/ingreso-datos/textura/muestra/${id}/estado`;
+    modalMethod.value = 'PATCH';
+
+    if (estado === 1) {
+        modalTitle.textContent = 'Anular muestra';
+        modalTitle.className = 'modal-title text-warning fw-semibold';
+
+        modalBody.innerHTML = `
+            ¿Está seguro que desea <strong>anular</strong> esta muestra?
+            <br>
+            <small class="text-muted">
+                La muestra seguirá visible, pero no se considerará activa.
+            </small>
+        `;
+
+        modalBtn.textContent = 'Anular';
+        modalBtn.className = 'btn btn-warning';
+
+    } else {
+        modalTitle.textContent = 'Reactivar muestra';
+        modalTitle.className = 'modal-title text-success fw-semibold';
+
+        modalBody.innerHTML = `
+            ¿Desea <strong>reactivar</strong> esta muestra?
+            <br>
+            <small class="text-muted">
+                La muestra volverá a estar activa en el sistema.
+            </small>
+        `;
+
+        modalBtn.textContent = 'Reactivar';
+        modalBtn.className = 'btn btn-success';
+    }
+
+    muestraModal.show();
+}
+
+/* ===============================
+ * ELIMINAR
+ * =============================== */
+function confirmarEliminarMuestra(id) {
+
+    modalForm.action = `/ingreso-datos/textura/muestra/${id}`;
+    modalMethod.value = 'DELETE';
+
+    modalTitle.textContent = 'Eliminar muestra';
+    modalTitle.className = 'modal-title text-danger fw-semibold';
+
+    modalBody.innerHTML = `
+        Esta acción eliminará la muestra y <strong>todos sus resultados</strong>.
+        <br>
+        <small class="text-muted">
+           Una vez eliminado no se puede deshacer.
+        </small>
+    `;
+
+    modalBtn.textContent = 'Eliminar';
+    modalBtn.className = 'btn btn-danger';
+
+    muestraModal.show();
+}
+</script>

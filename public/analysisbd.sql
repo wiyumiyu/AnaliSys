@@ -182,6 +182,54 @@ CREATE TABLE tbl_password_resets (
   COLLATE=utf8mb4_unicode_ci;
   
 
+/* ============================================================
+   INGRESO DE MUESTRAS (TABLAS)
+   ============================================================ */
+
+CREATE TABLE trn_analisis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    analisis VARCHAR(100) NOT NULL,
+    siglas VARCHAR(20) NOT NULL,
+    origen VARCHAR(50) 
+  
+);
+
+
+-- Textura
+CREATE TABLE trn_textura (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255) NULL,
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+CREATE TABLE trn_textura_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_textura INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL,
+
+    material int NOT NULL,
+    tipo int NOT NULL,
+    posicion int NOT NULL,
+
+    estado BOOLEAN NOT NULL DEFAULT 1,
+    ri BOOLEAN NOT NULL DEFAULT 0
+);
+CREATE TABLE trn_textura_resultados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_textura_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+
+    estado boolean DEFAULT 1
+
+
+);
+
+
 -- Densidad Aparente
 CREATE TABLE trn_densidadaparente (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -265,6 +313,26 @@ FOREIGN KEY (id_persona)
 REFERENCES tbl_persona(id_persona)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
+
+
+
+-- Textura
+ALTER TABLE trn_textura_muestras
+ADD CONSTRAINT fk_textura_muestras_textura
+FOREIGN KEY (id_textura)
+REFERENCES trn_textura(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_textura_resultados
+ADD CONSTRAINT fk_textura_resultados_resultados
+FOREIGN KEY (id_textura_muestras)
+REFERENCES trn_textura_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_textura_resultados
+ADD CONSTRAINT fk_textura_resultados_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
 
 -- Densidad Aparente
 ALTER TABLE trn_densidadaparente_muestras
@@ -504,6 +572,8 @@ END$$
 
 
 
+
+
 /* ============================================================
    5.5 PERSONAS – CORREOS
    ============================================================ */
@@ -633,6 +703,10 @@ BEGIN
     WHERE pr.id_persona = p_id_persona;
 END$$
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 CREATE PROCEDURE sp_actualizar_rol_persona (
     IN p_id_persona INT UNSIGNED,
     IN p_rol_id INT UNSIGNED
@@ -655,7 +729,11 @@ BEGIN
 
         SELECT 'ACTUALIZADO' AS resultado;
     END IF;
+<<<<<<< Updated upstream
 END;
+=======
+END$$
+>>>>>>> Stashed changes
 
 CREATE PROCEDURE sp_validar_correo_principal (
     IN p_correo VARCHAR(100)
@@ -732,6 +810,193 @@ DELIMITER ;
 
 
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_textura_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        t.id                     AS id_archivo,
+        t.periodo,
+        t.fecha,
+        t.archivo,
+        t.analista               AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_textura t
+    INNER JOIN tbl_persona p
+        ON p.id_persona = t.analista
+    WHERE t.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY t.fecha DESC, t.id DESC;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+-- drop procedure  sp_listar_muestras_textura_detalle 
+CREATE PROCEDURE sp_listar_muestras_textura_detalle (
+    IN p_id_textura INT
+)
+BEGIN
+    SELECT
+        m.id                         AS id_muestra,
+        m.idlab,
+        m.rep,
+		m.estado, 
+        MAX(CASE WHEN a.siglas = 'PESO_SECO' THEN r.resultado END) AS peso_seco,
+
+        MAX(CASE WHEN a.siglas = 'R1' THEN r.resultado END) AS R1,
+        MAX(CASE WHEN a.siglas = 'R2' THEN r.resultado END) AS R2,
+        MAX(CASE WHEN a.siglas = 'R3' THEN r.resultado END) AS R3,
+        MAX(CASE WHEN a.siglas = 'R4' THEN r.resultado END) AS R4,
+
+        MAX(CASE WHEN a.siglas = 'TEMP1' THEN r.resultado END) AS Temp1,
+        MAX(CASE WHEN a.siglas = 'TEMP2' THEN r.resultado END) AS Temp2,
+        MAX(CASE WHEN a.siglas = 'TEMP3' THEN r.resultado END) AS Temp3,
+        MAX(CASE WHEN a.siglas = 'TEMP4' THEN r.resultado END) AS Temp4,
+
+        MAX(CASE WHEN a.siglas = 'TIEMPO1' THEN r.resultado END) AS Tiempo1,
+        MAX(CASE WHEN a.siglas = 'TIEMPO2' THEN r.resultado END) AS Tiempo2,
+        MAX(CASE WHEN a.siglas = 'TIEMPO3' THEN r.resultado END) AS Tiempo3,
+        MAX(CASE WHEN a.siglas = 'TIEMPO4' THEN r.resultado END) AS Tiempo4
+
+    FROM trn_textura_muestras m
+    LEFT JOIN trn_textura_resultados r
+        ON r.id_textura_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'TEXTURA'
+
+    WHERE m.id_textura = p_id_textura
+   
+
+    GROUP BY
+        m.id, m.idlab, m.rep
+
+    ORDER BY
+        m.idlab, m.rep;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_textura (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        id,
+        id_textura,
+        idlab,
+        rep,
+        material,
+        tipo,
+        posicion,
+        estado,
+        ri
+    FROM trn_textura_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_textura_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+    SELECT
+        r.id                AS id_resultado,
+        r.id_analisis,
+        a.analisis,
+        a.siglas,
+        r.resultado,
+        r.estado
+    FROM trn_textura_resultados r
+    INNER JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'TEXTURA'
+    WHERE r.id_textura_muestras = p_id_muestra
+    ORDER BY a.id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_textura (
+    IN p_id INT,
+    IN p_rep INT,
+    IN p_material VARCHAR(255),
+    IN p_tipo VARCHAR(100),
+    IN p_posicion VARCHAR(50),
+    IN p_estado TINYINT
+)
+BEGIN
+    UPDATE trn_textura_muestras
+    SET
+        rep       = p_rep,
+        material  = p_material,
+        tipo      = p_tipo,
+        posicion  = p_posicion,
+        estado    = p_estado
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_textura (
+    IN p_id_resultado INT,
+    IN p_resultado VARCHAR(50)
+)
+BEGIN
+    UPDATE trn_textura_resultados
+    SET resultado = p_resultado
+    WHERE id = p_id_resultado;
+END$$
+
+DELIMITER ;
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_textura (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_textura_muestras
+    SET estado = 0
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+DELIMITER $$
+CREATE PROCEDURE sp_eliminar_muestra_textura (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_textura_muestras
+    WHERE id = p_id;
+END;
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_textura (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_textura_muestras
+    SET estado = IF(estado = 1, 0, 1)
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
 
 /* ============================================================
    6. TRIGGERS
@@ -1100,8 +1365,30 @@ END$$
 
 DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE sp_listar_bitacora()
+BEGIN
+    SELECT
+        b.id,
+        b.tabla,
+        SUBSTRING_INDEX(
+            COALESCE(c.correo, b.usuario),
+            '@',
+            1
+        ) AS usuario,
+        b.ip,
+        b.accion,
+        b.fecha,
+        IF(b.datos_antes IS NOT NULL, 1, 0)   AS tiene_antes,
+        IF(b.datos_despues IS NOT NULL, 1, 0) AS tiene_despues
+    FROM tbl_bitacora b
+    LEFT JOIN trn_persona_correo c
+        ON c.id_persona = b.usuario
+        AND c.descripcion = 'PRINCIPAL'
+    ORDER BY b.fecha DESC;
+END$$
 
-
+DELIMITER ;
 
 /* ============================================================
    6. DATOS INICIALES
@@ -1224,6 +1511,117 @@ VALUES
 INSERT INTO trn_persona_roles (id_persona, rol_id)
 VALUES
 (4, 2); -- ANALISTA
+
+
+
+INSERT INTO trn_textura (periodo, archivo, fecha, analista)
+VALUES (2024, 'textura_lote_2024_018.csv', '2024-09-15', 1);
+
+INSERT INTO trn_textura (periodo, archivo, fecha, analista)
+VALUES (2024, 'textura_lote_2024_018.csv', '2024-09-15', 2);
+
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+('Peso seco',      'PESO_SECO', 'TEXTURA'),
+
+('Resultado R1',   'R1',        'TEXTURA'),
+('Resultado R2',   'R2',        'TEXTURA'),
+('Resultado R3',   'R3',        'TEXTURA'),
+('Resultado R4',   'R4',        'TEXTURA'),
+
+('Temperatura 1',  'TEMP1',     'TEXTURA'),
+('Temperatura 2',  'TEMP2',     'TEXTURA'),
+('Temperatura 3',  'TEMP3',     'TEXTURA'),
+('Temperatura 4',  'TEMP4',     'TEXTURA'),
+
+('Tiempo 1',       'TIEMPO1',   'TEXTURA'),
+('Tiempo 2',       'TIEMPO2',   'TEXTURA'),
+('Tiempo 3',       'TIEMPO3',   'TEXTURA'),
+('Tiempo 4',       'TIEMPO4',   'TEXTURA');
+
+
+
+
+
+
+
+INSERT INTO trn_textura_muestras
+(id_textura, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '754', 1, 1, 1, '1', 1, 0),
+(1, '754', 2, 1, 1, '2', 1, 0),
+(1, '755', 1, 1, 1, '3', 1, 0);
+
+
+INSERT INTO trn_textura_resultados
+(id_textura_muestras, id_analisis, resultado, estado)
+VALUES
+(1, 1, '12.45', 1), -- PESO_SECO
+(1, 2, '0.226', 1), -- R1
+(1, 3, '0.215', 1), -- R2
+(1, 4, '0.209', 1), -- R3
+(1, 5, '0.231', 1), -- R4
+(1, 6, '25.0',  1), -- TEMP1
+(1, 7, '25.2',  1), -- TEMP2
+(1, 8, '25.1',  1), -- TEMP3
+(1, 9, '25.3',  1), -- TEMP4
+(1,10, '30',    1), -- TIEMPO1
+(1,11, '60',    1), -- TIEMPO2
+(1,12,'120',    1), -- TIEMPO3
+(1,13,'360',    1); -- TIEMPO4
+
+
+INSERT INTO trn_textura_resultados
+(id_textura_muestras, id_analisis, resultado, estado)
+VALUES
+(1, 1, '12.45', 1), -- PESO_SECO
+(1, 2, '0.226', 1), -- R1
+(1, 3, '0.215', 1), -- R2
+(1, 4, '0.209', 1), -- R3
+(1, 5, '0.231', 1), -- R4
+(1, 6, '25.0',  1), -- TEMP1
+(1, 7, '25.2',  1), -- TEMP2
+(1, 8, '25.1',  1), -- TEMP3
+(1, 9, '25.3',  1), -- TEMP4
+(1,10, '30',    1), -- TIEMPO1
+(1,11, '60',    1), -- TIEMPO2
+(1,12,'120',    1), -- TIEMPO3
+(1,13,'360',    1); -- TIEMPO4
+
+
+INSERT INTO trn_textura_resultados
+(id_textura_muestras, id_analisis, resultado, estado)
+VALUES
+(2, 1, '12.62', 1), -- PESO_SECO
+(2, 2, '0.231', 1), -- R1
+(2, 3, '0.219', 1), -- R2
+(2, 4, '0.214', 1), -- R3
+(2, 5, '0.238', 1), -- R4
+(2, 6, '24.9',  1), -- TEMP1
+(2, 7, '25.1',  1), -- TEMP2
+(2, 8, '25.0',  1), -- TEMP3
+(2, 9, '25.4',  1), -- TEMP4
+(2,10, '32',    1), -- TIEMPO1
+(2,11, '62',    1), -- TIEMPO2
+(2,12,'118',    1), -- TIEMPO3
+(2,13,'355',    1); -- TIEMPO4
+
+INSERT INTO trn_textura_resultados
+(id_textura_muestras, id_analisis, resultado, estado)
+VALUES
+(3, 1, '12.18', 1), -- PESO_SECO
+(3, 2, '0.219', 1), -- R1
+(3, 3, '0.207', 1), -- R2
+(3, 4, '0.201', 1), -- R3
+(3, 5, '0.224', 1), -- R4
+(3, 6, '25.3',  1), -- TEMP1
+(3, 7, '25.5',  1), -- TEMP2
+(3, 8, '25.4',  1), -- TEMP3
+(3, 9, '25.6',  1), -- TEMP4
+(3,10, '28',    1), -- TIEMPO1
+(3,11, '58',    1), -- TIEMPO2
+(3,12,'122',    1), -- TIEMPO3
+(3,13,'365',    1); -- TIEMPO4
 
 
 SELECT * 

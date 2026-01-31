@@ -11,21 +11,12 @@ class TexturaController extends Controller {
      * =============================== */
 
     public function archivos(Request $request) {
-        $anio = $request->get('anio', date('Y'));
+        $periodo = $request->get('periodo', date('Y'));
 
-        // 🔥 QUEMADO POR AHORA (luego SP)
-        $archivos = [
-            (object) [
-                'id_archivo' => 1,
-                'archivo' => 'PA-2026-001.xls',
-                'fecha' => '2026-01-15',
-                'analista' => 'Juan Pérez'
-            ]
-        ];
-
+        $archivos = DB::select('CALL sp_listar_textura_por_periodo(?)', [$periodo]);
         return view(
-                'ingreso_datos.textura.indextextura',
-                compact('archivos', 'anio')
+                'ingreso_datos.textura.index',
+                compact('archivos', 'periodo')
         );
     }
 
@@ -34,26 +25,13 @@ class TexturaController extends Controller {
      * =============================== */
 
     public function muestras($idArchivo) {
-        // 🔥 QUEMADO POR AHORA
+        // nombre del archivo (luego lo sacas de BD)
         $archivo = 'PA-2026-001';
 
-        $muestras = [
-            (object) [
-                'id' => 1,
-                'idlab' => 'LAB-001',
-                'rep' => 1,
-                'material' => 'Suelo franco',
-                'metodo' => 'ASTM',
-                'tipomuestra' => 'Indisturbada',
-                'longitud' => 10.5,
-                'diametrointerno' => 5.0,
-                'areatransversal' => 19.63,
-                'volumen' => 196.3,
-                'temperaturaaire' => 25,
-                'promedio' => null,
-                'desvEst' => null
-            ]
-        ];
+        $muestras = DB::select(
+                'CALL sp_listar_muestras_textura_detalle(?)',
+                [$idArchivo]
+        );
 
         return view(
                 'ingreso_datos.textura.muestras',
@@ -66,31 +44,73 @@ class TexturaController extends Controller {
      * =============================== */
 
     public function edit($id) {
-        // 🔥 QUEMADO POR AHORA
-        $muestra = (object) [
-                    'id' => $id,
-                    'idlab' => 'LAB-001',
-                    'rep' => 1,
-                    'material' => 'Suelo franco',
-                    'metodo' => 'ASTM',
-                    'tipomuestra' => 'Indisturbada',
-                    'longitud' => 10.5,
-                    'diametrointerno' => 5.0,
-                    'areatransversal' => 19.63,
-                    'volumen' => 196.3,
-                    'temperaturaaire' => 25
-        ];
+        $muestra = collect(
+                DB::select('CALL sp_obtener_muestra_textura(?)', [$id])
+                )->first();
+
+        $resultados = DB::select(
+                'CALL sp_listar_resultados_textura_por_muestra(?)',
+                [$id]
+        );
 
         return view(
-                'ingreso_datos.textura.edit',
-                compact('muestra')
+                'ingreso_datos.textura.editar',
+                compact('muestra', 'resultados')
         );
     }
+public function update(Request $request, $id)
+{
+    // obtener id_textura antes de actualizar
+    $muestra = collect(
+        DB::select('CALL sp_obtener_muestra_textura(?)', [$id])
+    )->first();
 
-    public function update(Request $request, $id) {
-        // luego aquí va el SP
+    // actualizar muestra
+    DB::statement(
+        'CALL sp_actualizar_muestra_textura(?,?,?,?,?,?)',
+        [
+            $id,
+            $request->rep,
+            $request->material,
+            $request->tipo,
+            $request->posicion,
+            $request->estado
+        ]
+    );
+
+    // actualizar resultados
+    if ($request->has('resultados')) {
+        foreach ($request->resultados as $idResultado => $valor) {
+            DB::statement(
+                'CALL sp_actualizar_resultado_textura(?,?)',
+                [$idResultado, $valor]
+            );
+        }
+    }
+
+    // 👉 REDIRECCIÓN AL LISTADO DE MUESTRAS
+    return redirect()
+        ->route('textura.muestras', $muestra->id_textura)
+        ->with('success', 'Muestra actualizada correctamente');
+}
+
+
+    public function toggleEstado($id) {
+        DB::statement(
+                'CALL sp_toggle_estado_muestra_textura(?)',
+                [$id]
+        );
+
         return redirect()
                         ->back()
-                        ->with('success', 'Muestra actualizada correctamente');
+                        ->with('success', 'Estado de la muestra actualizado correctamente');
+    }
+
+    public function destroy($id) {
+        DB::statement('CALL sp_eliminar_muestra_textura(?)', [$id]);
+
+        return redirect()
+                        ->back()
+                        ->with('success', 'Muestra eliminada correctamente');
     }
 }

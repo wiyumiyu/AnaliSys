@@ -7,7 +7,10 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Administracion\BitacoraController;
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 
 Route::get('/', function () {
     return redirect('/login');
@@ -91,6 +94,11 @@ Route::middleware(['rol:ADMIN'])->group(function () {
     
 
 });
+        // ===============================
+    // BITÁCORA
+    // ===============================
+    Route::get('/bitacora', [BitacoraController::class, 'index'])
+            ->name('bitacora.index');
 
 //------------------------------------------------------------------------------
 // TEXTURA
@@ -108,13 +116,36 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             '/ingreso-datos/textura/{archivo}/muestras',
             [TexturaController::class, 'muestras']
     )->name('textura.muestras');
-    
-    
+
+    // editar muestra
     Route::get(
             '/ingreso-datos/textura/muestra/{id}/editar',
-            [PermeabilidadAireController::class, 'edit']
-    )->name('textura.muestra.edit');    
-    
+            [TexturaController::class, 'edit']
+    )->name('textura.muestra.edit');
+
+    // actualizar muestra
+    Route::put(
+            '/ingreso-datos/textura/muestra/{id}',
+            [TexturaController::class, 'update']
+    )->name('textura.muestra.update');
+
+    // anular muestra
+//    Route::patch(
+//            '/ingreso-datos/textura/muestra/{id}/anular',
+//            [TexturaController::class, 'anular']
+//    )->name('textura.muestra.anular');
+
+    // anular y activar muestra
+    Route::patch(
+            '/ingreso-datos/textura/muestra/{id}/estado',
+            [TexturaController::class, 'toggleEstado']
+    )->name('textura.muestra.toggle');
+
+    // eliminar muestra
+    Route::delete(
+            '/ingreso-datos/textura/muestra/{id}',
+            [TexturaController::class, 'destroy']
+    )->name('textura.muestra.destroy');
 });
 
 //------------------------------------------------------------------------------
@@ -145,7 +176,10 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     )->name('densidad_aparente.muestra.update');
 
 });
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 //------------------------------------------------------------------------------
 // Permeabilidad de Aire PLANTILLA
 //-------------------------------------------------------------------------------

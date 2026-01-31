@@ -32,9 +32,9 @@
 
             {{-- AÑO (MISMA ALTURA, MENOR ANCHO) --}}
             <select class="form-select w-auto"
-                    onchange="location='?anio='+this.value">
+                    onchange="location='?periodo='+this.value">
                 @for($i = date('Y'); $i >= date('Y')-10; $i--)
-                    <option value="{{ $i }}" @selected($anio==$i)>
+                    <option value="{{ $i }}" @selected($periodo==$i)>
                         {{ $i }}
                     </option>
                 @endfor
@@ -82,7 +82,7 @@
                             {{-- LOTE --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('pa.muestras', $l->id_archivo) }}">
+                                    <a href="{{ route('textura.muestras', $l->id_archivo) }}">
                                         {{ $l->archivo }}
                                     </a>
                                 </h6>
@@ -101,7 +101,7 @@
                             <td class="text-end">
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
-                                    <a href="{{ route('pa.muestras', $l->id_archivo) }}"
+                                    <a href="{{ route('textura.muestras', $l->id_archivo) }}"
                                        class="btn bg-primary-subtle text-primary btn-sm">
                                         <i class="ri-eye-line"></i>
                                     </a>

@@ -273,6 +273,11 @@ ADD CONSTRAINT fk_resultado_muestras
 FOREIGN KEY (id_densidadaparente_muestras)
 REFERENCES trn_densidadaparente_muestras(id);
 
+ALTER TABLE tbl_bitacora
+ADD COLUMN operacion_id CHAR(36) NOT NULL AFTER id,
+ADD INDEX idx_operacion (operacion_id);
+
+
 /* ============================================================
    5. PROCEDIMIENTOS ALMACENADOS
    ============================================================ */
@@ -657,172 +662,178 @@ END $$
 
 DELIMITER ;
 
+
 DELIMITER $$
 
 CREATE PROCEDURE sp_bitacora_usuario (
+    IN p_operacion_id CHAR(36),
     IN p_tabla VARCHAR(64),
+    IN p_usuario INT,
+    IN p_ip VARCHAR(45),
     IN p_accion ENUM('CREATE','UPDATE','DELETE'),
-    IN p_id_persona INT
+    IN p_datos_antes JSON,
+    IN p_datos_despues JSON
 )
 BEGIN
-    -- evitar duplicados por la misma operación
-    IF NOT EXISTS (
-        SELECT 1
-        FROM tbl_bitacora
-        WHERE operacion_id = @operacion_id
-          AND JSON_EXTRACT(datos_despues, '$.persona.id_persona') = p_id_persona
-    ) THEN
+    INSERT INTO tbl_bitacora (
+        operacion_id,
+        tabla,
+        usuario,
+        ip,
+        accion,
+        datos_antes,
+        datos_despues
+    )
+    VALUES (
+        p_operacion_id,
+        p_tabla,
+        p_usuario,
+        p_ip,
+        p_accion,
+        p_datos_antes,
+        p_datos_despues
+    );
+END$$
 
-        INSERT INTO tbl_bitacora (
-            operacion_id,
-            tabla,
-            usuario,
-            ip,
-            accion,
-            datos_despues
-        )
-        VALUES (
-            @operacion_id,
-            p_tabla,
-            @usuario,
-            @ip,
-            p_accion,
-            JSON_OBJECT(
-                'persona', (
-                    SELECT JSON_OBJECT(
-                        'id_persona', p.id_persona,
-                        'nombre', p.nombre,
-                        'apellido1', p.apellido1,
-                        'apellido2', p.apellido2,
-                        'cedula', p.cedula,
-                        'id_estado', p.id_estado
-                    )
-                    FROM tbl_persona p
-                    WHERE p.id_persona = p_id_persona
-                ),
-                'correos', (
-                    SELECT JSON_ARRAYAGG(
-                        JSON_OBJECT(
-                            'correo', c.correo,
-                            'descripcion', c.descripcion
-                        )
-                    )
-                    FROM trn_persona_correo c
-                    WHERE c.id_persona = p_id_persona
-                ),
-                'telefonos', (
-                    SELECT JSON_ARRAYAGG(
-                        JSON_OBJECT(
-                            'telefono', t.telefono,
-                            'tipo', tt.nombre
-                        )
-                    )
-                    FROM trn_persona_telefono t
-                    JOIN cat_telefono_tipo tt ON tt.id = t.id_telefono_tipo
-                    WHERE t.id_persona = p_id_persona
-                )
-            )
-        );
-    END IF;
-END;
 DELIMITER ;
+
+
 
 /* ============================================================
    6. TRIGGERS
    ============================================================ */
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_persona_ai $$
 CREATE TRIGGER trg_persona_ai
 AFTER INSERT ON tbl_persona
 FOR EACH ROW
 BEGIN
-    CALL sp_bitacora_usuario('tbl_persona', 'CREATE', NEW.id_persona);
+    CALL sp_bitacora_usuario(
+        @operacion_id,
+        'tbl_persona',
+        @usuario,
+        @ip,
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'persona', JSON_OBJECT(
+                'id_persona', NEW.id_persona,
+                'nombre', NEW.nombre,
+                'apellido1', NEW.apellido1,
+                'apellido2', NEW.apellido2,
+                'cedula', NEW.cedula,
+                'id_estado', NEW.id_estado
+            )
+        )
+    );
 END$$
 
 DELIMITER ;
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_persona_au $$
 CREATE TRIGGER trg_persona_au
 AFTER UPDATE ON tbl_persona
 FOR EACH ROW
 BEGIN
-    CALL sp_bitacora_usuario('tbl_persona', 'UPDATE', NEW.id_persona);
+    CALL sp_bitacora_usuario(
+        @operacion_id,
+        'tbl_persona',
+        @usuario,
+        @ip,
+        CASE
+            WHEN OLD.id_estado = 1 AND NEW.id_estado = 0 THEN 'DELETE'
+            ELSE 'UPDATE'
+        END,
+        JSON_OBJECT(
+            'persona', JSON_OBJECT(
+                'id_persona', OLD.id_persona,
+                'nombre', OLD.nombre,
+                'apellido1', OLD.apellido1,
+                'apellido2', OLD.apellido2,
+                'cedula', OLD.cedula,
+                'id_estado', OLD.id_estado
+            )
+        ),
+        JSON_OBJECT(
+            'persona', JSON_OBJECT(
+                'id_persona', NEW.id_persona,
+                'nombre', NEW.nombre,
+                'apellido1', NEW.apellido1,
+                'apellido2', NEW.apellido2,
+                'cedula', NEW.cedula,
+                'id_estado', NEW.id_estado
+            ),
+            'correos', (
+                SELECT IFNULL(
+                    JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'correo', c.correo,
+                            'descripcion', c.descripcion
+                        )
+                    ),
+                    JSON_ARRAY()
+                )
+                FROM trn_persona_correo c
+                WHERE c.id_persona = NEW.id_persona
+            ),
+            'telefonos', (
+                SELECT IFNULL(
+                    JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'telefono', t.telefono,
+                            'tipo', tt.nombre
+                        )
+                    ),
+                    JSON_ARRAY()
+                )
+                FROM trn_persona_telefono t
+                JOIN cat_telefono_tipo tt ON tt.id = t.id_telefono_tipo
+                WHERE t.id_persona = NEW.id_persona
+            )
+        )
+    );
 END$$
 
 DELIMITER ;
 
+
+
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_persona_delete_logico $$
 CREATE TRIGGER trg_persona_delete_logico
 AFTER UPDATE ON tbl_persona
 FOR EACH ROW
 BEGIN
     IF OLD.id_estado = 1 AND NEW.id_estado = 0 THEN
-        CALL sp_bitacora_usuario('tbl_persona', 'DELETE', NEW.id_persona);
+        CALL sp_bitacora_usuario(
+            @operacion_id,
+            'tbl_persona',
+            @usuario,
+            @ip,
+            'DELETE',
+            JSON_OBJECT(
+                'persona', JSON_OBJECT(
+                    'id_persona', OLD.id_persona,
+                    'nombre', OLD.nombre,
+                    'apellido1', OLD.apellido1,
+                    'apellido2', OLD.apellido2,
+                    'cedula', OLD.cedula,
+                    'id_estado', OLD.id_estado
+                )
+            ),
+            JSON_OBJECT(
+                'persona', JSON_OBJECT(
+                    'id_persona', NEW.id_persona,
+                    'id_estado', NEW.id_estado
+                )
+            )
+        );
     END IF;
 END$$
 
 DELIMITER ;
 
-DELIMITER $$
-
-DROP TRIGGER IF EXISTS trg_correo_ai $$
-CREATE TRIGGER trg_correo_ai
-AFTER INSERT ON trn_persona_correo
-FOR EACH ROW
-BEGIN
-    CALL sp_bitacora_usuario('trn_persona_correo', 'UPDATE', NEW.id_persona);
-END$$
-
-DROP TRIGGER IF EXISTS trg_correo_au $$
-CREATE TRIGGER trg_correo_au
-AFTER UPDATE ON trn_persona_correo
-FOR EACH ROW
-BEGIN
-    CALL sp_bitacora_usuario('trn_persona_correo', 'UPDATE', NEW.id_persona);
-END$$
-
-DROP TRIGGER IF EXISTS trg_correo_ad $$
-CREATE TRIGGER trg_correo_ad
-AFTER DELETE ON trn_persona_correo
-FOR EACH ROW
-BEGIN
-    CALL sp_bitacora_usuario('trn_persona_correo', 'UPDATE', OLD.id_persona);
-END$$
-
-DELIMITER ;
-
-DELIMITER $$
-
-DROP TRIGGER IF EXISTS trg_tel_ai $$
-CREATE TRIGGER trg_tel_ai
-AFTER INSERT ON trn_persona_telefono
-FOR EACH ROW
-BEGIN
-    CALL sp_bitacora_usuario('trn_persona_telefono', 'UPDATE', NEW.id_persona);
-END$$
-
-DROP TRIGGER IF EXISTS trg_tel_au $$
-CREATE TRIGGER trg_tel_au
-AFTER UPDATE ON trn_persona_telefono
-FOR EACH ROW
-BEGIN
-    CALL sp_bitacora_usuario('trn_persona_telefono', 'UPDATE', NEW.id_persona);
-END$$
-
-DROP TRIGGER IF EXISTS trg_tel_ad $$
-CREATE TRIGGER trg_tel_ad
-AFTER DELETE ON trn_persona_telefono
-FOR EACH ROW
-BEGIN
-    CALL sp_bitacora_usuario('trn_persona_telefono', 'UPDATE', OLD.id_persona);
-END$$
-
-DELIMITER ;
 
 /* ============================================================
    6. DATOS INICIALES

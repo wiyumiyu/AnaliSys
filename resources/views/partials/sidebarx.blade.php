@@ -80,9 +80,9 @@
                         </a>
                     </li>
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/permeabilidad_aire/listado.php" class="pe-nav-link">
-                            Permeabilidad del aire
-                        </a>
+<a href="{{ route('pa.index') }}" class="pe-nav-link">
+    Permeabilidad del aire
+</a>
                     </li>
                 </ul>
             </li>

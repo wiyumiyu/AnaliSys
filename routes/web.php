@@ -87,3 +87,35 @@ Route::middleware(['rol:ADMIN'])->group(function () {
 
 });
 
+
+
+//------------------------------------------------------------------------------
+// PLANTILLA
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\PermeabilidadAireController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/permeabilidad-aire',
+        [PermeabilidadAireController::class, 'lotes']
+    )->name('pa.index');
+
+    Route::get(
+        '/ingreso-datos/permeabilidad-aire/{lote}/muestras',
+        [PermeabilidadAireController::class, 'muestras']
+    )->name('pa.muestras');
+
+    Route::get(
+        '/ingreso-datos/permeabilidad-aire/muestra/{id}/editar',
+        [PermeabilidadAireController::class, 'edit']
+    )->name('pa.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/permeabilidad-aire/muestra/{id}',
+        [PermeabilidadAireController::class, 'update']
+    )->name('pa.muestra.update');
+});
+//------------------------------------------------------------------------------
+// ----------------------------------------------------------PLANTILLA
+//-------------------------------------------------------------------------------

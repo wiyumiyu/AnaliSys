@@ -10,11 +10,98 @@
 @endsection
 
 @section('content')
+<br> 
+<div id="layout-wrapper">
+    <div class="row">
+        <div class="col-12 mb-1">
+            <div class="accordion accordion-icon accordion-primary accordion-border-box"
+                 id="demo_accordion_main_03">
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#demo_accordion_item_31"
+                                aria-expanded="true"
+                                aria-controls="demo_accordion_item_31">
+                            <i class="bi bi-funnel-fill me-2"></i> Filtrar
+                        </button>
+                    </h2>
+
+                    <div id="demo_accordion_item_31"
+                         class="accordion-collapse collapse show"
+                         data-bs-parent="#demo_accordion_main_03">
+
+                        <div class="accordion-body py-5">
+                            <div class="row g-4">
+
+                                <!-- Usuario -->
+                                <div class="col-md-4 col-xl">
+                                    <input type="text"
+                                           class="form-control form-control-icon"
+                                           id="filter-usuario"
+                                           placeholder="Usuario">
+                                </div>
+
+                                <!-- Tabla -->
+                                <div class="col-md-4 col-xl">
+                                    <input type="text"
+                                           class="form-control form-control-icon"
+                                           id="filter-tabla"
+                                           placeholder="Tabla">
+                                </div>
+
+                                <!-- Acción -->
+                                <div class="col-md-4 col-xl">
+                                    <select id="filter-accion"
+                                            class="form-select">
+                                        <option value="">Acción</option>
+                                        <option value="CREATE">CREATE</option>
+                                        <option value="UPDATE">UPDATE</option>
+                                        <option value="DELETE">DELETE</option>
+                                    </select>
+                                </div>
+
+                                <!-- IP -->
+                                <div class="col-md-4 col-xl">
+                                    <input type="text"
+                                           class="form-control form-control-icon"
+                                           id="filter-ip"
+                                           placeholder="IP">
+                                </div>
+
+                                <!-- Fecha -->
+                                <div class="col-md-4 col-xl">
+                                    <input type="date"
+                                           class="form-control"
+                                           id="filter-fecha">
+                                </div>
+
+                                <div class="col-xl d-flex justify-content-end align-items-center gap-2">
+
+                                    <button class="btn btn-light-danger"
+                                            type="button"
+                                            id="btn-limpiar">
+                                        Quitar filtros
+                                    </button>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="row">
     <div class="col-lg-12">
-
-        <br>
 
         <div class="card">
             <div class="card-header">
@@ -100,52 +187,83 @@
 <div class="modal fade"
      id="detalleBitacoraModal"
      tabindex="-1"
+     role="dialog"
+     aria-labelledby="modalLabel"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+         role="document">
         <div class="modal-content">
 
-            <div class="modal-header border-0">
-                <h5 class="modal-title">Detalle de Bitácora</h5>
+            {{-- HEADER --}}
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">
+                    <i class="ri-eye-line text-primary me-2"></i>
+                    Detalle de Bitácora
+                </h5>
+
                 <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
+                        class="btn-close icon-btn-sm"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                    <i class="ri-close-large-line fw-semibold"></i>
                 </button>
             </div>
 
+            {{-- BODY --}}
             <div class="modal-body">
 
-                <div class="row mb-3">
+                {{-- INFO PRINCIPAL --}}
+                <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <strong>Usuario</strong>
+                        <div class="fw-semibold mb-1">
+                            <i class="ri-user-3-line me-1 text-primary"></i>
+                            Usuario
+                        </div>
                         <div id="bd-usuario" class="text-muted"></div>
                     </div>
 
                     <div class="col-md-4">
-                        <strong>Tabla</strong>
+                        <div class="fw-semibold mb-1">
+                            <i class="ri-database-2-line me-1 text-secondary"></i>
+                            Tabla
+                        </div>
                         <div id="bd-tabla" class="text-muted"></div>
                     </div>
 
                     <div class="col-md-4">
-                        <strong>Acción</strong>
+                        <div class="fw-semibold mb-1">
+                            <i class="ri-flashlight-line me-1 text-warning"></i>
+                            Acción
+                        </div>
                         <div id="bd-accion" class="text-muted"></div>
                     </div>
                 </div>
 
-                <hr>
+                <hr class="my-3">
 
-                <h6 class="fw-semibold">Antes</h6>
-                <pre class="bg-light p-3 rounded small"
+                {{-- ANTES --}}
+                <h6 class="fw-semibold mb-2">
+                    <i class="ri-arrow-left-right-line text-danger me-1"></i>
+                    Estado anterior
+                </h6>
+                <pre class="bg-light p-3 rounded small mb-4"
                      id="bd-antes">—</pre>
 
-                <h6 class="fw-semibold mt-4">Después</h6>
+                {{-- DESPUÉS --}}
+                <h6 class="fw-semibold mb-2">
+                    <i class="ri-arrow-right-line text-success me-1"></i>
+                    Estado posterior
+                </h6>
                 <pre class="bg-light p-3 rounded small"
                      id="bd-despues">—</pre>
 
             </div>
 
-            <div class="modal-footer border-0">
-                <button class="btn btn-light"
+            {{-- FOOTER --}}
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
                         data-bs-dismiss="modal">
                     Cerrar
                 </button>
@@ -221,5 +339,70 @@ function verDetalle(id) {
         });
 }
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const table = $('#default_datatable').DataTable({
+        order: [[0, 'desc']] // 👈 Fecha DESC (más reciente primero)
+    });
+
+
+    function aplicarFiltros() {
+        table.column(1).search(
+            document.getElementById('filter-usuario').value
+        );
+
+        table.column(2).search(
+            document.getElementById('filter-tabla').value
+        );
+
+        table.column(3).search(
+            document.getElementById('filter-accion').value
+        );
+
+        table.column(4).search(
+            document.getElementById('filter-ip').value
+        );
+
+        table.column(0).search(
+            document.getElementById('filter-fecha').value
+        );
+
+        table.draw();
+    }
+
+    // Inputs texto → mientras escribe
+    document.querySelectorAll(
+        '#filter-usuario, #filter-tabla, #filter-ip'
+    ).forEach(input => {
+        input.addEventListener('input', aplicarFiltros);
+    });
+
+    // Fecha
+    document.getElementById('filter-fecha')
+        .addEventListener('change', aplicarFiltros);
+
+    // Select acción
+    document.getElementById('filter-accion')
+        .addEventListener('change', aplicarFiltros);
+
+    // Botón limpiar (se mantiene)
+    document.getElementById('btn-limpiar')
+        .addEventListener('click', function () {
+
+            document.querySelectorAll(
+                '#filter-usuario, #filter-tabla, #filter-accion, #filter-ip, #filter-fecha'
+            ).forEach(el => el.value = '');
+
+            table.columns().search('');
+            table.draw();
+        });
+
+});
+</script>
+
+
+
 
 

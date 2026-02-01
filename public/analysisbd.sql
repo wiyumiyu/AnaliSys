@@ -1026,9 +1026,13 @@ BEGIN
         m.rep,
         m.estado,
 
-        MAX(CASE WHEN a.siglas = 'PESO_SECO' THEN r.resultado END) AS peso_seco,
-        MAX(CASE WHEN a.siglas = 'VOLUMEN' THEN r.resultado END)   AS volumen,
-        MAX(CASE WHEN a.siglas = 'DENSIDAD' THEN r.resultado END)  AS densidad
+        MAX(CASE WHEN a.siglas = 'altura' THEN r.resultado END) AS altura,
+        MAX(CASE WHEN a.siglas = 'diametro' THEN r.resultado END) AS diametro,
+        MAX(CASE WHEN a.siglas = 'peso_cilindro_suelo' THEN r.resultado END) AS peso_cilindro_suelo,
+        MAX(CASE WHEN a.siglas = 'peso_cilindro' THEN r.resultado END) AS peso_cilindro,
+        MAX(CASE WHEN a.siglas = 'temperatura' THEN r.resultado END) AS temperatura,
+        MAX(CASE WHEN a.siglas = 'secado' THEN r.resultado END) AS secado
+
 
     FROM trn_densidad_aparente_muestras m
     LEFT JOIN trn_densidad_aparente_resultados r

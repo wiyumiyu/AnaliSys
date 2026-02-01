@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class DensidadAparenteController extends Controller
 {
@@ -154,4 +155,111 @@ class DensidadAparenteController extends Controller
             ->with('success', 'Archivo eliminado correctamente');
     }
 
+    public function importar(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+
+            /* ==== Crear archivo de densidad aparente ==== */
+            $idDensidadAparente = DB::table('trn_densidad_aparente')->insertGetId([
+                'periodo'  => date('Y'),
+                'archivo'  => $request->file('archivo')->getClientOriginalName(),
+                'fecha'    => now(),
+                'analista' => session('id_persona')
+
+            ]);
+
+            /* ==== Mapa de análisis DENSIDAD APARENTE ==== */
+
+            $analisisMap = DB::table('trn_analisis')
+                ->where('origen', 'DENSIDAD APARENTE')
+                ->pluck('id', 'siglas')
+                ->toArray();
+
+            /* ==== Leer Excel ===== */
+            $spreadsheet = IOFactory::load(
+                $request->file('archivo')->getPathname()
+            );
+
+            $rows = $spreadsheet
+                ->getActiveSheet()
+                ->toArray(null, true, true, true);
+
+            /* ==== Recorrer filas (desde fila 3) ===== */
+            $i = 1;
+            $tipo = 1;
+            foreach ($rows as $fila => $row) {
+
+                if ($fila < 3) {
+                    continue; // título y encabezados
+                }
+
+                if (empty($row['A'])) {
+                    continue; // IDLab vacío
+                }
+                $tipo = 1;
+                if (!is_numeric($row['A'])) {
+                    $tipo = 2;
+                }
+
+                /* ===== Insert Muestra ===== */
+                $idMuestra = DB::table('trn_densidad_aparente_muestras')->insertGetId([
+                    'id_densidad_aparente' => $idDensidadAparente,
+                    'idlab'                => $row['A'],
+                    'rep'                  => $row['B'],
+                    'material'             => 1, // placeholder
+                    'tipo'                 => $tipo,
+                    'posicion'             => $i,
+                    'estado'               => 1,
+                    'ri'                   => 0
+                ]);
+
+                /* ===== Resultados ===== */
+                $valores = [
+                    'altura'               => $row['C'],
+                    'diametro'             => $row['D'],
+                    'peso_cilindro_suelo'  => $row['E'],
+                    'peso_cilindro'        => $row['F'],
+                    'temperatura'          => $row['G'],
+                    'secado'               => $row['H'],
+
+                ];
+
+
+                foreach ($valores as $sigla => $resultado) {
+
+
+                    if (!isset($analisisMap[$sigla])) {
+                        continue;
+                    }
+
+                    DB::table('trn_densidad_aparente_resultados')->insert([
+                        'id_densidad_aparente_muestras' => $idMuestra,
+                        'id_analisis'         => $analisisMap[$sigla],
+                        'resultado'           => $resultado,
+                        'estado'              => 1
+                    ]);
+                }
+                $i += 1;
+            }
+            /* ==== Commit FINAL ==== */
+            DB::commit();
+
+            return redirect()
+                ->route('textura.index')
+                ->with('success', 'Archivo importado correctamente');
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return back()->withErrors(
+                'Error al importar: ' . $e->getMessage()
+            );
+        }
+    }
 }

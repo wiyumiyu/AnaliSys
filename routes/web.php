@@ -194,6 +194,12 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
         [DensidadAparenteController::class, 'destroyArchivo']
      )->name('densidad_aparente.destroy');
 
+     Route::post(
+       '/ingreso-datos/densidad-aparente/importar',
+        [DensidadAparenteController::class, 'importar']
+     )->name('densidad_aparente.importar');
+    
+
 });
 
 //------------------------------------------------------------------------------

@@ -50,7 +50,7 @@
 
                         {{-- IMPORTAR --}}
                          
-                        <form class="d-flex align-items-center gap-3 m-0" action=""
+                        <form class="d-flex align-items-center gap-3 m-0" action="{{ route('densidad_aparente.importar') }}"
                               enctype="multipart/form-data"  method="POST">
                              @csrf
                             <input type="file"

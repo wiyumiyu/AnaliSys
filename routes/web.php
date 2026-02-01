@@ -141,7 +141,16 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             '/ingreso-datos/textura/muestra/{id}',
             [TexturaController::class, 'destroy']
     )->name('textura.muestra.destroy');
+    
+    Route::post(
+    '/ingreso-datos/textura/importar',
+    [TexturaController::class, 'importar']
+)->name('textura.importar');
+    
+    
 });
+
+
 
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE

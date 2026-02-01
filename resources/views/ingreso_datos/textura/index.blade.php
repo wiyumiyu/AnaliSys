@@ -20,44 +20,61 @@
         {{-- CARD --}}
         <div class="card">
             <div class="card-header">
-    <div class="d-flex gap-4 justify-content-between align-items-center">
+                <div class="d-flex gap-4 justify-content-between align-items-center">
 
-        {{-- TÍTULO --}}
-        <h5 class="mb-0 fw-semibold">
-            Textura
-        </h5>
+                    {{-- TÍTULO --}}
+                    <h5 class="mb-0 fw-semibold">
+                        Textura
+                    </h5>
 
-        {{-- ACCIONES --}}
-        <div class="d-flex gap-3 align-items-center">
+                    {{-- ACCIONES --}}
+                    {{-- ACCIONES --}}
+                    <div class="d-flex align-items-center gap-3 flex-nowrap">
 
-            {{-- AÑO (MISMA ALTURA, MENOR ANCHO) --}}
-            <select class="form-select w-auto"
-                    onchange="location='?periodo='+this.value">
-                @for($i = date('Y'); $i >= date('Y')-10; $i--)
-                    <option value="{{ $i }}" @selected($periodo==$i)>
-                        {{ $i }}
-                    </option>
-                @endfor
-            </select>
+                        {{-- AÑO --}}
+                        <select class="form-select w-auto"
+                                onchange="location = '?periodo=' + this.value">
+                            @for($i = date('Y'); $i >= date('Y')-10; $i--)
+                            <option value="{{ $i }}" @selected($periodo==$i)>
+                                {{ $i }}
+                            </option>
+                            @endfor
+                        </select>
 
-            {{-- BUSCAR (IGUAL A USUARIOS) --}}
-            <div class="form-icon">
-                <input type="text"
-                       class="form-control form-control-icon"
-                       placeholder="Buscar ...">
-                <i class="ri-search-2-line text-muted"></i>
+                        {{-- BUSCAR --}}
+                        <div class="form-icon">
+                            <input type="text"
+                                   class="form-control form-control-icon"
+                                   placeholder="Buscar ...">
+                            <i class="ri-search-2-line text-muted"></i>
+                        </div>
+
+                        {{-- IMPORTAR --}}
+
+
+
+                        <form class="d-flex align-items-center gap-3 m-0" action="{{ route('textura.importar') }}"
+                              enctype="multipart/form-data"  method="POST">
+                             @csrf
+                            <input type="file"
+                                   name="archivo"
+                                   accept=".xlsx,.xls"
+                                   class="form-control"
+                                   style="max-width: 320px"
+                                   required>
+
+                            <button type="submit"
+                                    class="btn btn-primary mb-0">
+                                <i class="ri-upload-2-line me-1"></i>
+                                Importar
+                            </button>
+                        </form>
+                        
+                      
+
+                    </div>
+                </div>
             </div>
-
-            {{-- IMPORTAR --}}
-            <a href="#"
-               class="btn btn-primary">
-                <i class="ri-upload-2-line me-1"></i>
-                Importar
-            </a>
-
-        </div>
-    </div>
-</div>
 
 
             <div class="card-body">
@@ -76,13 +93,14 @@
                     </thead>
 
                     <tbody>
-                        @forelse($archivos as $l)
+                        @foreach($archivos as $l)
                         <tr>
 
-                            {{-- LOTE --}}
+                            {{-- ARCHIVO --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('textura.muestras', $l->id_archivo) }}">
+                                    <a href="{{ route('textura.muestras', $l->id_archivo) }}"
+                                       class="text-reset fw-semibold text-decoration-none fs-6">
                                         {{ $l->archivo }}
                                     </a>
                                 </h6>
@@ -114,15 +132,9 @@
                             </td>
 
                         </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4"
-                                class="text-center text-muted py-4">
-                                No hay lotes registrados para este año.
-                            </td>
-                        </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
+
 
                 </table>
 
@@ -132,7 +144,7 @@
     </div>
 </div>
 
-    </div><!--End container-fluid-->
+</div><!--End container-fluid-->
 </main><!--End app-wrapper-->
 @endsection
 

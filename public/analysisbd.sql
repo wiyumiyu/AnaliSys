@@ -1877,7 +1877,6 @@ VALUES
 
 -- DENSIDAD APARENTE – RESULTADOS
 
---TRUNCATE TABLE trn_densidad_aparente_resultados;
 
 INSERT INTO trn_densidad_aparente_resultados
 (id_densidad_aparente_muestras, id_analisis, resultado, estado)

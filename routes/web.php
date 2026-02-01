@@ -180,6 +180,11 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
         [DensidadAparenteController::class, 'destroy']
      )->name('densidad_aparente.muestra.destroy');
 
+     Route::delete(
+        '/ingreso-datos/densidad-aparente/{id}',
+        [DensidadAparenteController::class, 'destroyArchivo']
+     )->name('densidad_aparente.destroy');
+
 });
 
 //------------------------------------------------------------------------------

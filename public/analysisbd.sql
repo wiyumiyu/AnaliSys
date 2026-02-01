@@ -1181,6 +1181,18 @@ END$$
 
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_densidad_aparente (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_densidad_aparente
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
 
 /* ============================================================
    6. TRIGGERS
@@ -1838,18 +1850,20 @@ VALUES
 (3,12,'122',    1), -- TIEMPO3
 (3,13,'365',    1); -- TIEMPO4
 
--- Densidad Aparente
-INSERT INTO trn_densidad_aparente (periodo, archivo, fecha, analista)
-VALUES (2024, 'densidad_aparente_lote_2024_001.csv', '2024-09-20', 1);
-
-INSERT INTO trn_densidad_aparente (periodo, archivo, fecha, analista)
-VALUES (2024, 'densidad_aparente_lote_2024_001.csv', '2024-09-20', 2);
-
+-- DENSIDAD APARENTE
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
-('Peso seco',        'PESO_SECO', 'DENSIDAD_APARENTE'),
-('Volumen',          'VOLUMEN',   'DENSIDAD_APARENTE'),
-('Densidad aparente','DENSIDAD',  'DENSIDAD_APARENTE');
+('Peso seco',         'PESO_SECO', 'DENSIDAD_APARENTE'),
+('Volumen',           'VOLUMEN',   'DENSIDAD_APARENTE'),
+('Densidad aparente', 'DENSIDAD',  'DENSIDAD_APARENTE');
+
+-- DENSIDAD APARENTE – ARCHIVO
+
+INSERT INTO trn_densidad_aparente (periodo, archivo, fecha, analista)
+VALUES
+(2024, 'DA-2026-001', '2024-09-20', 1);
+
+-- DENSIDAD APARENTE – MUESTRAS
 
 INSERT INTO trn_densidad_aparente_muestras
 (id_densidad_aparente, idlab, rep, material, tipo, posicion, estado, ri)
@@ -1858,27 +1872,22 @@ VALUES
 (1, '801', 2, 1, 1, '2', 1, 0),
 (1, '802', 1, 1, 1, '3', 1, 0);
 
-INSERT INTO trn_densidad_aparente_resultados
-(id_densidad_aparente_muestras, id_analisis, resultado, estado)
-VALUES
-(1, 1, '12.50', 1), -- PESO_SECO
-(1, 2, '9.80',  1), -- VOLUMEN
-(1, 3, '1.276', 1); -- DENSIDAD
+-- DENSIDAD APARENTE – RESULTADOS
 
 INSERT INTO trn_densidad_aparente_resultados
 (id_densidad_aparente_muestras, id_analisis, resultado, estado)
 VALUES
-(2, 1, '12.72', 1), -- PESO_SECO
-(2, 2, '9.90',  1), -- VOLUMEN
-(2, 3, '1.285', 1); -- DENSIDAD
+(1, (SELECT id FROM trn_analisis WHERE siglas='PESO_SECO' AND origen='DENSIDAD_APARENTE'), '12.50', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='VOLUMEN'   AND origen='DENSIDAD_APARENTE'), '9.80',  1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='DENSIDAD'  AND origen='DENSIDAD_APARENTE'), '1.276', 1),
 
-INSERT INTO trn_densidad_aparente_resultados
-(id_densidad_aparente_muestras, id_analisis, resultado, estado)
-VALUES
-(3, 1, '12.18', 1), -- PESO_SECO
-(3, 2, '9.75',  1), -- VOLUMEN
-(3, 3, '1.249', 1); -- DENSIDAD
+(2, (SELECT id FROM trn_analisis WHERE siglas='PESO_SECO' AND origen='DENSIDAD_APARENTE'), '12.72', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='VOLUMEN'   AND origen='DENSIDAD_APARENTE'), '9.90',  1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='DENSIDAD'  AND origen='DENSIDAD_APARENTE'), '1.285', 1),
 
+(3, (SELECT id FROM trn_analisis WHERE siglas='PESO_SECO' AND origen='DENSIDAD_APARENTE'), '12.18', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='VOLUMEN'   AND origen='DENSIDAD_APARENTE'), '9.75',  1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='DENSIDAD'  AND origen='DENSIDAD_APARENTE'), '1.249', 1);
 
 
 

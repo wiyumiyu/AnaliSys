@@ -141,4 +141,17 @@ class DensidadAparenteController extends Controller
             ->back()
             ->with('success', 'Muestra eliminada correctamente');
     }
+
+    public function destroyArchivo($id)
+    {
+        DB::statement(
+            'CALL sp_eliminar_densidad_aparente(?)',
+            [$id]
+        );
+
+        return redirect()
+            ->route('densidad_aparente.index')
+            ->with('success', 'Archivo eliminado correctamente');
+    }
+
 }

@@ -45,9 +45,12 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Peso seco</th>
-                            <th>Volumen</th>
-                            <th>Densidad</th>
+                            <th>Altura Cilindro</th>
+                            <th>Diametro Cilindro</th>
+                            <th>Peso Seco</th>
+                            <th>Peso cilindro</th>
+                            <th>Temperatura secado</th>
+                            <th>Tiempo Secado</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -69,9 +72,12 @@
                                 </td>
 
                                 <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_seco }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->volumen }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->densidad }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->altura }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->diametro }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro_suelo }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->temperatura }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->secado }}</td>
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">
@@ -101,7 +107,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6"
+                                <td colspan="9"
                                     class="text-center text-muted py-4">
                                     No hay muestras registradas para este archivo.
                                 </td>

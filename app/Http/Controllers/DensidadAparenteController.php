@@ -251,7 +251,7 @@ class DensidadAparenteController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('textura.index')
+                ->route('densidad_aparente.index')
                 ->with('success', 'Archivo importado correctamente');
         } catch (\Throwable $e) {
 

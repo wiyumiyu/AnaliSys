@@ -126,7 +126,7 @@ public function importar(Request $request)
 
     DB::beginTransaction();
 
-    //try {
+    try {
 
         /* ===============================
          * 1. Crear archivo de textura
@@ -142,6 +142,7 @@ public function importar(Request $request)
         /* ===============================
          * 2. Mapa de análisis TEXTURA
          * =============================== */
+            //aqui se relacionan el nombre de la tabla, y el origen de la tabla trn_analisis
         $analisisMap = DB::table('trn_analisis')
             ->where('origen', 'TEXTURA')
             ->pluck('id', 'siglas')
@@ -161,6 +162,8 @@ public function importar(Request $request)
         /* ===============================
          * 4. Recorrer filas (desde fila 3)
          * =============================== */
+        $i = 1;
+        $tipo = 1;
         foreach ($rows as $fila => $row) {
 
             if ($fila < 3) {
@@ -170,15 +173,18 @@ public function importar(Request $request)
             if (empty($row['A'])) {
                 continue; // IDLab vacío
             }
-
+            $tipo = 1;
+            if(!is_numeric($row['A'])){
+                $tipo = 2;
+            }
             /* ===== INSERT MUESTRA ===== */
             $idMuestra = DB::table('trn_textura_muestras')->insertGetId([
                 'id_textura' => $idTextura,
                 'idlab'      => $row['A'],
                 'rep'        => $row['B'],
                 'material'   => 1, // placeholder
-                'tipo'       => 1,
-                'posicion'   => 1,
+                'tipo'       => $tipo,
+                'posicion'   => $i,
                 'estado'     => 1,
                 'ri'         => 0
             ]);
@@ -214,6 +220,7 @@ public function importar(Request $request)
                     'estado'              => 1
                 ]);
             }
+            $i +=1;
         }
 
         /* ===============================
@@ -224,15 +231,15 @@ public function importar(Request $request)
         return redirect()
             ->route('textura.index')
             ->with('success', 'Archivo importado correctamente');
-//
-//    } catch (\Throwable $e) {
-//
-//        DB::rollBack();
-//
-//        return back()->withErrors(
-//            'Error al importar: ' . $e->getMessage()
-//        );
-//    }
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        return back()->withErrors(
+            'Error al importar: ' . $e->getMessage()
+        );
+    }
 }
       
        

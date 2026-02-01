@@ -3,9 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/xampp/htdocs/AnaliSys/resources/views/usuarios/index.blade.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/resources/views/ingreso_datos/permeabilidad_aire/muestras.blade.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/resources/views/ingreso_datos/permeabilidad_aire/edit.blade.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/app/Http/Controllers/TexturaController.php</file>
         </group>
     </open-files>
 </project-private>

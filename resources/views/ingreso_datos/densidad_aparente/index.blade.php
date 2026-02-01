@@ -49,11 +49,23 @@
                         </div>
 
                         {{-- IMPORTAR --}}
-                        <a href="#"
-                           class="btn btn-primary">
-                            <i class="ri-upload-2-line me-1"></i>
-                            Importar
-                        </a>
+                         
+                        <form class="d-flex align-items-center gap-3 m-0" action=""
+                              enctype="multipart/form-data"  method="POST">
+                             @csrf
+                            <input type="file"
+                                   name="archivo"
+                                   accept=".xlsx,.xls"
+                                   class="form-control"
+                                   style="max-width: 320px"
+                                   required>
+
+                            <button type="submit"
+                                    class="btn btn-primary mb-0">
+                                <i class="ri-upload-2-line me-1"></i>
+                                Importar
+                            </button>
+                        </form>
 
                     </div>
                 </div>

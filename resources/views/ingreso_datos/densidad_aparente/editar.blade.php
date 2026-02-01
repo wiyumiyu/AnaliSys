@@ -3,7 +3,6 @@
 @section('title', 'Editar muestra - Densidad aparente')
 
 @section('css')
-<!-- Datatables CSS (FabKin style) -->
 <link rel="stylesheet"
       href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
 <link rel="stylesheet"
@@ -12,10 +11,6 @@
 
 @section('content')
 
-<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
-========
-
->>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
 <div class="row">
     <div class="col-lg-12">
         <br>
@@ -27,7 +22,7 @@
                 <div class="d-flex flex-wrap gap-4 justify-content-between align-items-center">
 
                     <h5 class="mb-0 fw-semibold">
-                        Editar muestra – Densidad aparente ({{ $muestra->idlab }})
+                        Editar muestra – Densidad aparente {{ $muestra->idlab }}
                     </h5>
 
                     <a href="{{ url()->previous() }}" class="btn btn-primary">
@@ -41,11 +36,7 @@
             <div class="card-body">
 
                 <form method="POST"
-<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
                       action="{{ route('densidad_aparente.muestra.update', $muestra->id) }}">
-========
-                      action="{{ route('textura.muestra.update', $muestra->id) }}">
->>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
                     @csrf
                     @method('PUT')
 
@@ -101,10 +92,10 @@
 
                     </div>
 
-                    {{-- ================= RESULTADOS DE TEXTURA ================= --}}
+                    {{-- ================= RESULTADOS DE DENSIDAD ================= --}}
                     <br><br>
                     <h5 class="fw-semibold mb-3">
-                        Resultados de textura
+                        Resultados de densidad aparente
                     </h5>
 
                     <div class="row g-3">
@@ -144,40 +135,23 @@
 
             </div>
         </div>
-
     </div>
 </div>
 
-<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
-========
-
->>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
 @endsection
 
-<<<<<<<< Updated upstream:resources/views/ingreso_datos/densidad_aparente/editar.blade.php
-========
-
-
->>>>>>>> Stashed changes:resources/views/ingreso_datos/textura/editar.blade.php
 @section('js')
-
-<!-- Bootstrap -->
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 
-<!-- DataTables CORE -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
-<!-- FabKin Datatable Init -->
 <script src="{{ asset('js/table/datatable.init.js') }}"></script>
-
-<!-- Buscar en tabla -->
 <script src="{{ asset('js/table/buscarEnTabla.js') }}"></script>
 
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
-
 @endsection

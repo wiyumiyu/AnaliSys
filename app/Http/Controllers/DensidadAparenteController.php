@@ -5,23 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class DensidadAparenteController extends Controller {
-
+class DensidadAparenteController extends Controller
+{
     /* ===============================
      * LISTADO DE ARCHIVOS
      * =============================== */
-    public function archivos(Request $request) {
+    public function archivos(Request $request)
+    {
         $anio = $request->get('anio', date('Y'));
 
-        // QUEMADO POR AHORA
-        $archivos = [
-            (object) [
-                'id_archivo' => 1,
-                'archivo' => 'DA-2026-001.xls',
-                'fecha' => '2026-01-20',
-                'analista' => 'Juan Pérez'
-            ]
-        ];
+        $archivos = DB::select(
+            'CALL sp_listar_densidad_aparente_por_periodo(?)',
+            [$anio]
+        );
 
         return view(
             'ingreso_datos.densidad_aparente.index',
@@ -32,29 +28,15 @@ class DensidadAparenteController extends Controller {
     /* ===============================
      * LISTADO DE MUESTRAS POR ARCHIVO
      * =============================== */
-    public function muestras($idArchivo) {
-
-        // QUEMADO POR AHORA
+    public function muestras($idArchivo)
+    {
+        // nombre del archivo (luego puedes traerlo desde BD si quieres)
         $archivo = 'DA-2026-001';
 
-        $muestras = [
-        (object) [
-            'id' => 1,
-            'idlab' => 'LAB-010',
-            'rep' => 1,
-            'material' => 'Suelo arcilloso',
-            'metodo' => 'ASTM',
-            'tipomuestra' => 'Disturbada',
-            'longitud' => 10,
-            'diametrointerno' => 5,
-            'areatransversal' => 19.6,
-            'volumen' => 196,
-            'temperaturaaire' => 24,
-            'promedio' => 1.35,
-            'desvEst' => 0.02
-    ]
-];
-
+        $muestras = DB::select(
+            'CALL sp_listar_muestras_densidad_aparente_detalle(?)',
+            [$idArchivo]
+        );
 
         return view(
             'ingreso_datos.densidad_aparente.muestras',
@@ -65,34 +47,98 @@ class DensidadAparenteController extends Controller {
     /* ===============================
      * EDITAR MUESTRA
      * =============================== */
-    public function edit($id) {
+    public function edit($id)
+    {
+        $muestra = collect(
+            DB::select(
+                'CALL sp_obtener_muestra_densidad_aparente(?)',
+                [$id]
+            )
+        )->first();
 
-        // QUEMADO POR AHORA
-        $muestra = (object) [
-        'id' => $id,
-        'idlab' => 'LAB-010',
-        'rep' => 1,
-        'material' => 'Suelo arcilloso',
-        'metodo' => 'ASTM',
-        'tipomuestra' => 'Disturbada',
-        'longitud' => 10,
-        'diametrointerno' => 5,
-        'areatransversal' => 19.6,
-        'volumen' => 196,
-        'temperaturaaire' => 24,
-        'resultado' => 1.35
-    ];
+        $resultados = DB::select(
+            'CALL sp_listar_resultados_densidad_aparente_por_muestra(?)',
+            [$id]
+        );
 
         return view(
             'ingreso_datos.densidad_aparente.editar',
-            compact('muestra')
+            compact('muestra', 'resultados')
         );
     }
 
-    public function update(Request $request, $id) {
-        // SP
+    /* ===============================
+     * ACTUALIZAR MUESTRA
+     * =============================== */
+    public function update(Request $request, $id)
+    {
+        // obtener id_densidad_aparente antes de actualizar
+        $muestra = collect(
+            DB::select(
+                'CALL sp_obtener_muestra_densidad_aparente(?)',
+                [$id]
+            )
+        )->first();
+
+        // actualizar muestra
+        DB::statement(
+            'CALL sp_actualizar_muestra_densidad_aparente(?,?,?,?,?,?)',
+            [
+                $id,
+                $request->rep,
+                $request->material,
+                $request->tipo,
+                $request->posicion,
+                $request->estado
+            ]
+        );
+
+        // actualizar resultados
+        if ($request->has('resultados')) {
+            foreach ($request->resultados as $idResultado => $valor) {
+                DB::statement(
+                    'CALL sp_actualizar_resultado_densidad_aparente(?,?)',
+                    [$idResultado, $valor]
+                );
+            }
+        }
+
+        // redirigir al listado de muestras
+        return redirect()
+            ->route(
+                'densidad_aparente.muestras',
+                $muestra->id_densidad_aparente
+            )
+            ->with('success', 'Muestra actualizada correctamente');
+    }
+
+    /* ===============================
+     * TOGGLE ESTADO
+     * =============================== */
+    public function toggleEstado($id)
+    {
+        DB::statement(
+            'CALL sp_toggle_estado_muestra_densidad_aparente(?)',
+            [$id]
+        );
+
         return redirect()
             ->back()
-            ->with('success', 'Muestra de densidad aparente actualizada correctamente');
+            ->with('success', 'Estado de la muestra actualizado correctamente');
+    }
+
+    /* ===============================
+     * ELIMINAR MUESTRA
+     * =============================== */
+    public function destroy($id)
+    {
+        DB::statement(
+            'CALL sp_eliminar_muestra_densidad_aparente(?)',
+            [$id]
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Muestra eliminada correctamente');
     }
 }

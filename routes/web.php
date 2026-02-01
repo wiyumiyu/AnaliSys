@@ -170,6 +170,16 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
         [DensidadAparenteController::class, 'update']
     )->name('densidad_aparente.muestra.update');
 
+    Route::patch(
+        '/ingreso-datos/densidad-aparente/muestra/{id}/estado',
+        [DensidadAparenteController::class, 'toggleEstado']
+    )->name('densidad_aparente.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/densidad-aparente/muestra/{id}',
+        [DensidadAparenteController::class, 'destroy']
+     )->name('densidad_aparente.muestra.destroy');
+
 });
 
 //------------------------------------------------------------------------------

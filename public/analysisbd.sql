@@ -225,13 +225,11 @@ CREATE TABLE trn_textura_resultados (
     resultado VARCHAR(25),
 
     estado boolean DEFAULT 1
-
-
 );
 
 
 -- Densidad Aparente
-CREATE TABLE trn_densidadaparente (
+CREATE TABLE trn_densidad_aparente (
     id INT AUTO_INCREMENT PRIMARY KEY,
     periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
     archivo VARCHAR(255) NULL,
@@ -239,20 +237,31 @@ CREATE TABLE trn_densidadaparente (
     analista INT NOT NULL
 );
 
-CREATE TABLE trn_densidadaparente_muestras (
+CREATE TABLE trn_densidad_aparente_muestras (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_densidadaparente INT NOT NULL,
-    idlab VARCHAR(100) NOT NULL,
-    rep INT NOT NULL DEFAULT 1,
-    id_tipo INT NOT NULL -- (0, 1 o 2)
+
+    id_densidad_aparente INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL,
+
+    material int NOT NULL,
+    tipo int NOT NULL,
+    posicion int NOT NULL,
+
+    estado BOOLEAN NOT NULL DEFAULT 1,
+    ri BOOLEAN NOT NULL DEFAULT 0
 );
 
-CREATE TABLE trn_densidadaparente_resultado (
+CREATE TABLE trn_densidad_aparente_resultados (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_densidadaparente_muestras INT NOT NULL,
-    resultado DECIMAL(10,2) NOT NULL,
-    id_analisis INT NOT NULL
+
+    id_densidad_aparente_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+
+    estado BOOLEAN DEFAULT 1
 );
+
 
   CREATE TABLE tbl_bitacora (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -335,17 +344,22 @@ FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
 
 -- Densidad Aparente
-ALTER TABLE trn_densidadaparente_muestras
-ADD CONSTRAINT fk_muestras_densidadaparente
-FOREIGN KEY (id_densidadaparente)
-REFERENCES trn_densidadaparente(id);
+ALTER TABLE trn_densidad_aparente_muestras
+ADD CONSTRAINT fk_da_muestras_densidad
+FOREIGN KEY (id_densidad_aparente)
+REFERENCES trn_densidad_aparente(id)
+ON DELETE CASCADE;
 
-ALTER TABLE trn_densidadaparente_resultado
-ADD CONSTRAINT fk_resultado_muestras
-FOREIGN KEY (id_densidadaparente_muestras)
-REFERENCES trn_densidadaparente_muestras(id);
+ALTER TABLE trn_densidad_aparente_resultados
+ADD CONSTRAINT fk_da_resultados_muestras
+FOREIGN KEY (id_densidad_aparente_muestras)
+REFERENCES trn_densidad_aparente_muestras(id)
+ON DELETE CASCADE;
 
-
+ALTER TABLE trn_densidad_aparente_resultados
+ADD CONSTRAINT fk_da_resultados_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
 
 
 /* ============================================================
@@ -974,6 +988,200 @@ END$$
 
 DELIMITER ;
 
+-- Procedimientos para Densidad Aparente
+
+-- Listar archivos de densidad por período
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_densidad_aparente_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        d.id                     AS id_archivo,
+        d.periodo,
+        d.fecha,
+        d.archivo,
+        d.analista               AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_densidad_aparente d
+    INNER JOIN tbl_persona p
+        ON p.id_persona = d.analista
+    WHERE d.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY d.fecha DESC, d.id DESC;
+END$$
+
+DELIMITER ;
+
+-- Listar muestras de densidad
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_densidad_aparente_detalle (
+    IN p_id_densidad INT
+)
+BEGIN
+    SELECT
+        m.id                         AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+
+        MAX(CASE WHEN a.siglas = 'PESO_SECO' THEN r.resultado END) AS peso_seco,
+        MAX(CASE WHEN a.siglas = 'VOLUMEN' THEN r.resultado END)   AS volumen,
+        MAX(CASE WHEN a.siglas = 'DENSIDAD' THEN r.resultado END)  AS densidad
+
+    FROM trn_densidad_aparente_muestras m
+    LEFT JOIN trn_densidad_aparente_resultados r
+        ON r.id_densidad_aparente_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'DENSIDAD_APARENTE'
+
+    WHERE m.id_densidad_aparente = p_id_densidad
+
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+
+    ORDER BY
+        m.idlab, m.rep;
+END$$
+
+DELIMITER ;
+
+-- Obtener una muestra específica
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_densidad_aparente (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        id,
+        id_densidad_aparente,
+        idlab,
+        rep,
+        material,
+        tipo,
+        posicion,
+        estado,
+        ri
+    FROM trn_densidad_aparente_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Listar resultados por muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_densidad_aparente_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+    SELECT
+        r.id                AS id_resultado,
+        r.id_analisis,
+        a.analisis,
+        a.siglas,
+        r.resultado,
+        r.estado
+    FROM trn_densidad_aparente_resultados r
+    INNER JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'DENSIDAD_APARENTE'
+    WHERE r.id_densidad_aparente_muestras = p_id_muestra
+    ORDER BY a.id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar datos generales de la muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_densidad_aparente (
+    IN p_id INT,
+    IN p_rep INT,
+    IN p_material VARCHAR(255),
+    IN p_tipo VARCHAR(100),
+    IN p_posicion VARCHAR(50),
+    IN p_estado TINYINT
+)
+BEGIN
+    UPDATE trn_densidad_aparente_muestras
+    SET
+        rep       = p_rep,
+        material  = p_material,
+        tipo      = p_tipo,
+        posicion  = p_posicion,
+        estado    = p_estado
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar un resultado puntual
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_densidad_aparente (
+    IN p_id_resultado INT,
+    IN p_resultado VARCHAR(50)
+)
+BEGIN
+    UPDATE trn_densidad_aparente_resultados
+    SET resultado = p_resultado
+    WHERE id = p_id_resultado;
+END$$
+
+DELIMITER ;
+
+-- Anular muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_densidad_aparente (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_densidad_aparente_muestras
+    SET estado = 0
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_densidad_aparente (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_densidad_aparente_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Toggle estado
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_densidad_aparente (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_densidad_aparente_muestras
+    SET estado = IF(estado = 1, 0, 1)
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+
 /* ============================================================
    6. TRIGGERS
    ============================================================ */
@@ -1263,13 +1471,13 @@ DELIMITER ;
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_densidadaparente_ai$$
-CREATE TRIGGER trg_densidadaparente_ai
-AFTER INSERT ON trn_densidadaparente
+DROP TRIGGER IF EXISTS trg_densidad_aparente_ai$$
+CREATE TRIGGER trg_densidad_aparente_ai
+AFTER INSERT ON trn_densidad_aparente
 FOR EACH ROW
 BEGIN
     CALL sp_bitacora_usuario(
-        'trn_densidadaparente',
+        'trn_densidad_aparente',
         COALESCE(@bitacora_usuario, 0),
         COALESCE(@bitacora_ip, 'UNKNOWN'),
         'CREATE',
@@ -1286,13 +1494,13 @@ DELIMITER ;
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_densidadaparente_ad$$
-CREATE TRIGGER trg_densidadaparente_ad
-AFTER DELETE ON trn_densidadaparente
+DROP TRIGGER IF EXISTS trg_densidad_aparente_ad$$
+CREATE TRIGGER trg_densidad_aparente_ad
+AFTER DELETE ON trn_densidad_aparente
 FOR EACH ROW
 BEGIN
     CALL sp_bitacora_usuario(
-        'trn_densidadaparente',
+        'trn_densidad_aparente',
         COALESCE(@bitacora_usuario, 0),
         COALESCE(@bitacora_ip, 'UNKNOWN'),
         'DELETE',
@@ -1310,9 +1518,9 @@ DELIMITER ;
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_densidadaparente_au$$
-CREATE TRIGGER trg_densidadaparente_au
-AFTER UPDATE ON trn_densidadaparente
+DROP TRIGGER IF EXISTS trg_densidad_aparente_au$$
+CREATE TRIGGER trg_densidad_aparente_au
+AFTER UPDATE ON trn_densidad_aparente
 FOR EACH ROW
 BEGIN
     IF NOT (
@@ -1321,7 +1529,7 @@ BEGIN
         OLD.analista <=> NEW.analista
     ) THEN
         CALL sp_bitacora_usuario(
-            'trn_densidadaparente',
+            'trn_densidad_aparente',
             COALESCE(@bitacora_usuario, 0),
             COALESCE(@bitacora_ip, 'UNKNOWN'),
             'UPDATE',
@@ -1552,11 +1760,6 @@ VALUES
 ('Tiempo 4',       'TIEMPO4',   'TEXTURA');
 
 
-
-
-
-
-
 INSERT INTO trn_textura_muestras
 (id_textura, idlab, rep, material, tipo, posicion, estado, ri)
 VALUES
@@ -1634,6 +1837,49 @@ VALUES
 (3,11, '58',    1), -- TIEMPO2
 (3,12,'122',    1), -- TIEMPO3
 (3,13,'365',    1); -- TIEMPO4
+
+-- Densidad Aparente
+INSERT INTO trn_densidad_aparente (periodo, archivo, fecha, analista)
+VALUES (2024, 'densidad_aparente_lote_2024_001.csv', '2024-09-20', 1);
+
+INSERT INTO trn_densidad_aparente (periodo, archivo, fecha, analista)
+VALUES (2024, 'densidad_aparente_lote_2024_001.csv', '2024-09-20', 2);
+
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+('Peso seco',        'PESO_SECO', 'DENSIDAD_APARENTE'),
+('Volumen',          'VOLUMEN',   'DENSIDAD_APARENTE'),
+('Densidad aparente','DENSIDAD',  'DENSIDAD_APARENTE');
+
+INSERT INTO trn_densidad_aparente_muestras
+(id_densidad_aparente, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '801', 1, 1, 1, '1', 1, 0),
+(1, '801', 2, 1, 1, '2', 1, 0),
+(1, '802', 1, 1, 1, '3', 1, 0);
+
+INSERT INTO trn_densidad_aparente_resultados
+(id_densidad_aparente_muestras, id_analisis, resultado, estado)
+VALUES
+(1, 1, '12.50', 1), -- PESO_SECO
+(1, 2, '9.80',  1), -- VOLUMEN
+(1, 3, '1.276', 1); -- DENSIDAD
+
+INSERT INTO trn_densidad_aparente_resultados
+(id_densidad_aparente_muestras, id_analisis, resultado, estado)
+VALUES
+(2, 1, '12.72', 1), -- PESO_SECO
+(2, 2, '9.90',  1), -- VOLUMEN
+(2, 3, '1.285', 1); -- DENSIDAD
+
+INSERT INTO trn_densidad_aparente_resultados
+(id_densidad_aparente_muestras, id_analisis, resultado, estado)
+VALUES
+(3, 1, '12.18', 1), -- PESO_SECO
+(3, 2, '9.75',  1), -- VOLUMEN
+(3, 3, '1.249', 1); -- DENSIDAD
+
+
 
 
 SELECT * 

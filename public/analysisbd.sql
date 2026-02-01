@@ -1853,9 +1853,12 @@ VALUES
 -- DENSIDAD APARENTE
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
-('Peso seco',         'PESO_SECO', 'DENSIDAD_APARENTE'),
-('Volumen',           'VOLUMEN',   'DENSIDAD_APARENTE'),
-('Densidad aparente', 'DENSIDAD',  'DENSIDAD_APARENTE');
+('Altura Cilindro', 'altura', 'DENSIDAD_APARENTE'),
+('Diametro Cilindro', 'diametro', 'DENSIDAD_APARENTE'),
+('Peso seco', 'peso_cilindro_suelo', 'DENSIDAD_APARENTE'),
+('Peso cilindro', 'peso_cilindro',   'DENSIDAD_APARENTE'),
+('Temperatura secado', 'temperatura', 'DENSIDAD_APARENTE'),
+('Tiempo secado', 'secado',  'DENSIDAD_APARENTE');
 
 -- DENSIDAD APARENTE – ARCHIVO
 
@@ -1874,20 +1877,32 @@ VALUES
 
 -- DENSIDAD APARENTE – RESULTADOS
 
+--TRUNCATE TABLE trn_densidad_aparente_resultados;
+
 INSERT INTO trn_densidad_aparente_resultados
 (id_densidad_aparente_muestras, id_analisis, resultado, estado)
 VALUES
-(1, (SELECT id FROM trn_analisis WHERE siglas='PESO_SECO' AND origen='DENSIDAD_APARENTE'), '12.50', 1),
-(1, (SELECT id FROM trn_analisis WHERE siglas='VOLUMEN'   AND origen='DENSIDAD_APARENTE'), '9.80',  1),
-(1, (SELECT id FROM trn_analisis WHERE siglas='DENSIDAD'  AND origen='DENSIDAD_APARENTE'), '1.276', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='altura' AND origen='DENSIDAD_APARENTE'), '12.50', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='diametro'   AND origen='DENSIDAD_APARENTE'), '9.80',  1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_cilindro_suelo'  AND origen='DENSIDAD_APARENTE'), '2.276', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_cilindro'  AND origen='DENSIDAD_APARENTE'), '1.276', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='temperatura'  AND origen='DENSIDAD_APARENTE'), '105.2', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='secado'  AND origen='DENSIDAD_APARENTE'), '120', 1),
 
-(2, (SELECT id FROM trn_analisis WHERE siglas='PESO_SECO' AND origen='DENSIDAD_APARENTE'), '12.72', 1),
-(2, (SELECT id FROM trn_analisis WHERE siglas='VOLUMEN'   AND origen='DENSIDAD_APARENTE'), '9.90',  1),
-(2, (SELECT id FROM trn_analisis WHERE siglas='DENSIDAD'  AND origen='DENSIDAD_APARENTE'), '1.285', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='altura' AND origen='DENSIDAD_APARENTE'), '12.72', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='diametro'   AND origen='DENSIDAD_APARENTE'), '9.90',  1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='peso_cilindro_suelo'  AND origen='DENSIDAD_APARENTE'), '1.285', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='peso_cilindro'  AND origen='DENSIDAD_APARENTE'), '1.285', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='temperatura'  AND origen='DENSIDAD_APARENTE'), '105.29', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='secado'  AND origen='DENSIDAD_APARENTE'), '120', 1),
 
-(3, (SELECT id FROM trn_analisis WHERE siglas='PESO_SECO' AND origen='DENSIDAD_APARENTE'), '12.18', 1),
-(3, (SELECT id FROM trn_analisis WHERE siglas='VOLUMEN'   AND origen='DENSIDAD_APARENTE'), '9.75',  1),
-(3, (SELECT id FROM trn_analisis WHERE siglas='DENSIDAD'  AND origen='DENSIDAD_APARENTE'), '1.249', 1);
+
+(3, (SELECT id FROM trn_analisis WHERE siglas='altura' AND origen='DENSIDAD_APARENTE'), '12.18', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='diametro'   AND origen='DENSIDAD_APARENTE'), '9.75',  1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='peso_cilindro_suelo'  AND origen='DENSIDAD_APARENTE'), '1.249', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='peso_cilindro'  AND origen='DENSIDAD_APARENTE'), '1.249', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='temperatura'  AND origen='DENSIDAD_APARENTE'), '105.10', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='secado'  AND origen='DENSIDAD_APARENTE'), '120', 1);
 
 
 

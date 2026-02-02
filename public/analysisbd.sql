@@ -189,7 +189,7 @@ CREATE TABLE tbl_password_resets (
 CREATE TABLE trn_analisis (
     id INT AUTO_INCREMENT PRIMARY KEY,
     analisis VARCHAR(100) NOT NULL,
-    siglas VARCHAR(20) NOT NULL,
+    siglas VARCHAR(50) NOT NULL,
     origen VARCHAR(50) 
   
 );
@@ -261,6 +261,42 @@ CREATE TABLE trn_densidad_aparente_resultados (
 
     estado BOOLEAN DEFAULT 1
 );
+
+
+-- Densidad de Particulas
+CREATE TABLE trn_densidad_particulas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255) NULL,
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+
+CREATE TABLE trn_densidad_particulas_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_densidad_particulas INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL,
+
+    material int NOT NULL,
+    tipo int NOT NULL,
+    posicion int NOT NULL,
+
+    estado BOOLEAN NOT NULL DEFAULT 1,
+    ri BOOLEAN NOT NULL DEFAULT 0
+);
+
+CREATE TABLE trn_densidad_particulas_resultados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_densidad_particulas_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+
+    estado BOOLEAN DEFAULT 1
+);
+
 
 
   CREATE TABLE tbl_bitacora (
@@ -361,6 +397,24 @@ ADD CONSTRAINT fk_da_resultados_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
 
+
+-- Densidad de Particulas
+ALTER TABLE trn_densidad_particulas_muestras
+ADD CONSTRAINT fk_dp_muestras_densidad
+FOREIGN KEY (id_densidad_particulas)
+REFERENCES trn_densidad_particulas(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_densidad_particulas_resultados
+ADD CONSTRAINT fk_dp_resultados_muestras
+FOREIGN KEY (id_densidad_particulas_muestras)
+REFERENCES trn_densidad_particulas_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_densidad_particulas_resultados
+ADD CONSTRAINT fk_dp_resultados_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
 
 /* ============================================================
    5. PROCEDIMIENTOS ALMACENADOS
@@ -990,7 +1044,7 @@ DELIMITER ;
 
 -- Procedimientos para Densidad Aparente
 
--- Listar archivos de densidad por período
+-- Listar archivos de densidad aparente por período
 DELIMITER $$
 
 CREATE PROCEDURE sp_listar_densidad_aparente_por_periodo (
@@ -1198,6 +1252,216 @@ END$$
 DELIMITER ;
 
 
+
+
+
+-- Procedimientos para Densidad particulas
+
+-- Listar archivos de densidad aparente por período
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_densidad_particulas_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        d.id                     AS id_archivo,
+        d.periodo,
+        d.fecha,
+        d.archivo,
+        d.analista               AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_densidad_particulas d
+    INNER JOIN tbl_persona p
+        ON p.id_persona = d.analista
+    WHERE d.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY d.fecha DESC, d.id DESC;
+END$$
+
+DELIMITER ;
+
+-- Listar muestras de densidad
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_densidad_particulas_detalle (
+    IN p_id_densidad INT
+)
+BEGIN
+    SELECT
+        m.id                         AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+
+        MAX(CASE WHEN a.siglas = 'numero_balon_vol' THEN r.resultado END) AS numero_balon_vol,
+        MAX(CASE WHEN a.siglas = 'peso_balon_vol_vacio_p1' THEN r.resultado END) AS peso_balon_vol_vacio_p1,
+        MAX(CASE WHEN a.siglas = 'peso_balon_vol_suelo_seco_p2' THEN r.resultado END) AS peso_balon_vol_suelo_seco_p2,
+        MAX(CASE WHEN a.siglas = 'peso_balon_vol_suelo_agua_p3' THEN r.resultado END) AS peso_balon_vol_suelo_agua_p3,
+        MAX(CASE WHEN a.siglas = 'temperatura_agua' THEN r.resultado END) AS temperatura_agua
+
+
+    FROM trn_densidad_particulas_muestras m
+    LEFT JOIN trn_densidad_particulas_resultados r
+        ON r.id_densidad_particulas_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'DENSIDAD_PARTICULAS'
+
+    WHERE m.id_densidad_particulas = p_id_densidad
+
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+
+    ORDER BY
+        m.idlab, m.rep;
+END$$
+
+DELIMITER ;
+
+-- Obtener una muestra específica
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_densidad_particulas (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        id,
+        id_densidad_particulas,
+        idlab,
+        rep,
+        material,
+        tipo,
+        posicion,
+        estado,
+        ri
+    FROM trn_densidad_particulas_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Listar resultados por muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_densidad_particulas_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+    SELECT
+        r.id                AS id_resultado,
+        r.id_analisis,
+        a.analisis,
+        a.siglas,
+        r.resultado,
+        r.estado
+    FROM trn_densidad_particulas_resultados r
+    INNER JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'DENSIDAD_PARTICULAS'
+    WHERE r.id_densidad_particulas_muestras = p_id_muestra
+    ORDER BY a.id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar datos generales de la muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_densidad_particulas (
+    IN p_id INT,
+    IN p_rep INT,
+    IN p_material VARCHAR(255),
+    IN p_tipo VARCHAR(100),
+    IN p_posicion VARCHAR(50),
+    IN p_estado TINYINT
+)
+BEGIN
+    UPDATE trn_densidad_particulas_muestras
+    SET
+        rep       = p_rep,
+        material  = p_material,
+        tipo      = p_tipo,
+        posicion  = p_posicion,
+        estado    = p_estado
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar un resultado puntual
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_densidad_particulas (
+    IN p_id_resultado INT,
+    IN p_resultado VARCHAR(50)
+)
+BEGIN
+    UPDATE trn_densidad_particulas_resultados
+    SET resultado = p_resultado
+    WHERE id = p_id_resultado;
+END$$
+
+DELIMITER ;
+
+-- Anular muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_densidad_particulas (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_densidad_particulas_muestras
+    SET estado = 0
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_densidad_particulas (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_densidad_particulas_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Toggle estado
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_densidad_particulas (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_densidad_particulas_muestras
+    SET estado = IF(estado = 1, 0, 1)
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_densidad_particulas (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_densidad_particulas
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
 /* ============================================================
    6. TRIGGERS
    ============================================================ */
@@ -1906,6 +2170,59 @@ VALUES
 (3, (SELECT id FROM trn_analisis WHERE siglas='peso_cilindro'  AND origen='DENSIDAD_APARENTE'), '1.249', 1),
 (3, (SELECT id FROM trn_analisis WHERE siglas='temperatura'  AND origen='DENSIDAD_APARENTE'), '105.10', 1),
 (3, (SELECT id FROM trn_analisis WHERE siglas='secado'  AND origen='DENSIDAD_APARENTE'), '120', 1);
+
+
+
+
+-- DENSIDAD DE PARTICULAS
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+('Número balon', 'numero_balon_vol', 'DENSIDAD_PARTICULAS'),
+('Peso balon vacío P1', 'peso_balon_vol_vacio_p1', 'DENSIDAD_PARTICULAS'),
+('Peso balon suelo seco P2', 'peso_balon_vol_suelo_seco_p2', 'DENSIDAD_PARTICULAS'),
+('Peso balon suelo agua P3', 'peso_balon_vol_suelo_agua_p3',   'DENSIDAD_PARTICULAS'),
+('Temperatura agua', 'temperatura_agua', 'DENSIDAD_PARTICULAS');
+
+
+INSERT INTO trn_densidad_particulas (periodo, archivo, fecha, analista)
+VALUES
+(2024, 'DP-2026-001', '2024-09-20', 1);
+
+-- DENSIDAD particulas – MUESTRAS
+
+INSERT INTO trn_densidad_particulas_muestras
+(id_densidad_particulas, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '801', 1, 1, 1, '1', 1, 0),
+(1, '801', 2, 1, 1, '2', 1, 0),
+(1, '802', 1, 1, 1, '3', 1, 0);
+
+-- DENSIDAD particulas – RESULTADOS
+
+
+INSERT INTO trn_densidad_particulas_resultados
+(id_densidad_particulas_muestras, id_analisis, resultado, estado)
+VALUES
+(1, (SELECT id FROM trn_analisis WHERE siglas='numero_balon_vol' AND origen='DENSIDAD_PARTICULAS'), '12.50', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_vacio_p1'   AND origen='DENSIDAD_PARTICULAS'), '9.80',  1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_suelo_seco_p2'  AND origen='DENSIDAD_PARTICULAS'), '2.276', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_suelo_agua_p3'  AND origen='DENSIDAD_PARTICULAS'), '1.276', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='temperatura_agua'  AND origen='DENSIDAD_PARTICULAS'), '105.2', 1),
+
+
+(2, (SELECT id FROM trn_analisis WHERE siglas='numero_balon_vol' AND origen='DENSIDAD_PARTICULAS'), '12.72', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_vacio_p1'   AND origen='DENSIDAD_PARTICULAS'), '9.90',  1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_suelo_seco_p2'  AND origen='DENSIDAD_PARTICULAS'), '1.285', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_suelo_agua_p3'  AND origen='DENSIDAD_PARTICULAS'), '1.285', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='temperatura_agua'  AND origen='DENSIDAD_PARTICULAS'), '105.29', 1),
+
+
+
+(3, (SELECT id FROM trn_analisis WHERE siglas='numero_balon_vol' AND origen='DENSIDAD_PARTICULAS'), '12.18', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_vacio_p1'   AND origen='DENSIDAD_PARTICULAS'), '9.75',  1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_suelo_seco_p2'  AND origen='DENSIDAD_PARTICULAS'), '1.249', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_suelo_agua_p3'  AND origen='DENSIDAD_PARTICULAS'), '1.249', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='temperatura_agua'  AND origen='DENSIDAD_PARTICULAS'), '105.10', 1);
 
 
 

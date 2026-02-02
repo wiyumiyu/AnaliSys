@@ -203,6 +203,55 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 });
 
 //------------------------------------------------------------------------------
+// DENSIDAD APARENTE
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\DensidadParticulasController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/densidad-particulas',
+        [DensidadParticulasController::class, 'archivos']
+    )->name('densidad_particulas.index');
+
+    Route::get(
+        '/ingreso-datos/densidad-particulas/{archivo}/muestras',
+        [DensidadParticulasController::class, 'muestras']
+    )->name('densidad_particulas.muestras');
+
+    Route::get(
+        '/ingreso-datos/densidad-particulas/muestra/{id}/editar',
+        [DensidadParticulasController::class, 'edit']
+    )->name('densidad_particulas.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/densidad-particulas/muestra/{id}',
+        [DensidadParticulasController::class, 'update']
+    )->name('densidad_particulas.muestra.update');
+
+    Route::patch(
+        '/ingreso-datos/densidad-particulas/muestra/{id}/estado',
+        [DensidadParticulasController::class, 'toggleEstado']
+    )->name('densidad_particulas.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/densidad-particulas/muestra/{id}',
+        [DensidadParticulasController::class, 'destroy']
+     )->name('densidad_particulas.muestra.destroy');
+
+     Route::delete(
+        '/ingreso-datos/densidad-particulas/{id}',
+        [DensidadParticulasController::class, 'destroyArchivo']
+     )->name('densidad_particulas.destroy');
+
+     Route::post(
+       '/ingreso-datos/densidad-particulas/importar',
+        [DensidadParticulasController::class, 'importar']
+     )->name('densidad_particulas.importar');
+    
+
+});
+//------------------------------------------------------------------------------
 // Permeabilidad de Aire PLANTILLA
 //-------------------------------------------------------------------------------
 use App\Http\Controllers\PermeabilidadAireController;

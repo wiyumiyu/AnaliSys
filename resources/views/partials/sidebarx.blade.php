@@ -67,8 +67,9 @@
                     </li>
 
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/densidad_particulas/listado.php" class="pe-nav-link">
-                            Densidad de Partículas
+                     <a href="{{ route('densidad_particulas.index') }}"
+                            class="pe-nav-link {{ request()->routeIs('densidad_particulas.*') ? 'active' : '' }}">
+                            Densidad de Pariculas
                         </a>
                     </li>
 

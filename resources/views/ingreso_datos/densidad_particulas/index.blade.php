@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Densidad Aparente - Archivos')
+@section('title', 'Densidad Particulas - Archivos')
 
 @section('css')
 <!-- Datatables CSS -->
@@ -24,7 +24,7 @@
 
                     {{-- TÍTULO --}}
                     <h5 class="mb-0 fw-semibold">
-                        Densidad Aparente
+                        Densidad Particulas
                     </h5>
 
                     {{-- ACCIONES --}}
@@ -50,7 +50,7 @@
 
                         {{-- IMPORTAR --}}
                          
-                        <form class="d-flex align-items-center gap-3 m-0" action="{{ route('densidad_aparente.importar') }}"
+                        <form class="d-flex align-items-center gap-3 m-0" action="{{ route('densidad_particulas.importar') }}"
                               enctype="multipart/form-data"  method="POST">
                              @csrf
                             <input type="file"
@@ -93,7 +93,7 @@
                             {{-- ARCHIVO --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('densidad_aparente.muestras', $l->id_archivo) }}">
+                                    <a href="{{ route('densidad_particulas.muestras', $l->id_archivo) }}">
                                         {{ $l->archivo }}
                                     </a>
                                 </h6>
@@ -113,7 +113,7 @@
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
                                     {{-- VER --}}
-                                    <a href="{{ route('densidad_aparente.muestras', $l->id_archivo) }}"
+                                    <a href="{{ route('densidad_particulas.muestras', $l->id_archivo) }}"
                                        class="btn bg-primary-subtle text-primary btn-sm">
                                         <i class="ri-eye-line"></i>
                                     </a>
@@ -149,6 +149,9 @@
     </div>
 </div>
 
+
+</div><!--End container-fluid-->
+</main><!--End app-wrapper-->
 {{-- ================= MODAL CONFIRMACIÓN ================= --}}
 <div class="modal fade" id="confirmArchivoModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -181,8 +184,7 @@
         </div>
     </div>
 </div>
-</div><!--End container-fluid-->
-</main><!--End app-wrapper-->
+
 @endsection
 
 @section('js')
@@ -229,7 +231,7 @@ function confirmarEliminarArchivo(id, nombre) {
     `;
 
     document.getElementById('modalForm').action =
-        `/ingreso-datos/densidad-aparente/${id}`;
+        `/ingreso-datos/densidad-particulas/${id}`;
 
     archivoModal.show();
 }

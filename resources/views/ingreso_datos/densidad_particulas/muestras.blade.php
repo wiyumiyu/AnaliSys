@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Muestras del archivo - Densidad aparente')
+@section('title', 'Muestras del archivo - Densidad particulas')
 
 @section('css')
 <!-- Datatables CSS -->
@@ -27,7 +27,7 @@
                     </h5>
 
                     {{-- VOLVER --}}
-                    <a href="{{ route('densidad_aparente.index') }}"
+                    <a href="{{ route('densidad_particulas.index') }}"
                        class="btn btn-primary">
                         ← Volver
                     </a>
@@ -45,12 +45,12 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Altura Cilindro</th>
-                            <th>Diametro Cilindro</th>
-                            <th>Peso Seco</th>
-                            <th>Peso cilindro</th>
-                            <th>Temperatura secado</th>
-                            <th>Tiempo Secado</th>
+                            <th>Número Balón</th>
+                            <th>Peso Balón vacío P1</th>
+                            <th>Peso Balón Suelo Seco P2</th>
+                            <th>Peso Balón Suelo Agua P3</th>
+                            <th>Temperatura Agua</th>
+                            
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -65,19 +65,19 @@
 
                                 {{-- ID LAB --}}
                                 <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('densidad_aparente.muestra.edit', $m->id_muestra) }}"
+                                    <a href="{{ route('densidad_particulas.muestra.edit', $m->id_muestra) }}"
                                        class="fw-semibold text-reset text-decoration-none">
                                         {{ $m->idlab }}
                                     </a>
                                 </td>
 
                                 <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->altura }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->diametro }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro_suelo }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->temperatura }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->secado }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->numero_balon_vol }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->peso_balon_vol_vacio_p1 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->peso_balon_vol_suelo_seco_p2 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->peso_balon_vol_suelo_agua_p3 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->temperatura_agua }}</td>
+                         
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * =============================== */
 function confirmarEstadoMuestra(id, estado) {
 
-    modalForm.action = `/ingreso-datos/densidad-aparente/muestra/${id}/estado`;
+    modalForm.action = `/ingreso-datos/densidad-particulas/muestra/${id}/estado`;
     modalMethod.value = 'PATCH';
 
     if (estado === 1) {
@@ -236,7 +236,7 @@ function confirmarEstadoMuestra(id, estado) {
  * =============================== */
 function confirmarEliminarMuestra(id) {
 
-    modalForm.action = `/ingreso-datos/densidad-aparente/muestra/${id}`;
+    modalForm.action = `/ingreso-datos/densidad-particulas/muestra/${id}`;
     modalMethod.value = 'DELETE';
 
     modalTitle.textContent = 'Eliminar muestra';

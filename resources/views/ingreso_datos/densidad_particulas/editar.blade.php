@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Editar muestra - Densidad aparente')
+@section('title', 'Editar muestra - Densidad particulas')
 
 @section('css')
 <link rel="stylesheet"
@@ -22,7 +22,7 @@
                 <div class="d-flex flex-wrap gap-4 justify-content-between align-items-center">
 
                     <h5 class="mb-0 fw-semibold">
-                        Editar muestra – Densidad aparente {{ $muestra->idlab }}
+                        Editar muestra – Densidad partículas {{ $muestra->idlab }}
                     </h5>
 
                     <a href="{{ url()->previous() }}" class="btn btn-primary">
@@ -36,7 +36,7 @@
             <div class="card-body">
 
                 <form method="POST"
-                      action="{{ route('densidad_aparente.muestra.update', $muestra->id) }}">
+                      action="{{ route('densidad_particulas.muestra.update', $muestra->id) }}">
                     @csrf
                     @method('PUT')
 
@@ -95,7 +95,7 @@
                     {{-- ================= RESULTADOS DE DENSIDAD ================= --}}
                     <br><br>
                     <h5 class="fw-semibold mb-3">
-                        Resultados de densidad aparente
+                        Resultados de densidad particulas
                     </h5>
 
                     <div class="row g-3">

@@ -163,7 +163,7 @@ class DensidadParticulasController extends Controller
 
         DB::beginTransaction();
 
-        try {
+      //  try {
 
             /* ==== Crear archivo de densidad particulas ==== */
             $idDensidadParticulas = DB::table('trn_densidad_particulas')->insertGetId([
@@ -177,7 +177,7 @@ class DensidadParticulasController extends Controller
             /* ==== Mapa de análisis DENSIDAD PARTICULAS ==== */
 
             $analisisMap = DB::table('trn_analisis')
-                ->where('origen', 'DENSIDAD PARTICULAS')
+                ->where('origen', 'DENSIDAD_PARTICULAS')
                 ->pluck('id', 'siglas')
                 ->toArray();
 
@@ -193,6 +193,8 @@ class DensidadParticulasController extends Controller
             /* ==== Recorrer filas (desde fila 3) ===== */
             $i = 1;
             $tipo = 1;
+            
+
             foreach ($rows as $fila => $row) {
 
                 if ($fila < 3) {
@@ -221,16 +223,15 @@ class DensidadParticulasController extends Controller
 
                 /* ===== Resultados ===== */
                 $valores = [
-                    'altura'               => $row['C'],
-                    'diametro'             => $row['D'],
-                    'peso_cilindro_suelo'  => $row['E'],
-                    'peso_cilindro'        => $row['F'],
-                    'temperatura'          => $row['G'],
-                    'secado'               => $row['H'],
+                    'numero_balon_vol'               => $row['C'],
+                    'peso_balon_vol_vacio_p1'             => $row['D'],
+                    'peso_balon_vol_suelo_seco_p2'  => $row['E'],
+                    'peso_balon_vol_suelo_agua_p3'        => $row['F'],
+                    'temperatura_agua'          => $row['G']
 
                 ];
 
-
+//dd($analisisMap, array_keys($valores));
                 foreach ($valores as $sigla => $resultado) {
 
 
@@ -253,13 +254,13 @@ class DensidadParticulasController extends Controller
             return redirect()
                 ->route('densidad_particulas.index')
                 ->with('success', 'Archivo importado correctamente');
-        } catch (\Throwable $e) {
-
-            DB::rollBack();
-
-            return back()->withErrors(
-                'Error al importar: ' . $e->getMessage()
-            );
-        }
+//        } catch (\Throwable $e) {
+//
+//            DB::rollBack();
+//
+//            return back()->withErrors(
+//                'Error al importar: ' . $e->getMessage()
+//            );
+//        }
     }
 }

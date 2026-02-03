@@ -2066,22 +2066,6 @@ VALUES
 (1,13,'360',    1); -- TIEMPO4
 
 
-INSERT INTO trn_textura_resultados
-(id_textura_muestras, id_analisis, resultado, estado)
-VALUES
-(1, 1, '12.45', 1), -- PESO_SECO
-(1, 2, '0.226', 1), -- R1
-(1, 3, '0.215', 1), -- R2
-(1, 4, '0.209', 1), -- R3
-(1, 5, '0.231', 1), -- R4
-(1, 6, '25.0',  1), -- TEMP1
-(1, 7, '25.2',  1), -- TEMP2
-(1, 8, '25.1',  1), -- TEMP3
-(1, 9, '25.3',  1), -- TEMP4
-(1,10, '30',    1), -- TIEMPO1
-(1,11, '60',    1), -- TIEMPO2
-(1,12,'120',    1), -- TIEMPO3
-(1,13,'360',    1); -- TIEMPO4
 
 
 INSERT INTO trn_textura_resultados

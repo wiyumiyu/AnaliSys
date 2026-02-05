@@ -16,6 +16,7 @@
 
 
     @yield('css')
+    
     @include('partials.head-css')
     @include('partials.title-meta')
 </head>

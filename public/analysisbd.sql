@@ -2066,8 +2066,6 @@ VALUES
 (1,13,'360',    1); -- TIEMPO4
 
 
-
-
 INSERT INTO trn_textura_resultados
 (id_textura_muestras, id_analisis, resultado, estado)
 VALUES

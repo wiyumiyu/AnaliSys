@@ -203,7 +203,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 });
 
 //------------------------------------------------------------------------------
-// DENSIDAD APARENTE
+// DENSIDAD PARTICULAS
 //-------------------------------------------------------------------------------
 use App\Http\Controllers\DensidadParticulasController;
 
@@ -281,6 +281,67 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             [PermeabilidadAireController::class, 'update']
     )->name('pa.muestra.update');
 });
+
+
+//------------------------------------------------------------------------------
+// HUMEDAD GRAVIMÉTRICA
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\HumedadGravimetricaController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    //Listado de archivos
+    Route::get(
+        '/ingreso-datos/humedad-gravimetrica',
+        [HumedadGravimetricaController::class, 'archivos']
+    )->name('humedad_gravimetrica.index');
+
+    //Listado de muestras por archivo
+    Route::get(
+        '/ingreso-datos/humedad-gravimetrica/{archivo}/muestras',
+        [HumedadGravimetricaController::class, 'muestras']
+    )->name('humedad_gravimetrica.muestras');
+
+    //Editar muestra
+    Route::get(
+        '/ingreso-datos/humedad-gravimetrica/muestra/{id}/editar',
+        [HumedadGravimetricaController::class, 'edit']
+    )->name('humedad_gravimetrica.muestra.edit');
+
+    //Actualizar muestra
+    Route::put(
+        '/ingreso-datos/humedad-gravimetrica/muestra/{id}',
+        [HumedadGravimetricaController::class, 'update']
+    )->name('humedad_gravimetrica.muestra.update');
+
+    //Activar / anular muestra
+    Route::patch(
+        '/ingreso-datos/humedad-gravimetrica/muestra/{id}/estado',
+        [HumedadGravimetricaController::class, 'toggleEstado']
+    )->name('humedad_gravimetrica.muestra.toggle');
+
+    //Eliminar muestra
+    Route::delete(
+        '/ingreso-datos/humedad-gravimetrica/muestra/{id}',
+        [HumedadGravimetricaController::class, 'destroy']
+    )->name('humedad_gravimetrica.muestra.destroy');
+
+    //Eliminar archivo completo
+    Route::delete(
+        '/ingreso-datos/humedad-gravimetrica/{id}',
+        [HumedadGravimetricaController::class, 'destroyArchivo']
+    )->name('humedad_gravimetrica.destroy');
+
+    //Importar archivo
+    Route::post(
+        '/ingreso-datos/humedad-gravimetrica/importar',
+        [HumedadGravimetricaController::class, 'importar']
+    )->name('humedad_gravimetrica.importar');
+
+});
+
+
+
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA
 //-------------------------------------------------------------------------------

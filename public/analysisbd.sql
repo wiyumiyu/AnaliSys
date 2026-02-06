@@ -297,6 +297,40 @@ CREATE TABLE trn_densidad_particulas_resultados (
     estado BOOLEAN DEFAULT 1
 );
 
+-- Humedad Gravimétrica
+CREATE TABLE trn_humedad_gravimetrica (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255) NULL,
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+
+CREATE TABLE trn_humedad_gravimetrica_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_humedad_gravimetrica INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL,
+
+    material INT NOT NULL,
+    tipo INT NOT NULL,
+    posicion INT NOT NULL,
+
+    estado BOOLEAN NOT NULL DEFAULT 1,
+    ri BOOLEAN NOT NULL DEFAULT 0
+);
+
+CREATE TABLE trn_humedad_gravimetrica_resultados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_humedad_gravimetrica_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+
+    estado BOOLEAN DEFAULT 1
+);
+
 
 
   CREATE TABLE tbl_bitacora (
@@ -415,6 +449,26 @@ ALTER TABLE trn_densidad_particulas_resultados
 ADD CONSTRAINT fk_dp_resultados_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
+
+-- Humedad Gravimétrica
+ALTER TABLE trn_humedad_gravimetrica_muestras
+ADD CONSTRAINT fk_hg_muestras_humedad
+FOREIGN KEY (id_humedad_gravimetrica)
+REFERENCES trn_humedad_gravimetrica(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_humedad_gravimetrica_resultados
+ADD CONSTRAINT fk_hg_resultados_muestras
+FOREIGN KEY (id_humedad_gravimetrica_muestras)
+REFERENCES trn_humedad_gravimetrica_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_humedad_gravimetrica_resultados
+ADD CONSTRAINT fk_hg_resultados_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
+
+
 
 /* ============================================================
    5. PROCEDIMIENTOS ALMACENADOS
@@ -856,6 +910,7 @@ DELIMITER ;
 
 DELIMITER $$
 
+-- Textura
 CREATE PROCEDURE sp_listar_textura_por_periodo (
     IN p_periodo YEAR
 )
@@ -1462,6 +1517,209 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- Procedimientos Humedad Gravimetrica
+
+DELIMITER $$
+
+-- Listar archivos por período
+CREATE PROCEDURE sp_listar_humedad_gravimetrica_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        h.id                     AS id_archivo,
+        h.periodo,
+        h.fecha,
+        h.archivo,
+        h.analista               AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_humedad_gravimetrica h
+    INNER JOIN tbl_persona p
+        ON p.id_persona = h.analista
+    WHERE h.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY h.fecha DESC, h.id DESC;
+END$$
+
+DELIMITER ;
+
+-- Listar muestras del archivo (detalle)
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_humedad_gravimetrica_detalle (
+    IN p_id_humedad_gravimetrica INT
+)
+BEGIN
+    SELECT
+        m.id      AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+
+        MAX(CASE WHEN a.siglas = 'peso_capsula_vacia'        THEN r.resultado END) AS peso_capsula_vacia,
+        MAX(CASE WHEN a.siglas = 'peso_capsula_suelohumedo' THEN r.resultado END) AS peso_capsula_suelohumedo,
+        MAX(CASE WHEN a.siglas = 'peso_capsula_sueloseco'   THEN r.resultado END) AS peso_capsula_sueloseco,
+        MAX(CASE WHEN a.siglas = 'temperatura_secado'       THEN r.resultado END) AS temperatura_secado,
+        MAX(CASE WHEN a.siglas = 'tiempo_secado'            THEN r.resultado END) AS tiempo_secado
+
+    FROM trn_humedad_gravimetrica_muestras m
+    LEFT JOIN trn_humedad_gravimetrica_resultados r
+        ON r.id_humedad_gravimetrica_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'HUMEDAD_GRAVIMETRICA'
+    WHERE m.id_humedad_gravimetrica = p_id_humedad_gravimetrica
+    GROUP BY m.id, m.idlab, m.rep, m.estado
+    ORDER BY m.idlab, m.rep;
+END$$
+
+
+DELIMITER ;
+
+-- Obtener una muestra específica
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_humedad_gravimetrica (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        id,
+        id_humedad_gravimetrica,
+        idlab,
+        rep,
+        material,
+        tipo,
+        posicion,
+        estado,
+        ri
+    FROM trn_humedad_gravimetrica_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Listar resultados por muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_humedad_gravimetrica_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+    SELECT
+        r.id                AS id_resultado,
+        r.id_analisis,
+        a.analisis,
+        a.siglas,
+        r.resultado,
+        r.estado
+    FROM trn_humedad_gravimetrica_resultados r
+    INNER JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'HUMEDAD_GRAVIMETRICA'
+    WHERE r.id_humedad_gravimetrica_muestras = p_id_muestra
+    ORDER BY a.id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar datos generales de la muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_humedad_gravimetrica (
+    IN p_id INT,
+    IN p_rep INT,
+    IN p_material VARCHAR(255),
+    IN p_tipo VARCHAR(100),
+    IN p_posicion VARCHAR(50),
+    IN p_estado TINYINT
+)
+BEGIN
+    UPDATE trn_humedad_gravimetrica_muestras
+    SET
+        rep       = p_rep,
+        material  = p_material,
+        tipo      = p_tipo,
+        posicion  = p_posicion,
+        estado    = p_estado
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar un resultado puntual
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_humedad_gravimetrica (
+    IN p_id_resultado INT,
+    IN p_resultado VARCHAR(50)
+)
+BEGIN
+    UPDATE trn_humedad_gravimetrica_resultados
+    SET resultado = p_resultado
+    WHERE id = p_id_resultado;
+END$$
+
+DELIMITER ;
+
+-- Anular muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_humedad_gravimetrica (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_humedad_gravimetrica_muestras
+    SET estado = 0
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_humedad_gravimetrica (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_humedad_gravimetrica_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Toggle estado muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_humedad_gravimetrica (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_humedad_gravimetrica_muestras
+    SET estado = IF(estado = 1, 0, 1)
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+DELIMITER $$
+CREATE PROCEDURE sp_eliminar_humedad_gravimetrica (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_humedad_gravimetrica
+    WHERE id = p_id;
+END$$
+
+
+
 /* ============================================================
    6. TRIGGERS
    ============================================================ */
@@ -1829,8 +2087,93 @@ END$$
 
 DELIMITER ;
 
+-- Triggers Humedad Gravimetrica
 
 
+-- Insert 
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_ai$$
+CREATE TRIGGER trg_humedad_gravimetrica_ai
+AFTER INSERT ON trn_humedad_gravimetrica
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_humedad_gravimetrica',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    );
+END$$
+
+DELIMITER ;
+
+
+-- Delete
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_ad$$
+CREATE TRIGGER trg_humedad_gravimetrica_ad
+AFTER DELETE ON trn_humedad_gravimetrica
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_humedad_gravimetrica',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+-- Update
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_au$$
+CREATE TRIGGER trg_humedad_gravimetrica_au
+AFTER UPDATE ON trn_humedad_gravimetrica
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_humedad_gravimetrica',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
 
 
 DELIMITER $$
@@ -2206,6 +2549,40 @@ VALUES
 (3, (SELECT id FROM trn_analisis WHERE siglas='peso_balon_vol_suelo_agua_p3'  AND origen='DENSIDAD_PARTICULAS'), '1.249', 1),
 (3, (SELECT id FROM trn_analisis WHERE siglas='temperatura_agua'  AND origen='DENSIDAD_PARTICULAS'), '105.10', 1);
 
+
+-- HUMEDAD GRAVIMÉTRICA – ANÁLISIS
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+('Peso cápsula vacía',        'peso_capsula_vacia',        'HUMEDAD_GRAVIMETRICA'),
+('Peso cápsula + suelo húmedo','peso_capsula_suelohumedo', 'HUMEDAD_GRAVIMETRICA'),
+('Peso cápsula + suelo seco', 'peso_capsula_sueloseco',    'HUMEDAD_GRAVIMETRICA'),
+('Temperatura secado',        'temperatura_secado',        'HUMEDAD_GRAVIMETRICA'),
+('Tiempo secado',             'tiempo_secado',             'HUMEDAD_GRAVIMETRICA');
+
+
+-- HUMEDAD GRAVIMÉTRICA – ARCHIVO
+INSERT INTO trn_humedad_gravimetrica (periodo, archivo, fecha, analista)
+VALUES
+(2024, 'HG-2026-001', '2024-09-20', 1);
+
+-- HUMEDAD GRAVIMÉTRICA – MUESTRAS
+INSERT INTO trn_humedad_gravimetrica_muestras
+(id_humedad_gravimetrica, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '901', 1, 1, 1, '1', 1, 0),
+(1, '901', 2, 1, 1, '2', 1, 0),
+(1, '902', 1, 1, 1, '3', 1, 0);
+
+-- HUMEDAD GRAVIMÉTRICA – RESULTADOS
+
+INSERT INTO trn_humedad_gravimetrica_resultados
+(id_humedad_gravimetrica_muestras, id_analisis, resultado, estado)
+VALUES
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_capsula_vacia' AND origen='HUMEDAD_GRAVIMETRICA'), '5.20', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_capsula_suelohumedo' AND origen='HUMEDAD_GRAVIMETRICA'), '18.50', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='peso_capsula_sueloseco' AND origen='HUMEDAD_GRAVIMETRICA'), '15.20', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='HUMEDAD_GRAVIMETRICA'), '105', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='HUMEDAD_GRAVIMETRICA'), '120', 1);
 
 
 SELECT * 

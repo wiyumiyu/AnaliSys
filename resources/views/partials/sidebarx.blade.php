@@ -1,4 +1,3 @@
-
 <aside class="pe-app-sidebar d-flex flex-column" id="sidebar">
     <div class="pe-app-sidebar-logo px-3 d-flex align-items-center position-relative">
         <!--begin::Brand Image-->
@@ -23,7 +22,7 @@
             || (Route::has('densidad_aparente.index') && request()->routeIs('densidad_aparente.*'))
             || (Route::has('densidad_particulas.index') && request()->routeIs('densidad_particulas.*'))
             || (Route::has('porosidad.index') && request()->routeIs('porosidad.*'))
-            || (Route::has('humedad.index') && request()->routeIs('humedad.*'))
+            || (Route::has('humedad_gravimetrica.index') && request()->routeIs('humedad_gravimetrica.*'))
             || (Route::has('conductividad.index') && request()->routeIs('conductividad.*'))
             || (Route::has('retencion.index') && request()->routeIs('retencion.*'))
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
@@ -69,7 +68,7 @@
                     <li class="pe-slide-item">
                      <a href="{{ route('densidad_particulas.index') }}"
                             class="pe-nav-link {{ request()->routeIs('densidad_particulas.*') ? 'active' : '' }}">
-                            Densidad de Pariculas
+                            Densidad de Particulas
                         </a>
                     </li>
 
@@ -79,9 +78,11 @@
                         </a>
                     </li>
 
+                    {{-- HUMEDAD GRAVIMETRICA (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/humedad_gravimetrica/listado.php" class="pe-nav-link">
-                            Humedad Gravimétrica
+                        <a href="{{ route('humedad_gravimetrica.index') }}"
+                            class="pe-nav-link {{ request()->routeIs('humedad_gravimetrica.*') ? 'active' : '' }}">
+                            Humedad Gravimetrica
                         </a>
                     </li>
 

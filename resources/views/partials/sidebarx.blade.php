@@ -23,7 +23,7 @@
             || (Route::has('densidad_particulas.index') && request()->routeIs('densidad_particulas.*'))
             || (Route::has('porosidad.index') && request()->routeIs('porosidad.*'))
             || (Route::has('humedad_gravimetrica.index') && request()->routeIs('humedad_gravimetrica.*'))
-            || (Route::has('conductividad.index') && request()->routeIs('conductividad.*'))
+            || (Route::has('conductividad_hidraulica.index') && request()->routeIs('conductividad_hidraulica.*'))
             || (Route::has('retencion.index') && request()->routeIs('retencion.*'))
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
             || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
@@ -86,8 +86,10 @@
                         </a>
                     </li>
 
+                    {{-- Conductividad Hidráulica (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/conductividad_hidraulica/listado.php" class="pe-nav-link">
+                        <a href="{{ route('conductividad_hidraulica.index') }}"
+                            class="pe-nav-link {{ request()->routeIs('conductividad_hidraulica.*') ? 'active' : '' }}">
                             Conductividad Hidráulica
                         </a>
                     </li>

@@ -1,9 +1,8 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Muestras del archivo - Humedad Gravimétrica')
+@section('title', 'Muestras del archivo - Conductividad Hidráulica')
 
 @section('css')
-<!-- Datatables CSS -->
 <link rel="stylesheet"
       href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
 <link rel="stylesheet"
@@ -16,7 +15,6 @@
     <div class="col-lg-12">
         <br>
 
-        
         {{-- CARD --}}
         <div class="card">
             <div class="card-header">
@@ -28,7 +26,7 @@
                     </h5>
 
                     {{-- VOLVER --}}
-                    <a href="{{ route('humedad_gravimetrica.index') }}"
+                    <a href="{{ route('conductividad_hidraulica.index') }}"
                        class="btn btn-primary">
                         ← Volver
                     </a>
@@ -46,11 +44,11 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Peso cápsula vacía</th>
-                            <th>Peso cápsula + suelo húmedo</th>
-                            <th>Peso cápsula + suelo seco</th>
-                            <th>Temperatura secado</th>
-                            <th>Tiempo secado</th>
+                            <th>Longitud muestra</th>
+                            <th>Diámetro interno</th>
+                            <th>Área transversal</th>
+                            <th>Temperatura agua</th>
+                            <th>Condición compactación / saturación</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -65,18 +63,18 @@
 
                                 {{-- ID LAB --}}
                                 <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('humedad_gravimetrica.muestra.edit', $m->id_muestra) }}"
+                                    <a href="{{ route('conductividad_hidraulica.muestra.edit', $m->id_muestra) }}"
                                        class="fw-semibold text-reset text-decoration-none">
                                         {{ $m->idlab }}
                                     </a>
                                 </td>
 
                                 <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_capsula_vacia }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_capsula_suelohumedo }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_capsula_sueloseco }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->temperatura_secado }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->tiempo_secado }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->longitud_muestra }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->diametro_interno }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->area_transversal }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->temperatura_agua }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->condicion_compactacion_saturacion }}</td>
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">
@@ -152,17 +150,14 @@
         </div>
     </div>
 </div>
-
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
 @endsection
 
 @section('js')
 
-<!-- Bootstrap -->
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 
-<!-- DataTables -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
@@ -198,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * =============================== */
 function confirmarEstadoMuestra(id, estado) {
 
-    modalForm.action = `/ingreso-datos/humedad-gravimetrica/muestra/${id}/estado`;
+    modalForm.action = `/ingreso-datos/conductividad-hidraulica/muestra/${id}/estado`;
     modalMethod.value = 'PATCH';
 
     if (estado === 1) {
@@ -236,7 +231,7 @@ function confirmarEstadoMuestra(id, estado) {
  * =============================== */
 function confirmarEliminarMuestra(id) {
 
-    modalForm.action = `/ingreso-datos/humedad-gravimetrica/muestra/${id}`;
+    modalForm.action = `/ingreso-datos/conductividad-hidraulica/muestra/${id}`;
     modalMethod.value = 'DELETE';
 
     modalTitle.textContent = 'Eliminar muestra';
@@ -258,4 +253,3 @@ function confirmarEliminarMuestra(id) {
 </script>
 
 @endsection
-

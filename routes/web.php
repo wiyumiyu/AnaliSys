@@ -340,6 +340,56 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
 });
 
+//------------------------------------------------------------------------------
+// CONDUCTIVIDAD HIDRÁULICA
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\ConductividadHidraulicaController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/conductividad-hidraulica',
+        [ConductividadHidraulicaController::class, 'archivos']
+    )->name('conductividad_hidraulica.index');
+
+    Route::get(
+        '/ingreso-datos/conductividad-hidraulica/{archivo}/muestras',
+        [ConductividadHidraulicaController::class, 'muestras']
+    )->name('conductividad_hidraulica.muestras');
+
+    Route::get(
+        '/ingreso-datos/conductividad-hidraulica/muestra/{id}/editar',
+        [ConductividadHidraulicaController::class, 'edit']
+    )->name('conductividad_hidraulica.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/conductividad-hidraulica/muestra/{id}',
+        [ConductividadHidraulicaController::class, 'update']
+    )->name('conductividad_hidraulica.muestra.update');
+
+    Route::patch(
+        '/ingreso-datos/conductividad-hidraulica/muestra/{id}/estado',
+        [ConductividadHidraulicaController::class, 'toggleEstado']
+    )->name('conductividad_hidraulica.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/conductividad-hidraulica/muestra/{id}',
+        [ConductividadHidraulicaController::class, 'destroy']
+    )->name('conductividad_hidraulica.muestra.destroy');
+
+    Route::delete(
+        '/ingreso-datos/conductividad-hidraulica/{id}',
+        [ConductividadHidraulicaController::class, 'destroyArchivo']
+    )->name('conductividad_hidraulica.destroy');
+
+    Route::post(
+        '/ingreso-datos/conductividad-hidraulica/importar',
+        [ConductividadHidraulicaController::class, 'importar']
+    )->name('conductividad_hidraulica.importar');
+
+});
+
+
 
 
 //------------------------------------------------------------------------------

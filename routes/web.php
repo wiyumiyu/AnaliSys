@@ -390,6 +390,56 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 });
 
 
+//------------------------------------------------------------------------------
+// RETENCIÓN DE HUMEDAD
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\RetencionHumedadController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/retencion-humedad',
+        [RetencionHumedadController::class, 'archivos']
+    )->name('retencion_humedad.index');
+
+    Route::get(
+        '/ingreso-datos/retencion-humedad/{archivo}/muestras',
+        [RetencionHumedadController::class, 'muestras']
+    )->name('retencion_humedad.muestras');
+
+    Route::get(
+        '/ingreso-datos/retencion-humedad/muestra/{id}/editar',
+        [RetencionHumedadController::class, 'edit']
+    )->name('retencion_humedad.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/retencion-humedad/muestra/{id}',
+        [RetencionHumedadController::class, 'update']
+    )->name('retencion_humedad.muestra.update');
+
+    Route::patch(
+        '/ingreso-datos/retencion-humedad/muestra/{id}/estado',
+        [RetencionHumedadController::class, 'toggleEstado']
+    )->name('retencion_humedad.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/retencion-humedad/muestra/{id}',
+        [RetencionHumedadController::class, 'destroy']
+    )->name('retencion_humedad.muestra.destroy');
+
+    Route::delete(
+        '/ingreso-datos/retencion-humedad/{id}',
+        [RetencionHumedadController::class, 'destroyArchivo']
+    )->name('retencion_humedad.destroy');
+
+    Route::post(
+        '/ingreso-datos/retencion-humedad/importar',
+        [RetencionHumedadController::class, 'importar']
+    )->name('retencion_humedad.importar');
+
+});
+
+
 
 
 //------------------------------------------------------------------------------

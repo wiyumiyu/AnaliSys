@@ -24,7 +24,7 @@
             || (Route::has('porosidad.index') && request()->routeIs('porosidad.*'))
             || (Route::has('humedad_gravimetrica.index') && request()->routeIs('humedad_gravimetrica.*'))
             || (Route::has('conductividad_hidraulica.index') && request()->routeIs('conductividad_hidraulica.*'))
-            || (Route::has('retencion.index') && request()->routeIs('retencion.*'))
+            || (Route::has('retencion_humedad.index') && request()->routeIs('retencion_humedad.*'))
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
             || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
             || (Route::has('estabilidad.index') && request()->routeIs('estabilidad.*'))
@@ -74,7 +74,7 @@
 
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/porosidad_total/listado.php" class="pe-nav-link">
-                            Porosidad total
+                            Porosidad Total
                         </a>
                     </li>
 
@@ -94,9 +94,11 @@
                         </a>
                     </li>
 
+                    {{-- Retención de Humedad (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/retencion_humedad/listado.php" class="pe-nav-link">
-                            Retención de humedad
+                        <a href="{{ route('retencion_humedad.index') }}"
+                            class="pe-nav-link {{ request()->routeIs('retencion_humedad.*') ? 'active' : '' }}">
+                            Retención de Humedad
                         </a>
                     </li>
 

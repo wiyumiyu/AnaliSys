@@ -365,6 +365,41 @@ CREATE TABLE trn_conductividad_hidraulica_resultados (
     estado BOOLEAN DEFAULT 1
 );
 
+-- Retención de Humedad
+CREATE TABLE trn_retencion_humedad (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255) NULL,
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+
+CREATE TABLE trn_retencion_humedad_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_retencion_humedad INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL,
+
+    material INT NOT NULL,
+    tipo INT NOT NULL,
+    posicion INT NOT NULL,
+
+    estado BOOLEAN NOT NULL DEFAULT 1,
+    ri BOOLEAN NOT NULL DEFAULT 0
+);
+
+CREATE TABLE trn_retencion_humedad_resultados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_retencion_humedad_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+
+    estado BOOLEAN DEFAULT 1
+);
+
+
 
   CREATE TABLE tbl_bitacora (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -519,6 +554,26 @@ ALTER TABLE trn_conductividad_hidraulica_resultados
 ADD CONSTRAINT fk_ch_resultados_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
+
+
+-- Retención de Humedad
+ALTER TABLE trn_retencion_humedad_muestras
+ADD CONSTRAINT fk_rh_muestras_retencion
+FOREIGN KEY (id_retencion_humedad)
+REFERENCES trn_retencion_humedad(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_retencion_humedad_resultados
+ADD CONSTRAINT fk_rh_resultados_muestras
+FOREIGN KEY (id_retencion_humedad_muestras)
+REFERENCES trn_retencion_humedad_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_retencion_humedad_resultados
+ADD CONSTRAINT fk_rh_resultados_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
+
 
 
 /* ============================================================
@@ -1358,7 +1413,7 @@ DELIMITER ;
 
 -- Procedimientos para Densidad particulas
 
--- Listar archivos de densidad aparente por período
+-- Listar archivos de densidad particulas por período
 DELIMITER $$
 
 CREATE PROCEDURE sp_listar_densidad_particulas_por_periodo (
@@ -1985,10 +2040,216 @@ END$$
 
 DELIMITER ;
 
+-- Procedimientos Retencion Humedad
 
+-- Listar archivos por período
 
+DELIMITER $$
 
+CREATE PROCEDURE sp_listar_retencion_humedad_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        r.id                     AS id_archivo,
+        r.periodo,
+        r.fecha,
+        r.archivo,
+        r.analista               AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_retencion_humedad r
+    INNER JOIN tbl_persona p
+        ON p.id_persona = r.analista
+    WHERE r.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY r.fecha DESC, r.id DESC;
+END$$
 
+DELIMITER ;
+
+-- Listar muestras del archivo (detalle)
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_retencion_humedad_detalle (
+    IN p_id_retencion INT
+)
+BEGIN
+    SELECT
+        m.id        AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+
+        MAX(CASE WHEN a.siglas = 'presion_aplicada' THEN r.resultado END) AS presion_aplicada,
+        MAX(CASE WHEN a.siglas = 'ph1_L1'           THEN r.resultado END) AS ph1_L1,
+        MAX(CASE WHEN a.siglas = 'ps1_L1'           THEN r.resultado END) AS ps1_L1,
+        MAX(CASE WHEN a.siglas = 'ph_L2'            THEN r.resultado END) AS ph_L2,
+        MAX(CASE WHEN a.siglas = 'ps2_L2'           THEN r.resultado END) AS ps2_L2,
+        MAX(CASE WHEN a.siglas = 'L1'               THEN r.resultado END) AS L1,
+        MAX(CASE WHEN a.siglas = 'L2'               THEN r.resultado END) AS L2
+
+    FROM trn_retencion_humedad_muestras m
+    LEFT JOIN trn_retencion_humedad_resultados r
+        ON r.id_retencion_humedad_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'RETENCION_HUMEDAD'
+
+    WHERE m.id_retencion_humedad = p_id_retencion
+
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+
+    ORDER BY
+        m.idlab, m.rep;
+END$$
+
+DELIMITER ;
+
+-- Obtener una muestra específica
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_retencion_humedad (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        id,
+        id_retencion_humedad,
+        idlab,
+        rep,
+        material,
+        tipo,
+        posicion,
+        estado,
+        ri
+    FROM trn_retencion_humedad_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Listar resultados por muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_retencion_humedad_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+    SELECT
+        r.id          AS id_resultado,
+        r.id_analisis,
+        a.analisis,
+        a.siglas,
+        r.resultado,
+        r.estado
+    FROM trn_retencion_humedad_resultados r
+    INNER JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'RETENCION_HUMEDAD'
+    WHERE r.id_retencion_humedad_muestras = p_id_muestra
+    ORDER BY a.id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar datos generales de la muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_retencion_humedad (
+    IN p_id INT,
+    IN p_rep INT,
+    IN p_material VARCHAR(255),
+    IN p_tipo VARCHAR(100),
+    IN p_posicion VARCHAR(50),
+    IN p_estado TINYINT
+)
+BEGIN
+    UPDATE trn_retencion_humedad_muestras
+    SET
+        rep       = p_rep,
+        material  = p_material,
+        tipo      = p_tipo,
+        posicion  = p_posicion,
+        estado    = p_estado
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar un resultado puntual
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_retencion_humedad (
+    IN p_id_resultado INT,
+    IN p_resultado VARCHAR(50)
+)
+BEGIN
+    UPDATE trn_retencion_humedad_resultados
+    SET resultado = p_resultado
+    WHERE id = p_id_resultado;
+END$$
+
+DELIMITER ;
+
+-- Anular muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_retencion_humedad (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_retencion_humedad_muestras
+    SET estado = 0
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_retencion_humedad (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_retencion_humedad_muestras
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Toggle estado muestra
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_retencion_humedad (
+    IN p_id INT
+)
+BEGIN
+    UPDATE trn_retencion_humedad_muestras
+    SET estado = IF(estado = 1, 0, 1)
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar archivo completo
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_retencion_humedad (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_retencion_humedad
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
 
 
 
@@ -2560,6 +2821,94 @@ DELIMITER ;
 
 DELIMITER $$
 
+-- Retencion Humedad
+
+-- Insert
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_ai$$
+CREATE TRIGGER trg_retencion_humedad_ai
+AFTER INSERT ON trn_retencion_humedad
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_retencion_humedad',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    );
+END$$
+
+DELIMITER ;
+
+-- Delete
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_ad$$
+CREATE TRIGGER trg_retencion_humedad_ad
+AFTER DELETE ON trn_retencion_humedad
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_retencion_humedad',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+
+-- Update
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_au$$
+CREATE TRIGGER trg_retencion_humedad_au
+AFTER UPDATE ON trn_retencion_humedad
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_retencion_humedad',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+
+
 CREATE PROCEDURE sp_obtener_bitacora_completa (
     IN p_id BIGINT
 )
@@ -2583,7 +2932,7 @@ BEGIN
     LEFT JOIN trn_persona_correo c
         ON c.id_persona = b.usuario
         AND c.descripcion = 'PRINCIPAL'
-    WHERE b.id = p_id;
+    WHERE b.id = p_id
 END$$
 
 DELIMITER ;
@@ -2986,6 +3335,58 @@ VALUES
 (3, (SELECT id FROM trn_analisis WHERE siglas='temperatura_agua' AND origen='CONDUCTIVIDAD_HIDRAULICA'), '22.9', 1),
 (3, (SELECT id FROM trn_analisis WHERE siglas='condicion_compactacion_saturacion' AND origen='CONDUCTIVIDAD_HIDRAULICA'), 'Compactada', 1);
 
+
+-- RETENCIÓN DE HUMEDAD
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+('Presión aplicada',          'presion_aplicada', 'RETENCION_HUMEDAD'),
+('Peso húmedo L1',            'ph1_L1',            'RETENCION_HUMEDAD'),
+('Peso seco L1',              'ps1_L1',            'RETENCION_HUMEDAD'),
+('Peso húmedo L2',            'ph_L2',              'RETENCION_HUMEDAD'),
+('Peso seco L2',              'ps2_L2',             'RETENCION_HUMEDAD'),
+('Longitud L1',               'L1',                 'RETENCION_HUMEDAD'),
+('Longitud L2',               'L2',                 'RETENCION_HUMEDAD');
+
+INSERT INTO trn_retencion_humedad (periodo, archivo, fecha, analista)
+VALUES
+(2024, 'RH-2026-001', '2024-09-20', 1);
+
+INSERT INTO trn_retencion_humedad_muestras
+(id_retencion_humedad, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '801', 1, 1, 1, '1', 1, 0),
+(1, '801', 2, 1, 1, '2', 1, 0),
+(1, '802', 1, 1, 1, '3', 1, 0);
+
+INSERT INTO trn_retencion_humedad_resultados
+(id_retencion_humedad_muestras, id_analisis, resultado, estado)
+VALUES
+-- MUESTRA 1
+(1, (SELECT id FROM trn_analisis WHERE siglas='presion_aplicada' AND origen='RETENCION_HUMEDAD'), '33', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='ph1_L1'            AND origen='RETENCION_HUMEDAD'), '25.30', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='ps1_L1'            AND origen='RETENCION_HUMEDAD'), '22.10', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='ph_L2'             AND origen='RETENCION_HUMEDAD'), '24.80', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='ps2_L2'            AND origen='RETENCION_HUMEDAD'), '21.90', 1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='L1'                AND origen='RETENCION_HUMEDAD'), '5.00',  1),
+(1, (SELECT id FROM trn_analisis WHERE siglas='L2'                AND origen='RETENCION_HUMEDAD'), '4.80',  1),
+
+-- MUESTRA 2
+(2, (SELECT id FROM trn_analisis WHERE siglas='presion_aplicada' AND origen='RETENCION_HUMEDAD'), '33', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='ph1_L1'            AND origen='RETENCION_HUMEDAD'), '26.10', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='ps1_L1'            AND origen='RETENCION_HUMEDAD'), '22.90', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='ph_L2'             AND origen='RETENCION_HUMEDAD'), '25.40', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='ps2_L2'            AND origen='RETENCION_HUMEDAD'), '22.30', 1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='L1'                AND origen='RETENCION_HUMEDAD'), '5.10',  1),
+(2, (SELECT id FROM trn_analisis WHERE siglas='L2'                AND origen='RETENCION_HUMEDAD'), '4.90',  1),
+
+-- MUESTRA 3
+(3, (SELECT id FROM trn_analisis WHERE siglas='presion_aplicada' AND origen='RETENCION_HUMEDAD'), '33', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='ph1_L1'            AND origen='RETENCION_HUMEDAD'), '24.70', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='ps1_L1'            AND origen='RETENCION_HUMEDAD'), '21.60', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='ph_L2'             AND origen='RETENCION_HUMEDAD'), '24.20', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='ps2_L2'            AND origen='RETENCION_HUMEDAD'), '21.40', 1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='L1'                AND origen='RETENCION_HUMEDAD'), '4.95',  1),
+(3, (SELECT id FROM trn_analisis WHERE siglas='L2'                AND origen='RETENCION_HUMEDAD'), '4.70',  1);
 
 
 SELECT * 

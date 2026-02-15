@@ -399,6 +399,37 @@ CREATE TABLE trn_retencion_humedad_resultados (
     estado BOOLEAN DEFAULT 1
 );
 
+-- Granulometria
+CREATE TABLE trn_granulometria (
+     id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255) NULL,
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+
+CREATE TABLE trn_granulometria_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_granulometria INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL,
+    material INT NOT NULL,
+    tipo INT NOT NULL,
+    posicion INT NOT NULL,
+    estado BOOLEAN NOT NULL DEFAULT 1,
+    ri BOOLEAN NOT NULL DEFAULT 0
+);
+
+CREATE TABLE trn_granulometria_resultado (
+
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_granulometria_muestras INT NOT NULL,
+	id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+    estado BOOLEAN DEFAULT 1
+);
+
+
 
 
   CREATE TABLE tbl_bitacora (
@@ -574,6 +605,23 @@ ADD CONSTRAINT fk_rh_resultados_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
 
+-- Granulometria
+ALTER TABLE trn_granulometria_muestras
+ADD CONSTRAINT fk_gran_muestras_granulometria
+FOREIGN KEY (id_granulometria)
+REFERENCES trn_granulometria(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_granulometria_resultado
+ADD CONSTRAINT fk_gran_resultados_muestras
+FOREIGN KEY (id_granulometria_muestras)
+REFERENCES trn_granulometria_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_granulometria_resultado
+ADD CONSTRAINT fk_gran_resultados_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
 
 
 /* ============================================================
@@ -2251,6 +2299,217 @@ END$$
 
 DELIMITER ;
 
+--  Procedimientos Granulometria
+-- Listar por periodo
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_granulometria_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        g.id AS id_archivo,
+        g.periodo,
+        g.fecha,
+        g.archivo,
+        g.analista AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_granulometria g
+    INNER JOIN tbl_persona p
+        ON p.id_persona = g.analista
+    WHERE g.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY g.fecha DESC, g.id DESC;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+-- Listar muestras (detalle)
+
+CREATE PROCEDURE sp_listar_muestras_granulometria_detalle (
+    IN p_id_granulometria INT
+)
+BEGIN
+    SELECT
+
+        m.id AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+
+        MAX(CASE WHEN a.siglas = 'peso_seco' THEN r.resultado END) AS peso_seco,
+        MAX(CASE WHEN a.siglas = 'peso_lata' THEN r.resultado END) AS peso_lata,
+        MAX(CASE WHEN a.siglas = 'temperatura_secado' THEN r.resultado END) AS temperatura_secado,
+        MAX(CASE WHEN a.siglas = 'tiempo_secado' THEN r.resultado END) AS tiempo_secado,
+        MAX(CASE WHEN a.siglas = 'fecha_secado' THEN r.resultado END) AS fecha_secado
+
+    FROM trn_granulometria_muestras m
+
+    LEFT JOIN trn_granulometria_resultado r
+        ON r.id_granulometria_muestras = m.id
+       AND r.estado = 1
+
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'GRANULOMETRIA'
+
+     WHERE m.id_granulometria = p_id_granulometria
+
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+
+    ORDER BY
+        m.idlab, m.rep;
+END$$
+
+DELIMITER ;
+
+-- Obtener muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_granulometria (
+    IN p_id INT
+)
+BEGIN
+
+	SELECT
+		id,
+		id_granulometria,
+		idlab,
+		rep,
+		material,
+		tipo,
+		posicion,
+		estado,
+		ri
+	FROM trn_granulometria_muestras
+	WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Listar Resultado por muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_granulometria_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+	SELECT
+		r.id AS id_resultado,
+		r.id_analisis,
+		a.analisis,
+		a.siglas,
+		r.resultado,
+		r.estado
+
+	FROM trn_granulometria_resultado r
+		INNER JOIN trn_analisis a
+		ON a.id = r.id_analisis
+		AND a.origen = 'GRANULOMETRIA'
+
+	WHERE r.id_granulometria_muestras = p_id_muestra
+	ORDER BY a.id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_granulometria (
+IN p_id INT,
+IN p_rep INT,
+IN p_material INT,
+IN p_tipo INT,
+IN p_posicion INT,
+IN p_estado TINYINT
+)
+BEGIN
+	UPDATE trn_granulometria_muestras
+SET
+rep = p_rep,
+material = p_material,
+tipo = p_tipo,
+posicion = p_posicion,
+estado = p_estado
+WHERE id = p_id;
+
+END$$
+
+DELIMITER ;
+
+-- Actualizar estado
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_granulometria (
+IN p_id_resultado INT,
+IN p_resultado VARCHAR(50)
+)
+BEGIN
+	UPDATE trn_granulometria_resultado
+SET resultado = p_resultado
+WHERE id = p_id_resultado;
+END$$
+
+DELIMITER ;
+
+-- Anular muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_granulometria (
+IN p_id INT
+)
+BEGIN
+	UPDATE trn_granulometria_muestras
+SET estado = 0
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_granulometria (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_granulometria_muestras
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Toggle estado
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_granulometria (
+IN p_id INT
+)
+BEGIN
+UPDATE trn_granulometria_muestras
+SET estado = IF(estado = 1, 0, 1)
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar archivo
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_granulometria (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_granulometria
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+
 
 
 /* ============================================================
@@ -2906,6 +3165,88 @@ END$$
 
 DELIMITER ;
 
+-- Triggers Granulometria
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_granulometria_ai$$
+CREATE TRIGGER trg_granulometria_ai
+AFTER INSERT ON trn_granulometria
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_granulometria',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    );
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_granulometria_ad$$
+CREATE TRIGGER trg_granulometria_ad
+AFTER DELETE ON trn_granulometria
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_granulometria',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_granulometria_au$$
+CREATE TRIGGER trg_granulometria_au
+AFTER UPDATE ON trn_granulometria
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_granulometria',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+
 
 
 
@@ -3387,6 +3728,51 @@ VALUES
 (3, (SELECT id FROM trn_analisis WHERE siglas='ps2_L2'            AND origen='RETENCION_HUMEDAD'), '21.40', 1),
 (3, (SELECT id FROM trn_analisis WHERE siglas='L1'                AND origen='RETENCION_HUMEDAD'), '4.95',  1),
 (3, (SELECT id FROM trn_analisis WHERE siglas='L2'                AND origen='RETENCION_HUMEDAD'), '4.70',  1);
+
+
+-- Granulometria
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+('Peso del material seco total', 'peso_seco', 'GRANULOMETRIA'),
+('Peso de lata',                 'peso_lata',          'GRANULOMETRIA'),
+('Temperatura de secado',       'temperatura_secado', 'GRANULOMETRIA'),
+('Tiempo de secado',            'tiempo_secado',      'GRANULOMETRIA'),
+('Fecha de secado',             'fecha_secado',       'GRANULOMETRIA');
+
+INSERT INTO trn_granulometria (periodo, archivo, fecha, analista)
+VALUES
+(2024, 'GR-2026-001', '2024-02-14', 1);
+
+INSERT INTO trn_granulometria_muestras
+(id_granulometria, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '901', 1, 1, 1, 1, 1, 0),
+(1, '901', 2, 1, 1, 2, 1, 0),
+(1, '902', 1, 1, 1, 3, 1, 0);
+
+INSERT INTO trn_granulometria_resultado
+(id_granulometria_muestras, id_analisis, resultado, estado)
+-- Muestra 1
+VALUES
+(1,(SELECT id FROM trn_analisis WHERE siglas='peso_seco' AND origen='GRANULOMETRIA'),'500',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='peso_lata' AND origen='GRANULOMETRIA'),'120',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='GRANULOMETRIA'),'105',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='GRANULOMETRIA'),'1440',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1),
+
+-- Muestra 2
+(2,(SELECT id FROM trn_analisis WHERE siglas='peso_seco' AND origen='GRANULOMETRIA'),'480',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='peso_lata' AND origen='GRANULOMETRIA'),'118',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='GRANULOMETRIA'),'105',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='GRANULOMETRIA'),'1440',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1),
+
+-- Muestra 3
+(3,(SELECT id FROM trn_analisis WHERE siglas='peso_seco' AND origen='GRANULOMETRIA'),'510',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='peso_lata' AND origen='GRANULOMETRIA'),'121',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='GRANULOMETRIA'),'105',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='GRANULOMETRIA'),'1440',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1);
 
 
 SELECT * 

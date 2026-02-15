@@ -440,6 +440,56 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 });
 
 
+//------------------------------------------------------------------------------
+// Granulometría
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\GranulometriaController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/granulometria',
+        [GranulometriaController::class, 'archivos']
+    )->name('granulometria.index');
+
+    Route::get(
+        '/ingreso-datos/granulometria/{archivo}/muestras',
+        [GranulometriaController::class, 'muestras']
+    )->name('granulometria.muestras');
+
+    Route::get(
+        '/ingreso-datos/granulometria/muestra/{id}/editar',
+        [GranulometriaController::class, 'edit']
+    )->name('granulometria.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/granulometria/muestra/{id}',
+        [GranulometriaController::class, 'update']
+    )->name('granulometria.muestra.update');
+
+    Route::patch(
+        '/ingreso-datos/granulometria/muestra/{id}/estado',
+        [GranulometriaController::class, 'toggleEstado']
+    )->name('granulometria.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/granulometria/muestra/{id}',
+        [GranulometriaController::class, 'destroy']
+    )->name('granulometria.muestra.destroy');
+
+    Route::delete(
+        '/ingreso-datos/granulometria/{id}',
+        [GranulometriaController::class, 'destroyArchivo']
+    )->name('granulometria.destroy');
+
+    Route::post(
+        '/ingreso-datos/granulometria/importar',
+        [GranulometriaController::class, 'importar']
+    )->name('granulometria.importar');
+
+});
+
+
 
 
 //------------------------------------------------------------------------------

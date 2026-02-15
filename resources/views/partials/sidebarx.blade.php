@@ -107,9 +107,10 @@
                             Curvatura de Retención de Humedad
                         </a>
                     </li>
-
+                    {{-- Granulometria (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/granulometria_gruesa/listado.php" class="pe-nav-link">
+                        <a href="{{ route('granulometria.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('granulometria.*') ? 'active' : '' }}">
                             Granulometría de la fracción gruesa
                         </a>
                     </li>

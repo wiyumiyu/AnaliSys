@@ -429,6 +429,36 @@ CREATE TABLE trn_granulometria_resultado (
     estado BOOLEAN DEFAULT 1
 );
 
+-- Estabilidad de agregados
+CREATE TABLE trn_estabilidad_agregados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255),
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+
+CREATE TABLE trn_estabilidad_agregados_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_estabilidad_agregados INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL DEFAULT 1,
+    material INT NOT NULL,
+    tipo INT NOT NULL,
+    posicion INT NOT NULL,
+    estado BOOLEAN DEFAULT 1,
+    ri BOOLEAN DEFAULT 0
+);
+
+CREATE TABLE trn_estabilidad_agregados_resultado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_estabilidad_agregados_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+    estado BOOLEAN DEFAULT 1
+);
+
+
 
 
 
@@ -620,6 +650,24 @@ ON DELETE CASCADE;
 
 ALTER TABLE trn_granulometria_resultado
 ADD CONSTRAINT fk_gran_resultados_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
+
+-- Estabilidad de Agregados
+ALTER TABLE trn_estabilidad_agregados_muestras
+ADD CONSTRAINT fk_ea_muestras
+FOREIGN KEY (id_estabilidad_agregados)
+REFERENCES trn_estabilidad_agregados(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_estabilidad_agregados_resultado
+ADD CONSTRAINT fk_ea_resultado_muestras
+FOREIGN KEY (id_estabilidad_agregados_muestras)
+REFERENCES trn_estabilidad_agregados_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_estabilidad_agregados_resultado
+ADD CONSTRAINT fk_ea_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
 
@@ -2509,6 +2557,208 @@ END$$
 
 DELIMITER ;
 
+-- Procedimientos de  Estabilidad de Agregados
+-- Listar por periodo
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_estabilidad_agregados_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        g.id AS id_archivo,
+        g.periodo,
+        g.fecha,
+        g.archivo,
+        g.analista AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_estabilidad_agregados g
+    INNER JOIN tbl_persona p
+        ON p.id_persona = g.analista
+    WHERE g.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY g.fecha DESC, g.id DESC;
+END$$
+
+DELIMITER ;
+
+-- Listar detalle
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_estabilidad_agregados_detalle (
+    IN p_id_estabilidad_agregados INT
+)
+BEGIN
+    SELECT
+        m.id AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+
+        MAX(CASE WHEN a.siglas = 'peso_suelo_seco' THEN r.resultado END) AS peso_suelo_seco,
+        MAX(CASE WHEN a.siglas = 'peso_tamices' THEN r.resultado END) AS peso_tamices,
+        MAX(CASE WHEN a.siglas = 'temperatura' THEN r.resultado END) AS temperatura,
+        MAX(CASE WHEN a.siglas = 'humedad_ambiental' THEN r.resultado END) AS humedad_ambiental,
+        MAX(CASE WHEN a.siglas = 'fecha_inicio' THEN r.resultado END) AS fecha_inicio
+
+    FROM trn_estabilidad_agregados_muestras m
+    LEFT JOIN trn_estabilidad_agregados_resultado r
+        ON r.id_estabilidad_agregados_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'ESTABILIDAD_AGREGADOS'
+
+    WHERE m.id_estabilidad_agregados = p_id_estabilidad_agregados
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+    ORDER BY
+        m.idlab, m.rep;
+END$$
+DELIMITER ;
+
+-- Obtener  muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_estabilidad_agregados (
+    IN p_id INT
+)
+BEGIN
+	SELECT
+		id,
+		id_estabilidad_agregados,
+		idlab,
+		rep,
+		material,
+		tipo,
+		posicion,
+		estado,
+		ri
+	FROM trn_estabilidad_agregados_muestras
+	WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+-- Listar resultados por muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_estabilidad_agregados_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+	SELECT
+		r.id AS id_resultado,
+		r.id_analisis,
+		a.analisis,
+		a.siglas,
+		r.resultado,
+		r.estado
+	FROM trn_estabilidad_agregados_resultado r
+	INNER JOIN trn_analisis a
+		ON a.id = r.id_analisis
+	   AND a.origen = 'ESTABILIDAD_AGREGADOS'
+	WHERE r.id_estabilidad_agregados_muestras = p_id_muestra
+	ORDER BY a.id;
+
+END$$
+DELIMITER ;
+
+-- Actualizar muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_estabilidad_agregados (
+	IN p_id INT,
+	IN p_rep INT,
+	IN p_material INT,
+	IN p_tipo INT,
+	IN p_posicion INT,
+	IN p_estado TINYINT
+)
+BEGIN
+UPDATE trn_estabilidad_agregados_muestras
+	SET
+		rep = p_rep,
+		material = p_material,
+		tipo = p_tipo,
+		posicion = p_posicion,
+		estado = p_estado
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Actualizar resultado
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_estabilidad_agregados (
+IN p_id_resultado INT,
+IN p_resultado VARCHAR(50)
+)
+BEGIN
+	UPDATE trn_estabilidad_agregados_resultado
+	SET resultado = p_resultado
+WHERE id = p_id_resultado;
+END$$
+
+DELIMITER ;
+
+-- Anular muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_estabilidad_agregados (
+IN p_id INT
+
+)
+BEGIN
+	UPDATE trn_estabilidad_agregados_muestras
+	SET estado = 0
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar muestra
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_estabilidad_agregados (
+IN p_id INT
+)
+	BEGIN
+	DELETE FROM trn_estabilidad_agregados_muestras
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+-- Toggle estado
+DELIMITER $$
+CREATE PROCEDURE sp_toggle_estado_muestra_estabilidad_agregados (
+IN p_id INT
+)
+	BEGIN
+	UPDATE trn_estabilidad_agregados_muestras
+	SET estado = IF(estado = 1, 0, 1)
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+-- Eliminar archivo
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_estabilidad_agregados (
+IN p_id INT
+)
+	BEGIN
+	DELETE FROM trn_estabilidad_agregados
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+
+
+
 
 
 
@@ -3245,7 +3495,86 @@ END$$
 
 DELIMITER ;
 
+-- Triggers Estabilidad de Agregados
+DELIMITER $$
 
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_ai$$
+CREATE TRIGGER trg_estabilidad_agregados_ai
+AFTER INSERT ON trn_estabilidad_agregados
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_estabilidad_agregados',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_au$$
+CREATE TRIGGER trg_estabilidad_agregados_au
+AFTER UPDATE ON trn_estabilidad_agregados
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_estabilidad_agregados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_ad$$
+CREATE TRIGGER trg_estabilidad_agregados_ad
+AFTER DELETE ON trn_estabilidad_agregados
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_estabilidad_agregados',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
 
 
 
@@ -3773,6 +4102,55 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='GRANULOMETRIA'),'105',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='GRANULOMETRIA'),'1440',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1);
+
+-- Estabilidad de Agregados
+
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+('Peso total de suelo seco usado',  'peso_suelo_seco',      'ESTABILIDAD_AGREGADOS'),
+('Peso del conjunto de tamices',    'peso_tamices',        'ESTABILIDAD_AGREGADOS'),
+('Temperatura','temperatura',       'ESTABILIDAD_AGREGADOS'),
+('Humedad Ambiental',  'humedad_ambiental', 'ESTABILIDAD_AGREGADOS'),
+('Fecha de inicio del análisis',         'fecha_inicio',     'ESTABILIDAD_AGREGADOS');
+
+INSERT INTO trn_estabilidad_agregados
+(periodo, archivo, fecha, analista)
+VALUES
+(2024, 'EA-2026-001', '2024-02-15', 1);
+
+INSERT INTO trn_estabilidad_agregados_muestras
+(id_estabilidad_agregados, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '1001', 1, 1, 1, 1, 1, 0),
+(1, '1001', 2, 1, 1, 2, 1, 0),
+(1, '1002', 1, 1, 1, 3, 1, 0);
+
+INSERT INTO trn_estabilidad_agregados_resultado
+(id_estabilidad_agregados_muestras, id_analisis, resultado, estado)
+VALUES
+
+-- Muestra 1
+(1,(SELECT id FROM trn_analisis WHERE siglas='peso_suelo_seco' AND origen='ESTABILIDAD_AGREGADOS'),'500',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='peso_tamices' AND origen='ESTABILIDAD_AGREGADOS'),'1200',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='temperatura' AND origen='ESTABILIDAD_AGREGADOS'),'25',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'60',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1),
+
+-- Muestra 2
+(2,(SELECT id FROM trn_analisis WHERE siglas='peso_suelo_seco' AND origen='ESTABILIDAD_AGREGADOS'),'510',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='peso_tamices' AND origen='ESTABILIDAD_AGREGADOS'),'1210',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='temperatura' AND origen='ESTABILIDAD_AGREGADOS'),'26',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'62',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1),
+
+-- Muestra 3
+
+(3,(SELECT id FROM trn_analisis WHERE siglas='peso_suelo_seco' AND origen='ESTABILIDAD_AGREGADOS'),'495',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='peso_tamices' AND origen='ESTABILIDAD_AGREGADOS'),'1195',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='temperatura' AND origen='ESTABILIDAD_AGREGADOS'),'24',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'59',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1);
+
 
 
 SELECT * 

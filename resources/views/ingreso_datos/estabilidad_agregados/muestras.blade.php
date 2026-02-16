@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Muestras del archivo - Granulometría')
+@section('title', 'Muestras del archivo - Estabilidad de agregados')
 
 @section('css')
 <link rel="stylesheet"
@@ -26,7 +26,7 @@
                     </h5>
 
                     {{-- VOLVER --}}
-                    <a href="{{ route('granulometria.index') }}"
+                    <a href="{{ route('estabilidad_agregados.index') }}"
                        class="btn btn-primary">
                         ← Volver
                     </a>
@@ -44,11 +44,11 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Peso del material seco</th>
-                            <th>Peso de lata</th>
-                            <th>Temperatura de secado</th>
-                            <th>Tiempo de secado</th>
-                            <th>Fecha de secado</th>
+                            <th>Peso total de suelo seco usado</th>
+                            <th>Peso del conjunto de tamices</th>
+                            <th>Temperatura</th>
+                            <th>Humedad Ambiental</th>
+                            <th>Fecha de inicio del análisis</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -63,18 +63,18 @@
 
                                 {{-- ID LAB --}}
                                 <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('granulometria.muestra.edit', $m->id_muestra) }}"
+                                    <a href="{{ route('estabilidad_agregados.muestra.edit', $m->id_muestra) }}"
                                        class="fw-semibold text-reset text-decoration-none">
                                         {{ $m->idlab }}
                                     </a>
                                 </td>
 
                                 <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_seco }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_lata }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->temperatura_secado }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->tiempo_secado }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->fecha_secado }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->peso_suelo_seco }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->peso_tamices }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->temperatura }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->humedad_ambiental }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->fecha_inicio_analisis }}</td>
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * =============================== */
 function confirmarEstadoMuestra(id, estado) {
 
-    modalForm.action = `/ingreso-datos/granulometria/muestra/${id}/estado`;
+    modalForm.action = `/ingreso-datos/estabilidad-agregados/muestra/${id}/estado`;
     modalMethod.value = 'PATCH';
 
     if (estado === 1) {
@@ -232,7 +232,7 @@ function confirmarEstadoMuestra(id, estado) {
  * =============================== */
 function confirmarEliminarMuestra(id) {
 
-    modalForm.action = `/ingreso-datos/granulometria/muestra/${id}`;
+    modalForm.action = `/ingreso-datos/estabilidad-agregados/muestra/${id}`;
     modalMethod.value = 'DELETE';
 
     modalTitle.textContent = 'Eliminar muestra';

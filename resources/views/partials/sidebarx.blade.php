@@ -27,7 +27,7 @@
             || (Route::has('retencion_humedad.index') && request()->routeIs('retencion_humedad.*'))
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
             || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
-            || (Route::has('estabilidad.index') && request()->routeIs('estabilidad.*'))
+            || (Route::has('estabilidad_agregados.index') && request()->routeIs('estabilidad_agregados.*'))
             || (Route::has('coel.index') && request()->routeIs('coel.*'));
             @endphp
             <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
@@ -115,8 +115,10 @@
                         </a>
                     </li>
 
+                    {{-- Estabilidad de Agregados (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/estabilidad_agregados/listado.php" class="pe-nav-link">
+                        <a href="{{ route('estabilidad_agregados.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('estabilidad_agregados.*') ? 'active' : '' }}">
                             Estabilidad de agregados
                         </a>
                     </li>

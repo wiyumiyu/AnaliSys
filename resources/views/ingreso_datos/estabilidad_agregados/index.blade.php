@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Granulometría - Archivos')
+@section('title', 'Estabilidad de agregados - Archivos')
 
 @section('css')
 <!-- Datatables CSS -->
@@ -24,7 +24,7 @@
 
                     {{-- TÍTULO --}}
                     <h5 class="mb-0 fw-semibold">
-                        Granulometría
+                        Estabilidad de agregados
                     </h5>
 
                     {{-- ACCIONES --}}
@@ -50,7 +50,7 @@
 
                         {{-- IMPORTAR --}}
                         <form class="d-flex align-items-center gap-3 m-0"
-                              action="{{ route('granulometria.importar') }}"
+                              action="{{ route('estabilidad_agregados.importar') }}"
                               enctype="multipart/form-data"
                               method="POST">
                             @csrf
@@ -95,7 +95,7 @@
                             {{-- ARCHIVO --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('granulometria.muestras', $l->id_archivo) }}">
+                                    <a href="{{ route('estabilidad_agregados.muestras', $l->id_archivo) }}">
                                         {{ $l->archivo }}
                                     </a>
                                 </h6>
@@ -115,7 +115,7 @@
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
                                     {{-- VER --}}
-                                    <a href="{{ route('granulometria.muestras', $l->id_archivo) }}"
+                                    <a href="{{ route('estabilidad_agregados.muestras', $l->id_archivo) }}"
                                        class="btn bg-primary-subtle text-primary btn-sm">
                                         <i class="ri-eye-line"></i>
                                     </a>
@@ -229,7 +229,7 @@ function confirmarEliminarArchivo(id, nombre) {
     `;
 
     document.getElementById('modalForm').action =
-        `/ingreso-datos/granulometria/${id}`;
+        `/ingreso-datos/estabilidad-agregados/${id}`;
 
     archivoModal.show();
 }

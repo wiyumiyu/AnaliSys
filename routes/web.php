@@ -490,6 +490,55 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 });
 
 
+//------------------------------------------------------------------------------
+// Estabilidad de Agregados
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\EstabilidadAgregadosController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/estabilidad-agregados',
+
+        [EstabilidadAgregadosController::class, 'archivos']
+    )->name('estabilidad_agregados.index');
+
+    Route::get(
+        '/ingreso-datos/estabilidad-agregados/{archivo}/muestras',
+        [EstabilidadAgregadosController::class, 'muestras']
+    )->name('estabilidad_agregados.muestras');
+
+    Route::get(
+        '/ingreso-datos/estabilidad-agregados/muestra/{id}/editar',
+        [EstabilidadAgregadosController::class, 'edit']
+    )->name('estabilidad_agregados.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/estabilidad-agregados/muestra/{id}',
+        [EstabilidadAgregadosController::class, 'update']
+    )->name('estabilidad_agregados.muestra.update');
+
+    Route::patch(
+        '/ingreso-datos/estabilidad-agregados/muestra/{id}/estado',
+        [EstabilidadAgregadosController::class, 'toggleEstado']
+    )->name('estabilidad_agregados.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/estabilidad-agregados/muestra/{id}',
+        [EstabilidadAgregadosController::class, 'destroy']
+    )->name('estabilidad_agregados.muestra.destroy');
+
+    Route::delete(
+        '/ingreso-datos/estabilidad-agregados/{id}',
+        [EstabilidadAgregadosController::class, 'destroyArchivo']
+    )->name('estabilidad_agregados.destroy');
+
+    Route::post(
+        '/ingreso-datos/estabilidad-agregados/importar',
+        [EstabilidadAgregadosController::class, 'importar']
+    )->name('estabilidad_agregados.importar');
+
+});
 
 
 //------------------------------------------------------------------------------

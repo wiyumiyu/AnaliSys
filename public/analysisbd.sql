@@ -458,7 +458,34 @@ CREATE TABLE trn_estabilidad_agregados_resultado (
     estado BOOLEAN DEFAULT 1
 );
 
+-- Coeficiente de Extensibilidad
+CREATE TABLE trn_coeficiente_extensibilidad (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255),
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
 
+CREATE TABLE trn_coeficiente_extensibilidad_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_coeficiente_extensibilidad INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL DEFAULT 1,
+    material INT NOT NULL,
+    tipo INT NOT NULL,
+    posicion INT NOT NULL,
+    estado BOOLEAN DEFAULT 1,
+    ri BOOLEAN DEFAULT 0
+);
+
+CREATE TABLE trn_coeficiente_extensibilidad_resultado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_coeficiente_extensibilidad_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+    estado BOOLEAN DEFAULT 1
+);
 
 
 
@@ -668,6 +695,25 @@ ON DELETE CASCADE;
 
 ALTER TABLE trn_estabilidad_agregados_resultado
 ADD CONSTRAINT fk_ea_resultado_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
+
+-- Coeficiente de Extensibilidad 
+
+ALTER TABLE trn_coeficiente_extensibilidad_muestras
+ADD CONSTRAINT fk_ce_muestras
+FOREIGN KEY (id_coeficiente_extensibilidad)
+REFERENCES trn_coeficiente_extensibilidad(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_coeficiente_extensibilidad_resultado
+ADD CONSTRAINT fk_ce_resultado_muestras
+FOREIGN KEY (id_coeficiente_extensibilidad_muestras)
+REFERENCES trn_coeficiente_extensibilidad_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_coeficiente_extensibilidad_resultado
+ADD CONSTRAINT fk_ce_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
 
@@ -2566,17 +2612,17 @@ CREATE PROCEDURE sp_listar_estabilidad_agregados_por_periodo (
 )
 BEGIN
     SELECT
-        g.id AS id_archivo,
-        g.periodo,
-        g.fecha,
-        g.archivo,
-        g.analista AS id_analista,
+        e.id AS id_archivo,
+        e.periodo,
+        e.fecha,
+        e.archivo,
+        e.analista AS id_analista,
         CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
-    FROM trn_estabilidad_agregados g
+    FROM trn_estabilidad_agregados e
     INNER JOIN tbl_persona p
-        ON p.id_persona = g.analista
-    WHERE g.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
-    ORDER BY g.fecha DESC, g.id DESC;
+        ON p.id_persona = e.analista
+    WHERE e.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY e.fecha DESC, e.id DESC;
 END$$
 
 DELIMITER ;
@@ -2756,9 +2802,202 @@ END$$
 
 DELIMITER ;
 
+-- Coeficiente de Extensibilidad
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_coeficiente_extensibilidad_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        c.id AS id_archivo,
+        c.periodo,
+        c.fecha,
+        c.archivo,
+        c.analista AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_coeficiente_extensibilidad c
+    INNER JOIN tbl_persona p
+        ON p.id_persona = c.analista
+    WHERE c.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY c.fecha DESC, c.id DESC;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_coeficiente_extensibilidad_detalle (
+    IN p_id_coeficiente_extensibilidad INT
+)
+BEGIN
+    SELECT
+        m.id AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+        MAX(CASE WHEN a.siglas = 'longitud_inicial' THEN r.resultado END) AS longitud_inicial,
+        MAX(CASE WHEN a.siglas = 'diametro_muestra' THEN r.resultado END) AS diametro_muestra,
+        MAX(CASE WHEN a.siglas = 'fecha_medicion' THEN r.resultado END) AS fecha_medicion,
+        MAX(CASE WHEN a.siglas = 'hora_medicion' THEN r.resultado END) AS hora_medicion,
+        MAX(CASE WHEN a.siglas = 'observaciones' THEN r.resultado END) AS observaciones
+        
+    FROM trn_coeficiente_extensibilidad_muestras m
+    LEFT JOIN trn_coeficiente_extensibilidad_resultado r
+        ON r.id_coeficiente_extensibilidad_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
+    WHERE m.id_coeficiente_extensibilidad = p_id_coeficiente_extensibilidad
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+    ORDER BY
+        m.idlab, m.rep;
+        
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_coeficiente_extensibilidad (
+    IN p_id INT
+)
+BEGIN
+SELECT
+    id,
+    id_coeficiente_extensibilidad,
+    idlab,
+    rep,
+    material,
+    tipo,
+    posicion,
+    estado,
+    ri
+FROM trn_coeficiente_extensibilidad_muestras
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_coeficiente_extensibilidad_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+SELECT
+
+    r.id AS id_resultado,
+    r.id_analisis,
+    a.analisis,
+    a.siglas,
+    r.resultado,
+    r.estado
+
+FROM trn_coeficiente_extensibilidad_resultado r
+INNER JOIN trn_analisis a
+    ON a.id = r.id_analisis
+   AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
+WHERE r.id_coeficiente_extensibilidad_muestras = p_id_muestra
+ORDER BY a.id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_coeficiente_extensibilidad (
+
+IN p_id INT,
+IN p_rep INT,
+IN p_material INT,
+IN p_tipo INT,
+IN p_posicion INT,
+IN p_estado TINYINT
+
+)
+BEGIN
+UPDATE trn_coeficiente_extensibilidad_muestras
+SET
+rep = p_rep,
+material = p_material,
+tipo = p_tipo,
+posicion = p_posicion,
+estado = p_estado
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
 
 
+DELIMITER $$
 
+CREATE PROCEDURE sp_actualizar_resultado_coeficiente_extensibilidad (
+IN p_id_resultado INT,
+IN p_resultado VARCHAR(50)
+
+)
+BEGIN
+UPDATE trn_coeficiente_extensibilidad_resultado
+SET resultado = p_resultado
+WHERE id = p_id_resultado;
+
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_coeficiente_extensibilidad (
+IN p_id INT
+
+)
+BEGIN
+UPDATE trn_coeficiente_extensibilidad_muestras
+SET estado = 0
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_coeficiente_extensibilidad (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_coeficiente_extensibilidad_muestras
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_coeficiente_extensibilidad (
+IN p_id INT
+)
+BEGIN
+UPDATE trn_coeficiente_extensibilidad_muestras
+SET estado = IF(estado = 1, 0, 1)
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_coeficiente_extensibilidad (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_coeficiente_extensibilidad
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
 
 
 
@@ -3576,7 +3815,86 @@ END$$
 
 DELIMITER ;
 
+-- Coeficiente de  Extensibilidad
+DELIMITER $$
 
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_ai$$
+CREATE TRIGGER trg_coeficiente_extensibilidad_ai
+AFTER INSERT ON trn_coeficiente_extensibilidad
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_coeficiente_extensibilidad',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_au$$
+
+CREATE TRIGGER trg_coeficiente_extensibilidad_au
+AFTER UPDATE ON trn_coeficiente_extensibilidad
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_coeficiente_extensibilidad',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_ad$$
+CREATE TRIGGER trg_coeficiente_extensibilidad_ad
+AFTER DELETE ON trn_coeficiente_extensibilidad
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_coeficiente_extensibilidad',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+
+END$$
+DELIMITER ;
 
 
 CREATE PROCEDURE sp_obtener_bitacora_completa (
@@ -4151,6 +4469,16 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'59',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1);
 
+-- Coeficiente de Extensibilidad
+
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+
+('Longitud inicial',          'longitud_inicial',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Diametro de la muestra',    'diametro_muestra',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Fecha de Medición',         'fecha_medicion',       'COEFICIENTE_EXTENSIBILIDAD'),
+('Hora de Medicion',          'hora_medicion',        'COEFICIENTE_EXTENSIBILIDAD'),
+('Fecha de inicio',           'fecha_inicio',         'COEFICIENTE_EXTENSIBILIDAD');
 
 
 SELECT * 

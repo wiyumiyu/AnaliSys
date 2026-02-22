@@ -176,6 +176,11 @@ Route::post(
     [TexturaController::class, 'guardarControl']
 )->name('controlTextura.store');
 
+Route::get(
+    '/controles/textura/consecutivo',
+    [TexturaController::class, 'traerConsecutivo']
+)->name('controlTextura.consecutivo');
+
 
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE

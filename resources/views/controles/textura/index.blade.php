@@ -170,63 +170,52 @@
                         </div>
 
                         {{-- CONSECUTIVO --}}
-                        <div>
-                            <label class="form-label fw-semibold">Consecutivo</label>
-                            <input type="number"
-                                   name="consecutivo"
-                                   class="form-control"
-                                   placeholder="Ej: 4">
-                        </div>
+<div>
+    <label class="form-label fw-semibold">Consecutivo</label>
+    <input type="number"
+           name="consecutivo"
+           class="form-control"
+           value="{{ $siguienteConsecutivo->siguiente_consecutivo ?? 1 }}"
+           readonly>
+</div>
 
                         {{-- ARCHIVOS --}}
-                        <div>
-                            <label class="form-label fw-semibold">Archivos</label>
+{{-- ARCHIVOS --}}
+<div>
+    <label class="form-label fw-semibold">Archivos</label>
 
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        data-bs-auto-close="outside">
-                                    Seleccionar archivos
-                                </button>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                data-bs-auto-close="outside">
+            Seleccionar archivos
+        </button>
 
-                                <div class="dropdown-menu p-3"
-                                     style="min-width: 260px;">
+        <div class="dropdown-menu p-3"
+             style="min-width: 260px; max-height: 250px; overflow-y: auto;">
 
-                                    {{-- OPCIONES QUEMADAS --}}
-                                    <div class="form-check">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               name="archivos[]"
-                                               value="1">
-                                        <label class="form-check-label">
-                                            TXT-2026-001
-                                        </label>
-                                    </div>
+            @forelse($archivosDisponibles as $archivo)
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="archivos[]"
+                           value="{{ $archivo->id }}"
+                           id="archivo{{ $archivo->id }}">
+                    <label class="form-check-label"
+                           for="archivo{{ $archivo->id }}">
+                        {{ $archivo->archivo }}
+                    </label>
+                </div>
+            @empty
+                <span class="text-muted small">
+                    No hay archivos disponibles
+                </span>
+            @endforelse
 
-                                    <div class="form-check">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               name="archivos[]"
-                                               value="2">
-                                        <label class="form-check-label">
-                                            TXT-2026-002
-                                        </label>
-                                    </div>
-
-                                    <div class="form-check">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               name="archivos[]"
-                                               value="3">
-                                        <label class="form-check-label">
-                                            TXT-2026-003
-                                        </label>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
+        </div>
+    </div>
+</div>
 
                     </div>
 

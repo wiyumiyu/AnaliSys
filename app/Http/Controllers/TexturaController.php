@@ -14,19 +14,48 @@ class TexturaController extends Controller {
      * LISTADO DE ARCHIVOS
      * =============================== */
 
-    public function consecutivosControles(Request $request) {
-        $periodo = $request->get('periodo', date('Y'));
-        $tipo = 1; // 1 es textura
+public function consecutivosControles(Request $request)
+{
+    $periodo = $request->get('periodo', date('Y'));
+    $tipo = 1;
 
-        $consecutivosControles = DB::select(
+    $consecutivosControles = DB::select(
         'CALL sp_listar_controles_por_anio(?,?);',
-            [$periodo, $tipo]
-        );
-        return view(
-                'controles.textura.index',
-                compact('consecutivosControles', 'periodo')
-        );
-    }
+        [$periodo, $tipo]
+    );
+
+    $archivosDisponibles = DB::select(
+        'CALL sp_traer_archivos_textura();'
+    );
+
+    $siguienteConsecutivo = collect(DB::select(
+        'CALL sp_traer_consecutivo(?,?);',
+        [$tipo, $periodo]
+    ))->first();
+
+    return view(
+        'controles.textura.index',
+        compact(
+            'consecutivosControles',
+            'periodo',
+            'archivosDisponibles',
+            'siguienteConsecutivo'
+        )
+    );
+}
+    
+    public function traerConsecutivo(Request $request)
+{
+    $tipo = 1;
+    $periodo = $request->periodo;
+
+    $consecutivo = collect(DB::select(
+        'CALL sp_traer_consecutivo(?,?);',
+        [$tipo, $periodo]
+    ))->first();
+
+    return response()->json($consecutivo);
+}
     
     public function agregarControl(Request $request)
 {

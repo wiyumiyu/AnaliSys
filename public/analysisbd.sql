@@ -4171,7 +4171,6 @@ VALUES
 (4, 2); -- ANALISTA
 
 
-
 INSERT INTO trn_textura (periodo, archivo, fecha, analista)
 VALUES (2024, 'textura_lote_2024_018.csv', '2024-09-15', 1);
 
@@ -4257,6 +4256,41 @@ VALUES
 (3,11, '58',    1), -- TIEMPO2
 (3,12,'122',    1), -- TIEMPO3
 (3,13,'365',    1); -- TIEMPO4
+
+
+DROP PROCEDURE IF EXISTS sp_traer_archivos_textura;
+DELIMITER $$
+
+CREATE PROCEDURE sp_traer_archivos_textura(
+
+)
+BEGIN
+    SELECT 
+        t.id,
+        t.archivo
+    FROM trn_textura t
+    LEFT JOIN trn_controles_lista cl
+        ON cl.id_archivo = t.id
+;
+END $$
+
+DELIMITER ;
+
+SELECT *
+FROM trn_controles_lista;
+
+INSERT INTO trn_textura (periodo, archivo, fecha, analista)
+VALUES (2024, 'textura_nuevo_2024_999.csv', '2024-01-15', 1);
+
+INSERT INTO trn_textura (periodo, archivo, fecha, analista)
+VALUES (2024, 'textura_prueba_2024_004.csv', '2024-04-15', 1);
+
+INSERT INTO trn_textura (periodo, archivo, fecha, analista)
+VALUES (2024, 'textura_libre_2024_010.csv', '2024-10-15', 1);
+
+CALL sp_traer_archivos_textura('2024');
+
+DELETE FROM trn_controles_lista;
 
 -- DENSIDAD APARENTE
 INSERT INTO trn_analisis (analisis, siglas, origen)

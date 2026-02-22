@@ -14,6 +14,20 @@ class TexturaController extends Controller {
      * LISTADO DE ARCHIVOS
      * =============================== */
 
+    public function consecutivosControles(Request $request) {
+        $periodo = $request->get('periodo', date('Y'));
+        $tipo = 1; // 1 es textura
+
+        $consecutivosControles = DB::select(
+        'CALL sp_listar_controles_por_anio(?,?);',
+            [$periodo, $tipo]
+        );
+        return view(
+                'controles.textura.index',
+                compact('consecutivosControles', 'periodo')
+        );
+    }
+    
     public function archivos(Request $request) {
         $periodo = $request->get('periodo', date('Y'));
 

@@ -150,6 +150,18 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     
 });
 
+//------------------------------------------------------------------------------
+// CONTROL DE TEXTURA
+//-------------------------------------------------------------------------------
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+            '/controles/textura',
+            [TexturaController::class, 'consecutivosControles']
+    )->name('controlTextura.index');
+    
+});
 
 
 //------------------------------------------------------------------------------

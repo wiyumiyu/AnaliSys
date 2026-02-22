@@ -487,7 +487,26 @@ CREATE TABLE trn_coeficiente_extensibilidad_resultado (
     estado BOOLEAN DEFAULT 1
 );
 
+/* ============================================================
+   CONTROLES (TABLAS)
+   ============================================================ */
+CREATE TABLE trn_controles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    consecutivo INT NOT NULL,
+    tipo INT NOT NULL,
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    id_persona INT NOT NULL
+);
 
+CREATE TABLE trn_controles_lista (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_control INT NOT NULL,
+    id_archivo INT NOT NULL
+);
+
+/* ============================================================
+   BITÁCORA (TABLAS)
+   ============================================================ */
 
   CREATE TABLE tbl_bitacora (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -716,6 +735,12 @@ ALTER TABLE trn_coeficiente_extensibilidad_resultado
 ADD CONSTRAINT fk_ce_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
+
+ALTER TABLE trn_controles_lista
+ADD CONSTRAINT fk_controles_lista
+FOREIGN KEY (id_control)
+REFERENCES trn_controles(id)
+ON DELETE CASCADE;
 
 
 /* ============================================================
@@ -2999,7 +3024,27 @@ WHERE id = p_id;
 END$$
 DELIMITER ;
 
+DELIMITER $$
+-- drop PROCEDURE sp_listar_controles_por_anio
+CREATE PROCEDURE sp_listar_controles_por_anio (
+    IN p_anio INT,
+    IN p_tipo INT
+)
+BEGIN
+    SELECT
+        c.id,
+        c.consecutivo,
+        c.tipo,
+        c.fecha,
+        CONCAT(p.nombre, ' ', p.apellido1) AS responsable
+    FROM trn_controles c
+    INNER JOIN tbl_persona p 
+        ON p.id_persona = c.id_persona
+    WHERE YEAR(c.fecha) = p_anio and c.tipo = p_tipo
+    ORDER BY c.consecutivo ASC;
+END$$
 
+DELIMITER ;
 
 /* ============================================================
    6. TRIGGERS
@@ -4480,6 +4525,65 @@ VALUES
 ('Hora de Medicion',          'hora_medicion',        'COEFICIENTE_EXTENSIBILIDAD'),
 ('Fecha de inicio',           'fecha_inicio',         'COEFICIENTE_EXTENSIBILIDAD');
 
+/* ============================================================
+   CONTROLES
+   ============================================================ */
+
+INSERT INTO trn_controles (consecutivo, tipo, fecha, id_persona)
+VALUES
+(2001, 1, '2024-09-15', 1), -- Textura
+(2002, 2, '2024-09-20', 1), -- Densidad Aparente
+(2003, 3, '2024-09-20', 1), -- Densidad Partículas
+(2004, 4, '2024-09-20', 1), -- Humedad Gravimétrica
+(2005, 5, '2024-09-20', 1), -- Conductividad Hidráulica
+(2006, 6, '2024-09-20', 1), -- Retención Humedad
+(2007, 7, '2024-02-14', 1), -- Granulometría
+(2008, 8, '2024-02-15', 1); -- Estabilidad Agregados
+
+/* ============================================================
+   RELACIÓN CONTROL → ARCHIVOS
+   ============================================================ */
+
+-- CONTROL 1 → TEXTURA (tenés 2 archivos)
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(1, 1),
+(1, 2);
+
+-- CONTROL 2 → DENSIDAD APARENTE
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(2, 1);
+
+-- CONTROL 3 → DENSIDAD PARTÍCULAS
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(3, 1);
+
+-- CONTROL 4 → HUMEDAD GRAVIMÉTRICA
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(4, 1);
+
+-- CONTROL 5 → CONDUCTIVIDAD HIDRÁULICA
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(5, 1);
+
+-- CONTROL 6 → RETENCIÓN HUMEDAD
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(6, 1);
+
+-- CONTROL 7 → GRANULOMETRÍA
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(7, 1);
+
+-- CONTROL 8 → ESTABILIDAD AGREGADOS
+INSERT INTO trn_controles_lista (id_control, id_archivo)
+VALUES
+(8, 1);
 
 SELECT * 
 FROM tbl_bitacora 

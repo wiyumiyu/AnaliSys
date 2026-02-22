@@ -28,6 +28,35 @@ class TexturaController extends Controller {
         );
     }
     
+    public function agregarControl(Request $request)
+{
+    $periodo = date('Y');
+
+    return view(
+        'controles.textura.agregar',
+        compact('periodo')
+    );
+}
+
+public function guardarControl(Request $request)
+{
+    $request->validate([
+        'anio' => 'required|integer',
+        'consecutivo' => 'required|integer'
+    ]);
+
+    DB::table('trn_controles')->insert([
+        'consecutivo' => $request->consecutivo,
+        'tipo'        => 1, // TEXTURA
+        'fecha'       => now(),
+        'id_persona'  => session('id_persona')
+    ]);
+
+    return redirect()
+        ->route('controlTextura.index')
+        ->with('success', 'Control creado correctamente');
+}
+    
     public function archivos(Request $request) {
         $periodo = $request->get('periodo', date('Y'));
 

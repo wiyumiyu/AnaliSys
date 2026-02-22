@@ -166,6 +166,16 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     
 });
 
+Route::get(
+    '/controles/textura/agregar',
+    [TexturaController::class, 'agregarControl']
+)->name('controlTextura.agregar');
+
+Route::post(
+    '/controles/textura',
+    [TexturaController::class, 'guardarControl']
+)->name('controlTextura.store');
+
 
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE

@@ -49,19 +49,14 @@
                             <i class="ri-search-2-line text-muted"></i>
                         </div>
 
-                        {{-- IMPORTAR --}}
+                        {{-- AGREGAR --}}
 
-
-
-<a href=""
-   class="btn btn-primary mb-0">
-    <i class="ri-add-large-line me-1"></i>
-    Nuevo
-</a>
-
-                        
-                      
-
+                        <button class="btn btn-primary mb-0"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalNuevoControl">
+                            <i class="ri-add-large-line fs-5 me-1"></i>
+                            Nuevo
+                        </button>
                     </div>
                 </div>
             </div>
@@ -131,6 +126,128 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+{{-- =========================================================
+   MODAL NUEVO CONTROL
+   ========================================================= --}}
+<div class="modal fade"
+     id="modalNuevoControl"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold">
+                    Nuevo control de textura
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="POST"
+                  action="{{ route('controlTextura.store') }}">
+                @csrf
+
+                <div class="modal-body">
+
+                    <div class="d-flex flex-wrap gap-4 justify-content-center">
+
+                        {{-- AÑO --}}
+                        <div>
+                            <label class="form-label fw-semibold">Año</label>
+                            <select name="anio" class="form-select">
+                                @for($i = date('Y'); $i >= date('Y')-10; $i--)
+                                    <option value="{{ $i }}" @selected($periodo==$i)>
+                                        {{ $i }}
+                                    </option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        {{-- CONSECUTIVO --}}
+                        <div>
+                            <label class="form-label fw-semibold">Consecutivo</label>
+                            <input type="number"
+                                   name="consecutivo"
+                                   class="form-control"
+                                   placeholder="Ej: 4">
+                        </div>
+
+                        {{-- ARCHIVOS --}}
+                        <div>
+                            <label class="form-label fw-semibold">Archivos</label>
+
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-auto-close="outside">
+                                    Seleccionar archivos
+                                </button>
+
+                                <div class="dropdown-menu p-3"
+                                     style="min-width: 260px;">
+
+                                    {{-- OPCIONES QUEMADAS --}}
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="archivos[]"
+                                               value="1">
+                                        <label class="form-check-label">
+                                            TXT-2026-001
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="archivos[]"
+                                               value="2">
+                                        <label class="form-check-label">
+                                            TXT-2026-002
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="archivos[]"
+                                               value="3">
+                                        <label class="form-check-label">
+                                            TXT-2026-003
+                                        </label>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Guardar
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
     </div>
 </div>
 

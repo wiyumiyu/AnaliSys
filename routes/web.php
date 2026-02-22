@@ -83,7 +83,10 @@ Route::middleware(['rol:ADMIN'])->group(function () {
 
     Route::patch('/usuarios/{id}/estado', [UsuarioController::class, 'cambiarEstado'])
             ->name('usuarios.cambiarEstado');
-        // ===============================
+
+    
+
+// ===============================
     // BITÁCORA
     // ===============================
     Route::get('/bitacora', [BitacoraController::class, 'index'])

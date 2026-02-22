@@ -295,7 +295,7 @@
 <!-- FabKin App -->
 <script src="{{ asset('js/app.js') }}"></script>
 
-@endsection
+
 
 <script>
 function verDetalle(id) {
@@ -338,7 +338,56 @@ function verDetalle(id) {
             alert('No se pudo cargar el detalle de la bitácora');
         });
 }
+
+//function verDetalle(id) {
+//
+//    fetch(`/bitacora/${id}`, {
+//        headers: {
+//            'Accept': 'application/json'
+//        }
+//    })
+//    .then(response => {
+//        if (!response.ok) {
+//            throw new Error('Error al cargar detalle');
+//        }
+//        return response.json();
+//    })
+//    .then(b => {
+//
+//        document.getElementById('bd-usuario').textContent =
+//            b.usuario || '—';
+//
+//        document.getElementById('bd-tabla').textContent =
+//            b.tabla || '—';
+//
+//        document.getElementById('bd-accion').textContent =
+//            b.accion || '—';
+//
+//        // 👇 SIN JSON.parse
+//        document.getElementById('bd-antes').textContent =
+//            b.datos_antes
+//                ? JSON.stringify(b.datos_antes, null, 2)
+//                : 'Sin datos';
+//
+//        document.getElementById('bd-despues').textContent =
+//            b.datos_despues
+//                ? JSON.stringify(b.datos_despues, null, 2)
+//                : 'Sin datos';
+//
+//        const modal = new bootstrap.Modal(
+//            document.getElementById('detalleBitacoraModal')
+//        );
+//
+//        modal.show();
+//    })
+//    .catch(error => {
+//        console.error('Error real:', error);
+//        alert('No se pudo cargar el detalle de la bitácora');
+//    });
+//}
+
 </script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -401,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
-
+@endsection
 
 
 

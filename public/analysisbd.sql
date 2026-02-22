@@ -3939,8 +3939,7 @@ BEGIN
     );
 
 END$$
-DELIMITER ;
-
+DELIMITER $$
 
 CREATE PROCEDURE sp_obtener_bitacora_completa (
     IN p_id BIGINT
@@ -3955,7 +3954,6 @@ BEGIN
             1
         ) AS usuario,
         b.usuario AS usuario_real,
-
         b.ip,
         b.accion,
         b.fecha,
@@ -3965,13 +3963,91 @@ BEGIN
     LEFT JOIN trn_persona_correo c
         ON c.id_persona = b.usuario
         AND c.descripcion = 'PRINCIPAL'
-    WHERE b.id = p_id
+    WHERE b.id = p_id;
+
 END$$
 
 DELIMITER ;
 
 
 
+/* PROCS DE CONTROLES DE TEXTURA */
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_traer_consecutivo $$
+
+CREATE PROCEDURE sp_traer_consecutivo(
+    IN p_tipo INT,
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT IFNULL(MAX(consecutivo), 0) + 1 AS siguiente_consecutivo
+    FROM trn_controles
+    WHERE tipo = p_tipo
+      AND YEAR(fecha) = p_periodo;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_traer_archivos_textura $$
+
+CREATE PROCEDURE sp_traer_archivos_textura(
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT t.id
+    FROM trn_textura t
+    LEFT JOIN trn_controles_lista cl
+        ON cl.id_archivo = t.id
+    WHERE t.periodo = p_periodo
+      AND cl.id IS NULL;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_traer_archivos_textura $$
+
+CREATE PROCEDURE sp_traer_archivos_textura(
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT t.id
+    FROM trn_textura t
+    LEFT JOIN trn_controles_lista cl
+        ON cl.id_archivo = t.id
+    WHERE t.periodo = p_periodo
+      AND cl.id IS NULL;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_eliminar_control $$
+
+CREATE PROCEDURE sp_eliminar_control(
+    IN p_id INT
+)
+BEGIN
+    START TRANSACTION;
+
+    DELETE FROM trn_controles_lista
+    WHERE id_control = p_id;
+
+    DELETE FROM trn_controles
+    WHERE id = p_id;
+
+    COMMIT;
+END $$
+
+DELIMITER ;
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */

@@ -109,7 +109,8 @@
                                         <i class="ri-eye-line"></i>
                                     </a>
 
-                                    <button class="btn bg-danger-subtle text-danger btn-sm">
+                                    <button type="button" class="btn bg-danger-subtle text-danger btn-sm"
+                                            onclick="confirmarEliminacion({{ $l->id }}, {{ $l->consecutivo }})">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
 
@@ -162,60 +163,66 @@
                             <label class="form-label fw-semibold">Año</label>
                             <select name="anio" class="form-select">
                                 @for($i = date('Y'); $i >= date('Y')-10; $i--)
-                                    <option value="{{ $i }}" @selected($periodo==$i)>
-                                        {{ $i }}
-                                    </option>
+                                <option value="{{ $i }}" @selected($periodo==$i)>
+                                    {{ $i }}
+                                </option>
                                 @endfor
                             </select>
                         </div>
 
                         {{-- CONSECUTIVO --}}
-<div>
-    <label class="form-label fw-semibold">Consecutivo</label>
-    <input type="number"
-           name="consecutivo"
-           class="form-control"
-           value="{{ $siguienteConsecutivo->siguiente_consecutivo ?? 1 }}"
-           readonly>
-</div>
+                        <div>
+                            <label class="form-label fw-semibold">Consecutivo</label>
+                            <input type="number"
+                                   name="consecutivo"
+                                   class="form-control"
+                                   value="{{ old('consecutivo', $siguienteConsecutivo->siguiente_consecutivo ?? 1) }}"
+                                   min="1"
+                                   required>
+                        </div>
 
                         {{-- ARCHIVOS --}}
-{{-- ARCHIVOS --}}
-<div>
-    <label class="form-label fw-semibold">Archivos</label>
+                        {{-- ARCHIVOS --}}
+                        <div>
+                            <label class="form-label fw-semibold">Archivos</label>
 
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle"
-                type="button"
-                data-bs-toggle="dropdown"
-                data-bs-auto-close="outside">
-            Seleccionar archivos
-        </button>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-auto-close="outside">
+                                    Seleccionar archivos
+                                </button>
 
-        <div class="dropdown-menu p-3"
-             style="min-width: 260px; max-height: 250px; overflow-y: auto;">
+                                <div class="dropdown-menu p-3"
+                                     style="min-width: 260px; max-height: 250px; overflow-y: auto;">
 
-            @forelse($archivosDisponibles as $archivo)
-                <div class="form-check">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="archivos[]"
-                           value="{{ $archivo->id }}"
-                           id="archivo{{ $archivo->id }}">
-                    <label class="form-check-label"
-                           for="archivo{{ $archivo->id }}">
-                        {{ $archivo->archivo }}
-                    </label>
-                </div>
-            @empty
-                <span class="text-muted small">
-                    No hay archivos disponibles
-                </span>
-            @endforelse
+                                    @php
+                                    $archivosOld = old('archivos', []);
+                                    @endphp
+                                    @forelse($archivosDisponibles as $archivo)
 
-        </div>
-    </div>
-</div>
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="archivos[]"
+                                               value="{{ $archivo->id }}"
+                                               id="archivo{{ $archivo->id }}"
+                                               @checked(in_array($archivo->id, $archivosOld))>
+                                        <label class="form-check-label"
+                                               for="archivo{{ $archivo->id }}">
+                                            {{ $archivo->archivo }}
+                                        </label>
+                                    </div>
+                                    @empty
+                                    <span class="text-muted small">
+                                        No hay archivos disponibles
+                                    </span>
+                                    @endforelse
+
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 
@@ -235,6 +242,62 @@
                 </div>
 
             </form>
+
+        </div>
+    </div>
+</div>
+
+{{-- =========================================================
+   MODAL ELIMINAR CONTROL
+   ========================================================= --}}
+
+
+<div class="modal fade"
+     id="modalEliminarControl"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold text-danger">
+                    Confirmar eliminación
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-center">
+
+                <p class="mb-3">
+                    ¿Está seguro que desea eliminar el control
+                    <strong id="controlNumero"></strong>?
+                </p>
+
+                <form id="formEliminar"
+                      method="POST">
+                    @csrf
+                    @method('DELETE')
+
+                    <div class="d-flex justify-content-center gap-3">
+
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Sí, eliminar
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-light"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                    </div>
+                </form>
+
+            </div>
 
         </div>
     </div>
@@ -263,4 +326,38 @@
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
 
+<script>
+                                                function confirmarEliminacion(id, consecutivo) {
+
+                                                document.getElementById('controlNumero').textContent = consecutivo;
+                                                const form = document.getElementById('formEliminar');
+                                                form.action = `/control-textura/${id}`;
+                                                const modal = new bootstrap.Modal(
+                                                        document.getElementById('modalEliminarControl')
+                                                        );
+                                                modal.show();
+                                                }
+</script>
+<script>
+document.querySelector('#modalNuevoControl form')
+    .addEventListener('submit', function(e) {
+
+    const seleccionados = document.querySelectorAll(
+        '#modalNuevoControl input[name="archivos[]"]:checked'
+    );
+
+    if (seleccionados.length === 0) {
+        e.preventDefault();
+
+        alert('Debe seleccionar al menos un archivo.');
+
+        const dropdownBtn = document.querySelector(
+            '#modalNuevoControl [data-bs-toggle="dropdown"]'
+        );
+
+        dropdownBtn.click();
+    }
+
+});
+</script>
 @endsection

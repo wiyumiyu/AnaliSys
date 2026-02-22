@@ -101,48 +101,57 @@ Route::middleware(['rol:ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // TEXTURA
 //-------------------------------------------------------------------------------
-
-use App\Http\Controllers\IngresoDatos\TexturaController as IngresoTexturaController;
-use App\Http\Controllers\Controles\TexturaController as ControlTexturaController;
+use App\Http\Controllers\TexturaController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
-Route::get(
-    '/ingreso-datos/textura',
-    [IngresoTexturaController::class, 'index']
-)->name('textura.index');
+    Route::get(
+            '/ingreso-datos/textura',
+            [TexturaController::class, 'archivos']
+    )->name('textura.index');
 
     Route::get(
-        '/ingreso-datos/textura/{archivo}/muestras',
-        [IngresoTexturaController::class, 'muestras']
+            '/ingreso-datos/textura/{archivo}/muestras',
+            [TexturaController::class, 'muestras']
     )->name('textura.muestras');
 
+    // editar muestra
     Route::get(
-        '/ingreso-datos/textura/muestra/{id}/editar',
-        [IngresoTexturaController::class, 'edit']
+            '/ingreso-datos/textura/muestra/{id}/editar',
+            [TexturaController::class, 'edit']
     )->name('textura.muestra.edit');
 
+    // actualizar muestra
     Route::put(
-        '/ingreso-datos/textura/muestra/{id}',
-        [IngresoTexturaController::class, 'update']
+            '/ingreso-datos/textura/muestra/{id}',
+            [TexturaController::class, 'update']
     )->name('textura.muestra.update');
 
+    // anular muestra
+//    Route::patch(
+//            '/ingreso-datos/textura/muestra/{id}/anular',
+//            [TexturaController::class, 'anular']
+//    )->name('textura.muestra.anular');
+
+    // anular y activar muestra
     Route::patch(
-        '/ingreso-datos/textura/muestra/{id}/estado',
-        [IngresoTexturaController::class, 'toggleEstado']
+            '/ingreso-datos/textura/muestra/{id}/estado',
+            [TexturaController::class, 'toggleEstado']
     )->name('textura.muestra.toggle');
 
+    // eliminar muestra
     Route::delete(
-        '/ingreso-datos/textura/muestra/{id}',
-        [IngresoTexturaController::class, 'destroy']
+            '/ingreso-datos/textura/muestra/{id}',
+            [TexturaController::class, 'destroy']
     )->name('textura.muestra.destroy');
-
+    
     Route::post(
-        '/ingreso-datos/textura/importar',
-        [IngresoTexturaController::class, 'importar']
-    )->name('textura.importar');
+    '/ingreso-datos/textura/importar',
+    [TexturaController::class, 'importar']
+)->name('textura.importar');
+    
+    
 });
-
 
 //------------------------------------------------------------------------------
 // CONTROL DE TEXTURA
@@ -150,26 +159,33 @@ Route::get(
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
-Route::get(
-    '/controles/textura',
-    [ControlTexturaController::class, 'index']
-)->name('controlTextura.index');
-
     Route::get(
-        '/controles/textura/consecutivo',
-        [ControlTexturaController::class, 'traerConsecutivo']
-    )->name('controlTextura.consecutivo');
-
-    Route::post(
-        '/controles/textura',
-        [ControlTexturaController::class, 'guardarControl']
-    )->name('controlTextura.store');
-
-    Route::delete(
-        '/control-textura/{id}',
-        [ControlTexturaController::class, 'destroy']
-    )->name('controlTextura.destroy');
+            '/controles/textura',
+            [TexturaController::class, 'consecutivosControles']
+    )->name('controlTextura.index');
+    
 });
+
+Route::get(
+    '/controles/textura/agregar',
+    [TexturaController::class, 'agregarControl']
+)->name('controlTextura.agregar');
+
+Route::post(
+    '/controles/textura',
+    [TexturaController::class, 'guardarControl']
+)->name('controlTextura.store');
+
+Route::get(
+    '/controles/textura/consecutivo',
+    [TexturaController::class, 'traerConsecutivo']
+)->name('controlTextura.consecutivo');
+
+
+Route::delete(
+    '/control-textura/{id}',
+    [\App\Http\Controllers\TexturaController::class, 'eliminarControl']
+)->name('controlTextura.destroy');
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE
 //-------------------------------------------------------------------------------

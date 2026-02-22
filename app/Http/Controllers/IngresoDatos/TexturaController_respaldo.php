@@ -67,23 +67,77 @@ public function consecutivosControles(Request $request)
     );
 }
 
+public function eliminarControl($id)
+{
+    try {
+
+        DB::statement('CALL sp_eliminar_control(?)', [$id]);
+
+        return redirect()
+            ->route('controlTextura.index')
+            ->with('success', 'Control eliminado correctamente.');
+
+    } catch (\Exception $e) {
+
+        return back()
+            ->with('error', 'No se pudo eliminar el control.');
+    }
+}
+
+//
+//public function guardarControl(Request $request)
+//{
+//    $request->validate([
+//        'anio' => 'required|integer',
+//        'consecutivo' => 'required|integer'
+//    ]);
+//
+//    DB::table('trn_controles')->insert([
+//        'consecutivo' => $request->consecutivo,
+//        'tipo'        => 1, // TEXTURA
+//        'fecha'       => now(),
+//        'id_persona'  => session('id_persona')
+//    ]);
+//
+//    return redirect()
+//        ->route('controlTextura.index')
+//        ->with('success', 'Control creado correctamente');
+//}
 public function guardarControl(Request $request)
 {
     $request->validate([
-        'anio' => 'required|integer',
-        'consecutivo' => 'required|integer'
+        'anio'        => 'required|integer',
+        'consecutivo' => 'required|integer|min:1',
+        'archivos'    => 'required|array|min:1'
     ]);
 
-    DB::table('trn_controles')->insert([
-        'consecutivo' => $request->consecutivo,
-        'tipo'        => 1, // TEXTURA
-        'fecha'       => now(),
-        'id_persona'  => session('id_persona')
-    ]);
+    $listaArchivos = implode(',', $request->archivos);
 
-    return redirect()
-        ->route('controlTextura.index')
-        ->with('success', 'Control creado correctamente');
+    try {
+
+        $resultado = DB::select(
+            'CALL sp_guardar_control(?, ?, ?, ?, ?)',
+            [
+                1, // tipo TEXTURA
+                $request->anio,
+                $request->consecutivo,
+                session('id_persona'),
+                $listaArchivos
+            ]
+        );
+
+        $idGenerado = $resultado[0]->id_generado ?? null;
+
+        return redirect()
+            ->route('controlTextura.index')
+            ->with('success', 'Control creado correctamente. ID: ' . $idGenerado);
+
+    } catch (\Exception $e) {
+
+        return back()
+            ->withInput()
+            ->with('error', $e->getMessage());
+    }
 }
     
     public function archivos(Request $request) {
@@ -315,104 +369,4 @@ public function importar(Request $request)
 }
       
        
-//    public function importar(Request $request) {
-//        $request->validate([
-//            'archivo' => 'required|file|mimes:xlsx,xls'
-//        ]);
-//
-//        DB::beginTransaction();
-//
-//        try {
-//
-//            /* ===============================
-//             * 1. Crear archivo de textura
-//             * =============================== */
-//            $idTextura = DB::table('trn_textura')->insertGetId([
-//                'periodo' => date('Y'),
-//                'archivo' => $request->file('archivo')->getClientOriginalName(),
-//                'fecha' => now(),
-//                'analista' => Auth::id()
-//            ]);
-//
-//            /* ===============================
-//             * 2. Leer Excel
-//             * =============================== */
-//            $spreadsheet = IOFactory::load($request->file('archivo')->getPathname());
-//            $sheet = $spreadsheet->getActiveSheet();
-//            $rows = $sheet->toArray();
-//
-//            /* ===============================
-//             * 3. Mapear análisis TEXTURA
-//             * =============================== */
-//            $analisisMap = DB::table('trn_analisis')
-//                    ->where('origen', 'TEXTURA')
-//                    ->pluck('id', 'siglas')
-//                    ->toArray();
-//
-//            /* ===============================
-//             * 4. Recorrer filas (desde fila 3)
-//             * =============================== */
-//            for ($i = 2; $i < count($rows); $i++) {
-//
-//                $row = $rows[$i];
-//
-//                if (empty($row[0])) {
-//                    continue; // IDLab vacío
-//                }
-//
-//                /* ===== MUESTRA ===== */
-//                $idMuestra = DB::table('trn_textura_muestras')->insertGetId([
-//                    'id_textura' => $idTextura,
-//                    'idlab' => $row[0],
-//                    'rep' => $row[1],
-//                    'material' => 1, // luego parametrizas
-//                    'tipo' => 1,
-//                    'posicion' => 1,
-//                    'estado' => 1,
-//                    'ri' => 0
-//                ]);
-//
-//                /* ===== RESULTADOS ===== */
-//                $valores = [
-//                    'PESO_SECO' => $row[2],
-//                    'R1' => $row[3],
-//                    'R2' => $row[4],
-//                    'R3' => $row[5],
-//                    'R4' => $row[6],
-//                    'TEMP1' => $row[7],
-//                    'TEMP2' => $row[8],
-//                    'TEMP3' => $row[9],
-//                    'TEMP4' => $row[10],
-//                    'TIEMPO1' => $row[11],
-//                    'TIEMPO2' => $row[12],
-//                    'TIEMPO3' => $row[13],
-//                    'TIEMPO4' => $row[14],
-//                ];
-//
-//                foreach ($valores as $sigla => $resultado) {
-//
-//                    if (!isset($analisisMap[$sigla])) {
-//                        throw new \Exception("No existe el análisis $sigla en la tabla trn_analisis");
-//                    }
-//
-//                    DB::table('trn_textura_resultados')->insert([
-//                        'id_textura_muestras' => $idMuestra,
-//                        'id_analisis' => $analisisMap[$sigla],
-//                        'resultado' => $resultado,
-//                        'estado' => 1
-//                    ]);
-//                }
-//            }
-//
-//            DB::commit();
-//
-//            return redirect()
-//                            ->route('textura.index')
-//                            ->with('success', 'Archivo importado correctamente');
-//        } catch (\Exception $e) {
-//
-//            DB::rollBack();
-//            return back()->withErrors('Error al importar archivo: ' . $e->getMessage());
-//        }
-//    }
 }

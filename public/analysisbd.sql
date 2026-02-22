@@ -4048,6 +4048,77 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_guardar_control $$
+
+CREATE PROCEDURE sp_guardar_control(
+    IN p_tipo INT,
+    IN p_periodo YEAR,
+    IN p_consecutivo INT,
+    IN p_id_persona INT,
+    IN p_lista_archivos TEXT
+)
+BEGIN
+    DECLARE v_id_control INT;
+    DECLARE v_id_archivo INT;
+    DECLARE v_pos INT DEFAULT 1;
+    DECLARE v_coma INT;
+    DECLARE v_existe INT DEFAULT 0;
+
+    START TRANSACTION;
+
+    -- Validar que no exista el consecutivo en el mismo tipo y periodo
+    SELECT COUNT(*)
+    INTO v_existe
+    FROM trn_controles
+    WHERE tipo = p_tipo
+      AND consecutivo = p_consecutivo
+      AND YEAR(fecha) = p_periodo;
+
+    IF v_existe > 0 THEN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El consecutivo ya existe para este tipo y periodo';
+    END IF;
+
+    -- Insertar control con consecutivo manual
+    INSERT INTO trn_controles(consecutivo, tipo, fecha, id_persona)
+    VALUES (p_consecutivo, p_tipo, CURDATE(), p_id_persona);
+
+    SET v_id_control = LAST_INSERT_ID();
+
+    -- Procesar lista de archivos
+    archivos_loop: LOOP
+
+        SET v_coma = LOCATE(',', p_lista_archivos, v_pos);
+
+        IF v_coma = 0 THEN
+            SET v_id_archivo = TRIM(SUBSTRING(p_lista_archivos, v_pos));
+        ELSE
+            SET v_id_archivo = TRIM(SUBSTRING(p_lista_archivos, v_pos, v_coma - v_pos));
+        END IF;
+
+        INSERT INTO trn_controles_lista(id_control, id_archivo)
+        VALUES (v_id_control, v_id_archivo);
+
+        IF v_coma = 0 THEN
+            LEAVE archivos_loop;
+        END IF;
+
+        SET v_pos = v_coma + 1;
+
+    END LOOP;
+
+    COMMIT;
+
+    SELECT v_id_control AS id_generado;
+
+END $$
+
+DELIMITER ;
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */
@@ -4288,7 +4359,7 @@ VALUES (2024, 'textura_prueba_2024_004.csv', '2024-04-15', 1);
 INSERT INTO trn_textura (periodo, archivo, fecha, analista)
 VALUES (2024, 'textura_libre_2024_010.csv', '2024-10-15', 1);
 
-CALL sp_traer_archivos_textura('2024');
+-- CALL sp_traer_archivos_textura();
 
 DELETE FROM trn_controles_lista;
 

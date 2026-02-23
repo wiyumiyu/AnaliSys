@@ -129,4 +129,9 @@ class TexturaController extends Controller
                 ->with('error', 'No se pudo eliminar el control.');
         }
     }
+    
+    public function graficos($id)
+    {
+        return view('controles.textura.graficos');
+    }
 }

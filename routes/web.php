@@ -169,6 +169,10 @@ Route::get(
         '/control-textura/{id}',
         [ControlTexturaController::class, 'destroy']
     )->name('controlTextura.destroy');
+    
+    Route::get('/controles/textura/{id}/graficos',
+        [ControlTexturaController::class, 'graficos']
+    )->name('controles.textura.graficos');
 });
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE

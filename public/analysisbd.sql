@@ -4360,8 +4360,6 @@ VALUES (2024, 'textura_libre_2024_010.csv', '2024-10-15', 1);
 
 -- CALL sp_traer_archivos_textura();
 
-DELETE FROM trn_controles_lista;
-
 -- DENSIDAD APARENTE
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES

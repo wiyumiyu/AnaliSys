@@ -2864,8 +2864,7 @@ BEGIN
         MAX(CASE WHEN a.siglas = 'longitud_inicial' THEN r.resultado END) AS longitud_inicial,
         MAX(CASE WHEN a.siglas = 'diametro_muestra' THEN r.resultado END) AS diametro_muestra,
         MAX(CASE WHEN a.siglas = 'fecha_medicion' THEN r.resultado END) AS fecha_medicion,
-        MAX(CASE WHEN a.siglas = 'hora_medicion' THEN r.resultado END) AS hora_medicion,
-        MAX(CASE WHEN a.siglas = 'observaciones' THEN r.resultado END) AS observaciones
+        MAX(CASE WHEN a.siglas = 'hora_medicion' THEN r.resultado END) AS hora_medicion
         
     FROM trn_coeficiente_extensibilidad_muestras m
     LEFT JOIN trn_coeficiente_extensibilidad_resultado r
@@ -4678,14 +4677,14 @@ VALUES
 (1,(SELECT id FROM trn_analisis WHERE siglas='peso_tamices' AND origen='ESTABILIDAD_AGREGADOS'),'1200',1),
 (1,(SELECT id FROM trn_analisis WHERE siglas='temperatura' AND origen='ESTABILIDAD_AGREGADOS'),'25',1),
 (1,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'60',1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2024-02-15',1),
 
 -- Muestra 2
 (2,(SELECT id FROM trn_analisis WHERE siglas='peso_suelo_seco' AND origen='ESTABILIDAD_AGREGADOS'),'510',1),
 (2,(SELECT id FROM trn_analisis WHERE siglas='peso_tamices' AND origen='ESTABILIDAD_AGREGADOS'),'1210',1),
 (2,(SELECT id FROM trn_analisis WHERE siglas='temperatura' AND origen='ESTABILIDAD_AGREGADOS'),'26',1),
 (2,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'62',1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2024-02-15',1),
 
 -- Muestra 3
 
@@ -4693,7 +4692,7 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='peso_tamices' AND origen='ESTABILIDAD_AGREGADOS'),'1195',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='temperatura' AND origen='ESTABILIDAD_AGREGADOS'),'24',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'59',1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1);
+(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2024-02-15',1);
 
 -- Coeficiente de Extensibilidad
 
@@ -4703,8 +4702,52 @@ VALUES
 ('Longitud inicial',          'longitud_inicial',     'COEFICIENTE_EXTENSIBILIDAD'),
 ('Diametro de la muestra',    'diametro_muestra',     'COEFICIENTE_EXTENSIBILIDAD'),
 ('Fecha de Medición',         'fecha_medicion',       'COEFICIENTE_EXTENSIBILIDAD'),
-('Hora de Medicion',          'hora_medicion',        'COEFICIENTE_EXTENSIBILIDAD'),
-('Fecha de inicio',           'fecha_inicio',         'COEFICIENTE_EXTENSIBILIDAD');
+('Hora de Medicion',          'hora_medicion',        'COEFICIENTE_EXTENSIBILIDAD');
+
+
+INSERT INTO trn_coeficiente_extensibilidad
+(periodo, archivo, fecha, analista)
+
+VALUES
+(2026, 'CE-2026-001', '2024-02-16', 1);
+
+INSERT INTO trn_coeficiente_extensibilidad_muestras
+
+(id_coeficiente_extensibilidad, idlab, rep, material, tipo, posicion, estado, ri)
+
+VALUES
+(1, '2001', 1, 1, 1, 1, 1, 0),
+(1, '2002', 2, 1, 1, 2, 1, 0),
+(1, '2003', 1, 1, 1, 3, 1, 0);
+
+INSERT INTO trn_coeficiente_extensibilidad_resultado
+
+(id_coeficiente_extensibilidad_muestras, id_analisis, resultado, estado)
+
+VALUES
+-- Muestra 1
+INSERT INTO trn_coeficiente_extensibilidad_resultado
+
+(id_coeficiente_extensibilidad_muestras, id_analisis, resultado, estado)
+
+VALUES
+-- Muestra 1
+(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.50', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:30', 1);
+
+-- Muestra 2
+(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.60', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.25', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:45', 1);
+
+-- Muestra 3
+(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.40', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.10', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '11:00', 1);
 
 /* ============================================================
    CONTROLES

@@ -32,7 +32,7 @@ class GranulometriaController extends Controller
     public function muestras($idArchivo)
     {
         //Nombre del archivo
-        $archivo = 'HG-2026-001';
+        $archivo = 'G-2024-001';
 
         $muestras = DB::select(
             'CALL sp_listar_muestras_granulometria_detalle(?)',

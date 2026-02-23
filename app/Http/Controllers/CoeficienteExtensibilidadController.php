@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class EstabilidadAgregadosController extends Controller
+class CoeficienteExtensibilidadController extends Controller
 {
     /* ===============================
      * LISTADO DE ARCHIVOS
@@ -16,12 +16,12 @@ class EstabilidadAgregadosController extends Controller
         $anio = $request->get('anio', date('Y'));
 
         $archivos = DB::select(
-            'CALL sp_listar_estabilidad_agregados_por_periodo(?)',
+            'CALL sp_listar_coeficiente_extensibilidad_por_periodo(?)',
             [$anio]
         );
 
         return view(
-            'ingreso_datos.estabilidad_agregados.index',
+            'ingreso_datos.coeficiente_extensibilidad.index',
             compact('archivos', 'anio')
         );
     }
@@ -31,16 +31,16 @@ class EstabilidadAgregadosController extends Controller
      * =============================== */
     public function muestras($idArchivo)
     {
-        //Nombre del archivo
-        $archivo = 'EA-2024-001';
+        // nombre del archivo (luego puedes traerlo desde BD si quieres)
+        $archivo = 'CE-2024-001';
 
         $muestras = DB::select(
-            'CALL sp_listar_muestras_estabilidad_agregados_detalle(?)',
+            'CALL sp_listar_muestras_coeficiente_extensibilidad_detalle(?)',
             [$idArchivo]
         );
 
         return view(
-            'ingreso_datos.estabilidad_agregados.muestras',
+            'ingreso_datos.coeficiente_extensibilidad.muestras',
             compact('muestras', 'archivo', 'idArchivo')
         );
     }
@@ -52,18 +52,18 @@ class EstabilidadAgregadosController extends Controller
     {
         $muestra = collect(
             DB::select(
-                'CALL sp_obtener_muestra_estabilidad_agregados(?)',
+                'CALL sp_obtener_muestra_coeficiente_extensibilidad(?)',
                 [$id]
             )
         )->first();
 
         $resultados = DB::select(
-            'CALL sp_listar_resultados_estabilidad_agregados_por_muestra(?)',
+            'CALL sp_listar_resultados_coeficiente_extensibilidad_por_muestra(?)',
             [$id]
         );
 
         return view(
-            'ingreso_datos.estabilidad_agregados.editar',
+            'ingreso_datos.coeficiente_extensibilidad.editar',
             compact('muestra', 'resultados')
         );
     }
@@ -73,17 +73,17 @@ class EstabilidadAgregadosController extends Controller
      * =============================== */
     public function update(Request $request, $id)
     {
-        // obtener id_estabilidad_agregados antes de actualizar
+        // obtener id_coeficiente_extensibilidad antes de actualizar
         $muestra = collect(
             DB::select(
-                'CALL sp_obtener_muestra_estabilidad_agregados(?)',
+                'CALL sp_obtener_muestra_coeficiente_extensibilidad(?)',
                 [$id]
             )
         )->first();
 
         // actualizar muestra
         DB::statement(
-            'CALL sp_actualizar_muestra_estabilidad_agregados(?,?,?,?,?,?)',
+            'CALL sp_actualizar_muestra_coeficiente_extensibilidad(?,?,?,?,?,?)',
             [
                 $id,
                 $request->rep,
@@ -98,16 +98,17 @@ class EstabilidadAgregadosController extends Controller
         if ($request->has('resultados')) {
             foreach ($request->resultados as $idResultado => $valor) {
                 DB::statement(
-                    'CALL sp_actualizar_resultado_estabilidad_agregados(?,?)',
+                    'CALL sp_actualizar_resultado_coeficiente_extensibilidad(?,?)',
                     [$idResultado, $valor]
                 );
             }
         }
 
+        // redirigir al listado de muestras
         return redirect()
             ->route(
-                'estabilidad_agregados.muestras',
-                $muestra->id_estabilidad_agregados
+                'coeficiente_extensibilidad.muestras',
+                $muestra->id_coeficiente_extensibilidad
             )
             ->with('success', 'Muestra actualizada correctamente');
     }
@@ -118,7 +119,7 @@ class EstabilidadAgregadosController extends Controller
     public function toggleEstado($id)
     {
         DB::statement(
-            'CALL sp_toggle_estado_muestra_estabilidad_agregados(?)',
+            'CALL sp_toggle_estado_muestra_coeficiente_extensibilidad(?)',
             [$id]
         );
 
@@ -133,7 +134,7 @@ class EstabilidadAgregadosController extends Controller
     public function destroy($id)
     {
         DB::statement(
-            'CALL sp_eliminar_muestra_estabilidad_agregados(?)',
+            'CALL sp_eliminar_muestra_coeficiente_extensibilidad(?)',
             [$id]
         );
 
@@ -142,24 +143,18 @@ class EstabilidadAgregadosController extends Controller
             ->with('success', 'Muestra eliminada correctamente');
     }
 
-    /* ===============================
-     * ELIMINAR ARCHIVO
-     * =============================== */
     public function destroyArchivo($id)
     {
         DB::statement(
-            'CALL sp_eliminar_estabilidad_agregados(?)',
+            'CALL sp_eliminar_coeficiente_extensibilidad(?)',
             [$id]
         );
 
         return redirect()
-            ->route('estabilidad_agregados.index')
+            ->route('coeficiente_extensibilidad.index')
             ->with('success', 'Archivo eliminado correctamente');
     }
 
-    /* ===============================
-     * IMPORTAR EXCEL
-     * =============================== */
     public function importar(Request $request)
     {
         $request->validate([
@@ -170,21 +165,23 @@ class EstabilidadAgregadosController extends Controller
 
         try {
 
-            /* ==== Crear archivo de estabilidad de agregados ==== */
-            $idEstabilidadAgregados = DB::table('trn_estabilidad_agregados')->insertGetId([
+            /* ==== Crear archivo de coeficiente extensibilidad ==== */
+            $idCoeficienteExtensibilidad = DB::table('trn_coeficiente_extensibilidad')->insertGetId([
                 'periodo'  => date('Y'),
                 'archivo'  => $request->file('archivo')->getClientOriginalName(),
                 'fecha'    => now(),
                 'analista' => session('id_persona')
+
             ]);
 
-            /* ==== Mapa de análisis Estabilidad de Agregados ==== */
+            /* ==== Mapa de análisis COEFICIENTE DE EXTENSIBILIDAD ==== */
+
             $analisisMap = DB::table('trn_analisis')
-                ->where('origen', 'ESTABILIDAD_AGREGADOS')
+                ->where('origen', 'COEFICIENTE DE EXTENSIBILIDAD')
                 ->pluck('id', 'siglas')
                 ->toArray();
 
-            /* ==== Leer Excel ==== */
+            /* ==== Leer Excel ===== */
             $spreadsheet = IOFactory::load(
                 $request->file('archivo')->getPathname()
             );
@@ -193,54 +190,67 @@ class EstabilidadAgregadosController extends Controller
                 ->getActiveSheet()
                 ->toArray(null, true, true, true);
 
-            /* ==== Recorrer filas (desde fila 3) ==== */
+            /* ==== Recorrer filas (desde fila 3) ===== */
             $i = 1;
+            $tipo = 1;
             foreach ($rows as $fila => $row) {
 
-                if ($fila < 3) continue;
-                if (empty($row['A'])) continue;
-
-                /* ==== Insert muestra ==== */
-                $idMuestra = DB::table('trn_estabilidad_agregados_muestras')->insertGetId([
-                    'id_estabilidad_agregados' => $idEstabilidadAgregados,
-                    'idlab'     => $row['A'],
-                    'rep'       => $row['B'],
-                    'material'  => 1,
-                    'tipo'      => 1,
-                    'posicion'  => $i,
-                    'estado'    => 1,
-                    'ri'        => 0
-                ]);
-
-                /* ==== Resultados ==== */
-                $valores = [
-                    'peso_suelo_seco'                => $row['C'],
-                    'peso_tamices'                   => $row['D'],
-                    'temperatura'                    => $row['E'],
-                    'humedad_ambiental'              => $row['F'],
-                    'fecha_inicio'                   => $row['G'],
-                ];
-
-                foreach ($valores as $sigla => $resultado) {
-                    if (!isset($analisisMap[$sigla])) continue;
-
-                    DB::table('trn_estabilidad_agregados_resultados')->insert([
-                        'id_estabilidad_agregados_muestra' => $idMuestra,
-                        'id_analisis' => $analisisMap[$sigla],
-                        'resultado'   => $resultado,
-                        'estado'      => 1
-                    ]);
+                if ($fila < 3) {
+                    continue; // título y encabezados
                 }
 
-                $i++;
-            }
+                if (empty($row['A'])) {
+                    continue; // IDLab vacío
+                }
+                $tipo = 1;
+                if (!is_numeric($row['A'])) {
+                    $tipo = 2;
+                }
 
+                /* ===== Insert Muestra ===== */
+                $idMuestra = DB::table('trn_coeficiente_extensibilidad_muestras')->insertGetId([
+                    'id_coeficiente_extensibilidad' => $idCoeficienteExtensibilidad,
+                    'idlab'                => $row['A'],
+                    'rep'                  => $row['B'],
+                    'material'             => 1, // placeholder
+                    'tipo'                 => $tipo,
+                    'posicion'             => $i,
+                    'estado'               => 1,
+                    'ri'                   => 0
+                ]);
+
+                /* ===== Resultados ===== */
+                $valores = [
+                    'longitud_inicial'     => $row['C'],
+                    'diametro_muestra'     => $row['D'],
+                    'fecha_medicion'       => $row['E'],
+                    'hora_medicion'        => $row['F']
+
+                ];
+
+
+                foreach ($valores as $sigla => $resultado) {
+
+
+                    if (!isset($analisisMap[$sigla])) {
+                        continue;
+                    }
+
+                    DB::table('trn_coeficiente_extensibilidad_resultados')->insert([
+                        'id_coeficiente_extensibilidad_muestras' => $idMuestra,
+                        'id_analisis'         => $analisisMap[$sigla],
+                        'resultado'           => $resultado,
+                        'estado'              => 1
+                    ]);
+                }
+                $i += 1;
+            }
+            /* ==== Commit FINAL ==== */
             DB::commit();
 
             return redirect()
-                ->route('estabilidad_agregados.index')
+                ->route('coeficiente_extensibilidad.index')
                 ->with('success', 'Archivo importado correctamente');
-
         } catch (\Throwable $e) {
 
             DB::rollBack();

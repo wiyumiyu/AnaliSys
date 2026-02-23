@@ -28,7 +28,7 @@
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
             || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
             || (Route::has('estabilidad_agregados.index') && request()->routeIs('estabilidad_agregados.*'))
-            || (Route::has('coel.index') && request()->routeIs('coel.*'));
+            || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'));
             @endphp
             <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
                 <a href="#collapseAdvancedUI"
@@ -122,10 +122,11 @@
                             Estabilidad de agregados
                         </a>
                     </li>
-
+                    {{-- Coeficiente de extensibilidad (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/coel/listado.php" class="pe-nav-link">
-                            Coeficiente de extensibilidad lineal (COEL)
+                        <a href="{{ route('coeficiente_extensibilidad.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('coeficiente_extensibilidad.*') ? 'active' : '' }}">
+                            Coeficiente de extensibilidad lineal
                         </a>
                     </li>
 
@@ -193,7 +194,7 @@
                 </li>
 
                 <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
+                    <a href="#" class="pe-nav-link">Coeficiente de extensibilidad</a>
                 </li>
 
                 <li class="pe-slide-item">

@@ -558,6 +558,56 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
 });
 
+//------------------------------------------------------------------------------
+// Coeficiente de Extensibilidad
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\CoeficienteExtensibilidadController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/coeficiente-extensibilidad',
+
+        [CoeficienteExtensibilidadController::class, 'archivos']
+    )->name('coeficiente_extensibilidad.index');
+
+    Route::get(
+        '/ingreso-datos/coeficiente-extensibilidad/{archivo}/muestras',
+        [CoeficienteExtensibilidadController::class, 'muestras']
+    )->name('coeficiente_extensibilidad.muestras');
+
+    Route::get(
+        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}/editar',
+        [CoeficienteExtensibilidadController::class, 'edit']
+    )->name('coeficiente_extensibilidad.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}',
+        [CoeficienteExtensibilidadController::class, 'update']
+    )->name('coeficiente_extensibilidad.muestra.update');
+
+    Route::patch(
+        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}/estado',
+        [CoeficienteExtensibilidadController::class, 'toggleEstado']
+    )->name('coeficiente_extensibilidad.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}',
+        [CoeficienteExtensibilidadController::class, 'destroy']
+    )->name('coeficiente_extensibilidad.muestra.destroy');
+
+    Route::delete(
+        '/ingreso-datos/coeficiente-extensibilidad/{id}',
+        [CoeficienteExtensibilidadController::class, 'destroyArchivo']
+    )->name('coeficiente_extensibilidad.destroy');
+
+    Route::post(
+        '/ingreso-datos/coeficiente-extensibilidad/importar',
+        [CoeficienteExtensibilidadController::class, 'importar']
+    )->name('coeficiente_extensibilidad.importar');
+
+});
+
 
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA

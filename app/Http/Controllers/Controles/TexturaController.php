@@ -73,7 +73,7 @@ class TexturaController extends Controller
      * Guardar nuevo control
      * ------------------------------------------------------------
      */
-    public function store(Request $request)
+    public function guardarControl(Request $request)
     {
         $request->validate([
             'anio'        => 'required|integer',

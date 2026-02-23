@@ -74,7 +74,7 @@
                                 <td class="{{ $filaInactiva }}">{{ $m->peso_tamices }}</td>
                                 <td class="{{ $filaInactiva }}">{{ $m->temperatura }}</td>
                                 <td class="{{ $filaInactiva }}">{{ $m->humedad_ambiental }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->fecha_inicio_analisis }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->fecha_inicio }}</td>
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">
@@ -104,7 +104,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10"
+                               <td colspan="8"
                                     class="text-center text-muted py-4">
                                     No hay muestras registradas para este archivo.
                                 </td>

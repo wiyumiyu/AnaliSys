@@ -420,7 +420,7 @@ CREATE TABLE trn_granulometria_muestras (
     ri BOOLEAN NOT NULL DEFAULT 0
 );
 
-CREATE TABLE trn_granulometria_resultado (
+CREATE TABLE trn_granulometria_resultados (
 
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_granulometria_muestras INT NOT NULL,
@@ -450,7 +450,7 @@ CREATE TABLE trn_estabilidad_agregados_muestras (
     ri BOOLEAN DEFAULT 0
 );
 
-CREATE TABLE trn_estabilidad_agregados_resultado (
+CREATE TABLE trn_estabilidad_agregados_resultados (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_estabilidad_agregados_muestras INT NOT NULL,
     id_analisis INT NOT NULL,
@@ -688,13 +688,13 @@ FOREIGN KEY (id_granulometria)
 REFERENCES trn_granulometria(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_granulometria_resultado
+ALTER TABLE trn_granulometria_resultados
 ADD CONSTRAINT fk_gran_resultados_muestras
 FOREIGN KEY (id_granulometria_muestras)
 REFERENCES trn_granulometria_muestras(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_granulometria_resultado
+ALTER TABLE trn_granulometria_resultados
 ADD CONSTRAINT fk_gran_resultados_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
@@ -706,13 +706,13 @@ FOREIGN KEY (id_estabilidad_agregados)
 REFERENCES trn_estabilidad_agregados(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_estabilidad_agregados_resultado
+ALTER TABLE trn_estabilidad_agregados_resultados
 ADD CONSTRAINT fk_ea_resultado_muestras
 FOREIGN KEY (id_estabilidad_agregados_muestras)
 REFERENCES trn_estabilidad_agregados_muestras(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_estabilidad_agregados_resultado
+ALTER TABLE trn_estabilidad_agregados_resultados
 ADD CONSTRAINT fk_ea_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
@@ -1575,9 +1575,113 @@ END$$
 DELIMITER ;
 
 
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_crear_densidad_aparente $$
+
+CREATE PROCEDURE sp_crear_densidad_aparente(
+    IN p_periodo YEAR,
+    IN p_archivo VARCHAR(255),
+    IN p_analista INT
+)
+BEGIN
+    INSERT INTO trn_densidad_aparente(
+        periodo,
+        archivo,
+        fecha,
+        analista
+    )
+    VALUES(
+        p_periodo,
+        p_archivo,
+        NOW(),
+        p_analista
+    );
+
+    SELECT LAST_INSERT_ID() AS id_generado;
+END $$
+
+DELIMITER ;
 
 
+DELIMITER $$
 
+DROP PROCEDURE IF EXISTS sp_insertar_muestra_densidad_aparente $$
+
+CREATE PROCEDURE sp_insertar_muestra_densidad_aparente(
+    IN p_id_archivo INT,
+    IN p_idlab VARCHAR(50),
+    IN p_rep INT,
+    IN p_material INT,
+    IN p_tipo INT,
+    IN p_posicion INT
+)
+BEGIN
+    INSERT INTO trn_densidad_aparente_muestras(
+        id_densidad_aparente,
+        idlab,
+        rep,
+        material,
+        tipo,
+        posicion,
+        estado,
+        ri
+    )
+    VALUES(
+        p_id_archivo,
+        p_idlab,
+        p_rep,
+        p_material,
+        p_tipo,
+        p_posicion,
+        1,
+        0
+    );
+
+    SELECT LAST_INSERT_ID() AS id_muestra;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_insertar_resultado_densidad_aparente $$
+
+CREATE PROCEDURE sp_insertar_resultado_densidad_aparente(
+    IN p_id_muestra INT,
+    IN p_sigla VARCHAR(100),
+    IN p_resultado DECIMAL(18,2)
+)
+BEGIN
+    DECLARE v_id_analisis INT;
+
+    SELECT id
+    INTO v_id_analisis
+    FROM trn_analisis
+    WHERE LOWER(siglas) = LOWER(p_sigla)
+      AND origen = 'DENSIDAD_APARENTE'
+    LIMIT 1;
+
+    IF v_id_analisis IS NOT NULL THEN
+
+        INSERT INTO trn_densidad_aparente_resultados(
+            id_densidad_aparente_muestras,
+            id_analisis,
+            resultado,
+            estado
+        )
+        VALUES(
+            p_id_muestra,
+            v_id_analisis,
+            p_resultado,
+            1
+        );
+
+    END IF;
+
+END $$
+
+DELIMITER ;
 -- Procedimientos para Densidad particulas
 
 -- Listar archivos de densidad particulas por período
@@ -2465,7 +2569,7 @@ BEGIN
 
     FROM trn_granulometria_muestras m
 
-    LEFT JOIN trn_granulometria_resultado r
+    LEFT JOIN trn_granulometria_resultados r
         ON r.id_granulometria_muestras = m.id
        AND r.estado = 1
 
@@ -2523,7 +2627,7 @@ BEGIN
 		r.resultado,
 		r.estado
 
-	FROM trn_granulometria_resultado r
+	FROM trn_granulometria_resultados r
 		INNER JOIN trn_analisis a
 		ON a.id = r.id_analisis
 		AND a.origen = 'GRANULOMETRIA'
@@ -2567,7 +2671,7 @@ IN p_id_resultado INT,
 IN p_resultado VARCHAR(50)
 )
 BEGIN
-	UPDATE trn_granulometria_resultado
+	UPDATE trn_granulometria_resultados
 SET resultado = p_resultado
 WHERE id = p_id_resultado;
 END$$
@@ -2632,8 +2736,9 @@ DELIMITER ;
 -- Listar por periodo
 DELIMITER $$
 
+
 CREATE PROCEDURE sp_listar_estabilidad_agregados_por_periodo (
-    IN p_periodo YEAR
+    IN p_periodo INT
 )
 BEGIN
     SELECT
@@ -2672,7 +2777,7 @@ BEGIN
         MAX(CASE WHEN a.siglas = 'fecha_inicio' THEN r.resultado END) AS fecha_inicio
 
     FROM trn_estabilidad_agregados_muestras m
-    LEFT JOIN trn_estabilidad_agregados_resultado r
+    LEFT JOIN trn_estabilidad_agregados_resultados r
         ON r.id_estabilidad_agregados_muestras = m.id
        AND r.estado = 1
     LEFT JOIN trn_analisis a
@@ -2724,7 +2829,7 @@ BEGIN
 		a.siglas,
 		r.resultado,
 		r.estado
-	FROM trn_estabilidad_agregados_resultado r
+	FROM trn_estabilidad_agregados_resultados r
 	INNER JOIN trn_analisis a
 		ON a.id = r.id_analisis
 	   AND a.origen = 'ESTABILIDAD_AGREGADOS'
@@ -2766,7 +2871,7 @@ IN p_id_resultado INT,
 IN p_resultado VARCHAR(50)
 )
 BEGIN
-	UPDATE trn_estabilidad_agregados_resultado
+	UPDATE trn_estabilidad_agregados_resultados
 	SET resultado = p_resultado
 WHERE id = p_id_resultado;
 END$$
@@ -2826,6 +2931,123 @@ WHERE id = p_id;
 END$$
 
 DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_crear_estabilidad_agregados $$
+
+CREATE PROCEDURE sp_crear_estabilidad_agregados(
+    IN p_periodo YEAR,
+    IN p_archivo VARCHAR(255),
+    IN p_analista INT
+)
+BEGIN
+    INSERT INTO trn_estabilidad_agregados(
+        periodo,
+        archivo,
+        fecha,
+        analista
+    )
+    VALUES(
+        p_periodo,
+        p_archivo,
+        NOW(),
+        p_analista
+    );
+
+    SELECT LAST_INSERT_ID() AS id_generado;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_insertar_muestra_estabilidad_agregados $$
+
+CREATE PROCEDURE sp_insertar_muestra_estabilidad_agregados(
+    IN p_id_archivo INT,
+    IN p_idlab VARCHAR(50),
+    IN p_rep INT,
+    IN p_material INT,
+    IN p_tipo INT,
+    IN p_posicion INT
+)
+BEGIN
+    INSERT INTO trn_estabilidad_agregados_muestras(
+        id_estabilidad_agregados,
+        idlab,
+        rep,
+        material,
+        tipo,
+        posicion,
+        estado,
+        ri
+    )
+    VALUES(
+        p_id_archivo,
+        p_idlab,
+        p_rep,
+        p_material,
+        p_tipo,
+        p_posicion,
+        1,
+        0
+    );
+
+    SELECT LAST_INSERT_ID() AS id_muestra;
+END $$
+
+DELIMITER ;
+
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_insertar_resultado_estabilidad_agregados $$
+
+CREATE PROCEDURE sp_insertar_resultado_estabilidad_agregados(
+    IN p_id_muestra INT,
+    IN p_sigla VARCHAR(100),
+    IN p_resultado VARCHAR(255)
+)
+BEGIN
+    DECLARE v_id_analisis INT;
+
+    SELECT id
+    INTO v_id_analisis
+    FROM trn_analisis
+    WHERE LOWER(siglas) = LOWER(p_sigla)
+      AND origen = 'ESTABILIDAD_AGREGADOS'
+    LIMIT 1;
+
+    IF v_id_analisis IS NOT NULL THEN
+        INSERT INTO trn_estabilidad_agregados_resultados(
+            id_estabilidad_agregados_muestras,
+            id_analisis,
+            resultado,
+            estado
+        )
+        VALUES(
+            p_id_muestra,
+            v_id_analisis,
+            p_resultado,
+            1
+        );
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+
+
+
+
+
+
+
 
 -- Coeficiente de Extensibilidad
 DELIMITER $$
@@ -4361,7 +4583,7 @@ VALUES (2024, 'textura_libre_2024_010.csv', '2024-10-15', 1);
 
 -- CALL sp_traer_archivos_textura();
 
-DELETE FROM trn_controles_lista;
+
 
 -- DENSIDAD APARENTE
 INSERT INTO trn_analisis (analisis, siglas, origen)
@@ -4623,7 +4845,7 @@ VALUES
 (1, '901', 2, 1, 1, 2, 1, 0),
 (1, '902', 1, 1, 1, 3, 1, 0);
 
-INSERT INTO trn_granulometria_resultado
+INSERT INTO trn_granulometria_resultados
 (id_granulometria_muestras, id_analisis, resultado, estado)
 -- Muestra 1
 VALUES
@@ -4648,7 +4870,7 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1);
 
 -- Estabilidad de Agregados
-
+SELECT siglas, origen FROM trn_analisis WHERE origen LIKE '%ESTABILIDAD%';
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
 ('Peso total de suelo seco usado',  'peso_suelo_seco',      'ESTABILIDAD_AGREGADOS'),
@@ -4669,7 +4891,7 @@ VALUES
 (1, '1001', 2, 1, 1, 2, 1, 0),
 (1, '1002', 1, 1, 1, 3, 1, 0);
 
-INSERT INTO trn_estabilidad_agregados_resultado
+INSERT INTO trn_estabilidad_agregados_resultados
 (id_estabilidad_agregados_muestras, id_analisis, resultado, estado)
 VALUES
 

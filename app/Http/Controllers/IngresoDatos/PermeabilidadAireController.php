@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Http\Controllers\Controller;
 
 class PermeabilidadAireController extends Controller {
     /* ===============================

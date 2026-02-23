@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PersonaController;
-use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Administracion\BitacoraController;
@@ -53,6 +52,7 @@ Route::post('/reset-password',
   | ADMIN
   |--------------------------------------------------------------------------
  */
+use App\Http\Controllers\Administracion\UsuarioController;
 
 Route::get('/admin', function () {
     return 'Solo ADMIN';
@@ -173,7 +173,7 @@ Route::get(
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\DensidadAparenteController;
+use App\Http\Controllers\IngresoDatos\DensidadAparenteController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -223,7 +223,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // DENSIDAD PARTICULAS
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\DensidadParticulasController;
+use App\Http\Controllers\IngresoDatos\DensidadParticulasController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -304,7 +304,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // HUMEDAD GRAVIMÉTRICA
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\HumedadGravimetricaController;
+use App\Http\Controllers\IngresoDatos\HumedadGravimetricaController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -361,7 +361,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // CONDUCTIVIDAD HIDRÁULICA
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\ConductividadHidraulicaController;
+use App\Http\Controllers\IngresoDatos\ConductividadHidraulicaController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -411,7 +411,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // RETENCIÓN DE HUMEDAD
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\RetencionHumedadController;
+use App\Http\Controllers\IngresoDatos\RetencionHumedadController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -461,7 +461,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // Granulometría
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\GranulometriaController;
+use App\Http\Controllers\IngresoDatos\GranulometriaController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -511,7 +511,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // Estabilidad de Agregados
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\EstabilidadAgregadosController;
+use App\Http\Controllers\IngresoDatos\EstabilidadAgregadosController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 

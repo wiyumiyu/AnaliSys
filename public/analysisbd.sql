@@ -4719,33 +4719,26 @@ VALUES
 (1, '2003', 1, 1, 1, 3, 1, 0);
 
 INSERT INTO trn_coeficiente_extensibilidad_resultado
-
 (id_coeficiente_extensibilidad_muestras, id_analisis, resultado, estado)
-
 VALUES
--- Muestra 1
-INSERT INTO trn_coeficiente_extensibilidad_resultado
 
-(id_coeficiente_extensibilidad_muestras, id_analisis, resultado, estado)
-
-VALUES
 -- Muestra 1
-(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.50', 1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20', 1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:30', 1);
+(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.50',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10:30',1),
 
 -- Muestra 2
-(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.60', 1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.25', 1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:45', 1);
+(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.60',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.25',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10:45',1),
 
 -- Muestra 3
-(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.40', 1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.10', 1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '11:00', 1);
+(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.40',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.10',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'11:00',1);
 
 /* ============================================================
    CONTROLES

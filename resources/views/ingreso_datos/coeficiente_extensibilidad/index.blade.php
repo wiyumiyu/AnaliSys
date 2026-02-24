@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Permeabilidad del aire - Archivos')
+@section('title', 'Coeficiente de Extensibilidad - Archivos')
 
 @section('css')
 <!-- Datatables CSS -->
@@ -24,7 +24,7 @@
 
                     {{-- TÍTULO --}}
                     <h5 class="mb-0 fw-semibold">
-                        Permeabilidad del aire
+                        Coeficiente de Extensibilidad
                     </h5>
 
                     {{-- ACCIONES --}}
@@ -50,7 +50,7 @@
 
                         {{-- IMPORTAR --}}
                          
-                        <form class="d-flex align-items-center gap-3 m-0" action="{{ route('permeabilidad_aire.importar') }}"
+                        <form class="d-flex align-items-center gap-3 m-0" action="{{ route('coeficiente_extensibilidad.importar') }}"
                               enctype="multipart/form-data"  method="POST">
                              @csrf
                             <input type="file"
@@ -93,7 +93,7 @@
                             {{-- ARCHIVO --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('permeabilidad_aire.muestras', $l->id_archivo) }}">
+                                    <a href="{{ route('coeficiente_extensibilidad.muestras', $l->id_archivo) }}">
                                         {{ $l->archivo }}
                                     </a>
                                 </h6>
@@ -113,7 +113,7 @@
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
                                     {{-- VER --}}
-                                    <a href="{{ route('permeabilidad_aire.muestras', $l->id_archivo) }}"
+                                    <a href="{{ route('coeficiente_extensibilidad.muestras', $l->id_archivo) }}"
                                        class="btn bg-primary-subtle text-primary btn-sm">
                                         <i class="ri-eye-line"></i>
                                     </a>
@@ -229,7 +229,7 @@ function confirmarEliminarArchivo(id, nombre) {
     `;
 
     document.getElementById('modalForm').action =
-        `/ingreso-datos/permeabilidad-aire/${id}`;
+        `/ingreso-datos/coeficiente-extensibilidad/${id}`;
 
     archivoModal.show();
 }

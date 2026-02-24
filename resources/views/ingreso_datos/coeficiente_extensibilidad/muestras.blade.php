@@ -1,7 +1,6 @@
-
 @extends('partials.layouts.master')
 
-@section('title', 'Muestras del archivo - Permeabilidad del aire')
+@section('title', 'Muestras del archivo - Coeficiente de Extensibilidad')
 
 @section('css')
 <!-- Datatables CSS -->
@@ -28,7 +27,7 @@
                     </h5>
 
                     {{-- VOLVER --}}
-                    <a href="{{ route('permeabilidad_aire.index') }}"
+                    <a href="{{ route('coeficiente_extensibilidad.index') }}"
                        class="btn btn-primary">
                         ← Volver
                     </a>
@@ -46,11 +45,10 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Longitud de la muestra</th>
-                            <th>Diametro interno</th>
-                            <th>Area transversal</th>
-                            <th>Volumen de muestra</th>
-                            <th>Temperatura del aire</th>
+                            <th>Longitud inicial</th>
+                            <th>Diametro de la muestra</th>
+                            <th>Fecha de Medición</th>
+                            <th>Hora de Medicion</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -65,18 +63,17 @@
 
                                 {{-- ID LAB --}}
                                 <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('permeabilidad_aire.muestra.edit', $m->id_muestra) }}"
+                                    <a href="{{ route('coeficiente_extensibilidad.muestra.edit', $m->id_muestra) }}"
                                        class="fw-semibold text-reset text-decoration-none">
                                         {{ $m->idlab }}
                                     </a>
                                 </td>
 
                                 <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->longitud_muestra }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->diametro_interno }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->area_transversal }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->volumen_muestra }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->temperatura_aire }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->longitud_inicial }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->diametro_muestra }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->fecha_medicion }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->hora_medicion }}</td>
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">
@@ -197,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * =============================== */
 function confirmarEstadoMuestra(id, estado) {
 
-    modalForm.action = `/ingreso-datos/permeabilidad-aire/muestra/${id}/estado`;
+    modalForm.action = `/ingreso-datos/coeficiente-extensibilidad/muestra/${id}/estado`;
     modalMethod.value = 'PATCH';
 
     if (estado === 1) {
@@ -235,7 +232,7 @@ function confirmarEstadoMuestra(id, estado) {
  * =============================== */
 function confirmarEliminarMuestra(id) {
 
-    modalForm.action = `/ingreso-datos/permeabilidad-aire/muestra/${id}`;
+    modalForm.action = `/ingreso-datos/coeficiente-extensibilidad/muestra/${id}`;
     modalMethod.value = 'DELETE';
 
     modalTitle.textContent = 'Eliminar muestra';

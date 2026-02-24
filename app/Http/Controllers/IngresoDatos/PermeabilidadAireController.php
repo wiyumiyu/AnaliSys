@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\IngresoDatos;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -9,57 +9,41 @@ use App\Http\Controllers\Controller;
 
 class PermeabilidadAireController extends Controller {
     /* ===============================
-     * LISTADO DE LOTES
+     * LISTADO DE ARCHIVOS
      * =============================== */
 
-    public function lotes(Request $request) {
+    public function archivos(Request $request) {
         $anio = $request->get('anio', date('Y'));
-
-        // 🔥 QUEMADO POR AHORA (luego SP)
-        $lotes = [
-            (object) [
-                'id_lote' => 1,
-                'lote' => 'PA-2026-001',
-                'fecha' => '2026-01-15',
-                'analista' => 'Juan Pérez'
-            ]
-        ];
+        $archivos = DB::select(
+                'CALL sp_listar_permeabilidad_aire_por_periodo(?)',
+                [$anio]
+        );
 
         return view(
                 'ingreso_datos.permeabilidad_aire.index',
-                compact('lotes', 'anio')
+                compact('archivos', 'anio')
         );
     }
 
     /* ===============================
-     * LISTADO DE MUESTRAS POR LOTE
+     * LISTADO DE MUESTRAS POR ARCHIVO
      * =============================== */
 
-    public function muestras($idLote) {
-        // 🔥 QUEMADO POR AHORA
-        $lote = 'PA-2026-001';
+    public function muestras($idArchivo) {
+        // nombre del archivo (luego puedes traerlo desde BD si quieres)
+        $archivo = 'PA-2024-001';
 
-        $muestras = [
-            (object) [
-                'id' => 1,
-                'idlab' => 'LAB-001',
-                'rep' => 1,
-                'material' => 'Suelo franco',
-                'metodo' => 'ASTM',
-                'tipomuestra' => 'Indisturbada',
-                'longitud' => 10.5,
-                'diametrointerno' => 5.0,
-                'areatransversal' => 19.63,
-                'volumen' => 196.3,
-                'temperaturaaire' => 25,
-                'promedio' => null,
-                'desvEst' => null
-            ]
-        ];
+        $archivo = DB::table('trn_permeabilidad_aire')
+                ->where('id', $idArchivo)
+                ->value('archivo');
+        $muestras = DB::select(
+                'CALL sp_listar_muestras_permeabilidad_aire_detalle(?)',
+                [$idArchivo]
+        );
 
         return view(
                 'ingreso_datos.permeabilidad_aire.muestras',
-                compact('muestras', 'lote', 'idLote')
+                compact('muestras', 'archivo', 'idArchivo')
         );
     }
 
@@ -68,31 +52,206 @@ class PermeabilidadAireController extends Controller {
      * =============================== */
 
     public function edit($id) {
-        // 🔥 QUEMADO POR AHORA
-        $muestra = (object) [
-                    'id' => $id,
-                    'idlab' => 'LAB-001',
-                    'rep' => 1,
-                    'material' => 'Suelo franco',
-                    'metodo' => 'ASTM',
-                    'tipomuestra' => 'Indisturbada',
-                    'longitud' => 10.5,
-                    'diametrointerno' => 5.0,
-                    'areatransversal' => 19.63,
-                    'volumen' => 196.3,
-                    'temperaturaaire' => 25
-        ];
+        $muestra = collect(
+                DB::select(
+                        'CALL sp_obtener_muestra_permeabilidad_aire(?)',
+                        [$id]
+                )
+                )->first();
+
+        $resultados = DB::select(
+                'CALL sp_listar_resultados_permeabilidad_aire_por_muestra(?)',
+                [$id]
+        );
 
         return view(
-                'ingreso_datos.permeabilidad_aire.edit',
-                compact('muestra')
+                'ingreso_datos.permeabilidad_aire.editar',
+                compact('muestra', 'resultados')
         );
     }
 
+    /* ===============================
+     * ACTUALIZAR MUESTRA
+     * =============================== */
+
     public function update(Request $request, $id) {
-        // luego aquí va el SP
+
+        $muestra = collect(
+                DB::select(
+                        'CALL sp_obtener_muestra_permeabilidad_aire(?)',
+                        [$id]
+                )
+                )->first();
+
+        // actualizar muestra
+        DB::statement(
+                'CALL sp_actualizar_muestra_permeabilidad_aire(?,?,?,?,?,?)',
+                [
+                    $id,
+                    $request->rep,
+                    $request->material,
+                    $request->tipo,
+                    $request->posicion,
+                    $request->estado
+                ]
+        );
+
+        // actualizar resultados
+        if ($request->has('resultados')) {
+            foreach ($request->resultados as $idResultado => $valor) {
+                DB::statement(
+                        'CALL sp_actualizar_resultado_permeabilidad_aire(?,?)',
+                        [$idResultado, $valor]
+                );
+            }
+        }
+
+        // redirigir al listado de muestras
+        return redirect()
+                        ->route(
+                                'permeabilidad_aire.muestras',
+                                $muestra->id_permeabilidad_aire
+                        )
+                        ->with('success', 'Muestra actualizada correctamente');
+    }
+
+    /* ===============================
+     * TOGGLE ESTADO
+     * =============================== */
+
+    public function toggleEstado($id) {
+        DB::statement(
+                'CALL sp_toggle_estado_muestra_permeabilidad_aire(?)',
+                [$id]
+        );
+
         return redirect()
                         ->back()
-                        ->with('success', 'Muestra actualizada correctamente');
+                        ->with('success', 'Estado de la muestra actualizado correctamente');
+    }
+
+    /* ===============================
+     * ELIMINAR MUESTRA
+     * =============================== */
+
+    public function destroy($id) {
+        DB::statement(
+                'CALL sp_eliminar_muestra_permeabilidad_aire(?)',
+                [$id]
+        );
+
+        return redirect()
+                        ->route('permeabilidad_aire.index')
+                        ->with('success', 'Archivo eliminado correctamente');
+    }
+
+    public function destroyArchivo($id) {
+        DB::statement(
+                'CALL sp_eliminar_permeabilidad_aire(?)',
+                [$id]
+        );
+    }
+
+    public function importar(Request $request) {
+        $request->validate([
+            'archivo' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+
+            /* ==== Crear archivo de permeabilidad aire ==== */
+            $idPermeabilidadAire = DB::table('trn_permeabilidad_aire')->insertGetId([
+                'periodo' => date('Y'),
+                'archivo' => $request->file('archivo')->getClientOriginalName(),
+                'fecha' => now(),
+                'analista' => session('id_persona')
+            ]);
+
+            /* ==== Mapa de análisis PERMEABILIDAD DEL AIRE ==== */
+
+            $analisisMap = DB::table('trn_analisis')
+                    ->where('origen', 'PERMEABILIDAD AIRE')
+                    ->pluck('id', 'siglas')
+                    ->toArray();
+
+            /* ==== Leer Excel ===== */
+            $spreadsheet = IOFactory::load(
+                    $request->file('archivo')->getPathname()
+            );
+
+            $rows = $spreadsheet
+                    ->getActiveSheet()
+                    ->toArray(null, true, true, true);
+
+            /* ==== Recorrer filas (desde fila 3) ===== */
+            $i = 1;
+            $tipo = 1;
+            foreach ($rows as $fila => $row) {
+
+                if ($fila < 3) {
+                    continue; // título y encabezados
+                }
+
+                if (empty($row['A'])) {
+                    continue; // IDLab vacío
+                }
+                $tipo = 1;
+                if (!is_numeric($row['A'])) {
+                    $tipo = 2;
+                }
+
+                /* ===== Insert Muestra ===== */
+                $idMuestra = DB::table('trn_permeabilidad_aire_muestras')->insertGetId([
+                    'id_permeabilidad_aire' => $idPermeabilidadAire,
+                    'idlab' => $row['A'],
+                    'rep' => $row['B'],
+                    'material' => 1, // placeholder
+                    'tipo' => $tipo,
+                    'posicion' => $i,
+                    'estado' => 1,
+                    'ri' => 0
+                ]);
+
+                /* ===== Resultados ===== */
+                $valores = [
+                    'longitud_muestra' => $row['C'],
+                    'diametro_interno' => $row['D'],
+                    'area_transversal' => $row['E'],
+                    'volumen_muestra' => $row['F'],
+                    'temperatura_aire' => $row['G']
+                ];
+
+                foreach ($valores as $sigla => $resultado) {
+
+
+                    if (!isset($analisisMap[$sigla])) {
+                        continue;
+                    }
+
+                    DB::table('trn_permeabilidad_aire_resultados')->insert([
+                        'id_permeabilidad_aire_muestras' => $idMuestra,
+                        'id_analisis' => $analisisMap[$sigla],
+                        'resultado' => $resultado,
+                        'estado' => 1
+                    ]);
+                }
+                $i += 1;
+            }
+            /* ==== Commit FINAL ==== */
+            DB::commit();
+
+            return redirect()
+                            ->route('permeabilidad_aire.index')
+                            ->with('success', 'Archivo importado correctamente');
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return back()->withErrors(
+                            'Error al importar: ' . $e->getMessage()
+                    );
+        }
     }
 }

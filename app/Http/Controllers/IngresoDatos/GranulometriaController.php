@@ -76,6 +76,8 @@ public function muestras($idArchivo)
      * =============================== */
     public function update(Request $request, $id)
     {
+                DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
         // obtener id_granulometria antes de actualizar
         $muestra = collect(
             DB::select(

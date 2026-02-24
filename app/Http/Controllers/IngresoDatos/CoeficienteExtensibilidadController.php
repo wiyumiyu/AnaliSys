@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\IngresoDatos;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Http\Controllers\Controller;
 
 class CoeficienteExtensibilidadController extends Controller
 {
@@ -12,7 +13,11 @@ class CoeficienteExtensibilidadController extends Controller
      * LISTADO DE ARCHIVOS
      * =============================== */
     public function archivos(Request $request)
+    
+    
     {
+        
+
         $anio = $request->get('anio', date('Y'));
 
         $archivos = DB::select(

@@ -28,7 +28,9 @@
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
             || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
             || (Route::has('estabilidad_agregados.index') && request()->routeIs('estabilidad_agregados.*'))
-            || (Route::has('coel.index') && request()->routeIs('coel.*'));
+            || (Route::has('coel.index') && request()->routeIs('coel.*'))
+            || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'))
+            || (Route::has('permeabilidad_aire.index') && request()->routeIs('permeabilidad_aire.*'));
             @endphp
             <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
                 <a href="#collapseAdvancedUI"
@@ -60,14 +62,14 @@
                     {{-- DENSIDAD APARENTE (LARAVEL) --}}
                     <li class="pe-slide-item">
                         <a href="{{ route('densidad_aparente.index') }}"
-                            class="pe-nav-link {{ request()->routeIs('densidad_aparente.*') ? 'active' : '' }}">
+                           class="pe-nav-link {{ request()->routeIs('densidad_aparente.*') ? 'active' : '' }}">
                             Densidad Aparente
                         </a>
                     </li>
 
                     <li class="pe-slide-item">
-                     <a href="{{ route('densidad_particulas.index') }}"
-                            class="pe-nav-link {{ request()->routeIs('densidad_particulas.*') ? 'active' : '' }}">
+                        <a href="{{ route('densidad_particulas.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('densidad_particulas.*') ? 'active' : '' }}">
                             Densidad de Particulas
                         </a>
                     </li>
@@ -81,7 +83,7 @@
                     {{-- HUMEDAD GRAVIMETRICA (LARAVEL) --}}
                     <li class="pe-slide-item">
                         <a href="{{ route('humedad_gravimetrica.index') }}"
-                            class="pe-nav-link {{ request()->routeIs('humedad_gravimetrica.*') ? 'active' : '' }}">
+                           class="pe-nav-link {{ request()->routeIs('humedad_gravimetrica.*') ? 'active' : '' }}">
                             Humedad Gravimetrica
                         </a>
                     </li>
@@ -89,7 +91,7 @@
                     {{-- Conductividad Hidráulica (LARAVEL) --}}
                     <li class="pe-slide-item">
                         <a href="{{ route('conductividad_hidraulica.index') }}"
-                            class="pe-nav-link {{ request()->routeIs('conductividad_hidraulica.*') ? 'active' : '' }}">
+                           class="pe-nav-link {{ request()->routeIs('conductividad_hidraulica.*') ? 'active' : '' }}">
                             Conductividad Hidráulica
                         </a>
                     </li>
@@ -97,7 +99,7 @@
                     {{-- Retención de Humedad (LARAVEL) --}}
                     <li class="pe-slide-item">
                         <a href="{{ route('retencion_humedad.index') }}"
-                            class="pe-nav-link {{ request()->routeIs('retencion_humedad.*') ? 'active' : '' }}">
+                           class="pe-nav-link {{ request()->routeIs('retencion_humedad.*') ? 'active' : '' }}">
                             Retención de Humedad
                         </a>
                     </li>
@@ -126,13 +128,16 @@
                     <li class="pe-slide-item">
                         <a href="/pages/ingreso_datos/coel/listado.php" class="pe-nav-link">
                             Coeficiente de extensibilidad lineal (COEL)
-                        </a>
+                            <a href="{{ route('coeficiente_extensibilidad.index') }}"
+                               class="pe-nav-link {{ request()->routeIs('coeficiente_extensibilidad.*') ? 'active' : '' }}">
+                                Coeficiente de extensibilidad lineal
+                            </a>
                     </li>
-
                     {{-- PERMEABILIDAD (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="{{ route('pa.index') }}"
-                           class="pe-nav-link {{ request()->routeIs('pa.*') ? 'active' : '' }}">
+    
+                        <a href="{{ route('permeabilidad_aire.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('permeabilidad_aire.*') ? 'active' : '' }}">
                             Permeabilidad del aire
                         </a>
                     </li>
@@ -141,67 +146,67 @@
             </li>
 
 
-           <li class="pe-slide pe-has-sub">
+            <li class="pe-slide pe-has-sub">
                 <a href="#collapseControles" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseControles">
                     <i class="ri-pulse-line pe-nav-icon"></i>
                     <span class="pe-nav-content">Controles</span>
                     <i class="ri-arrow-down-s-line pe-nav-arrow"></i>
                 </a>
                 <ul class="pe-slide-menu collapse" id="collapseControles">
-                
-                <li class="pe-slide-item">
+
+                    <li class="pe-slide-item">
                         <a href="{{ route('controlTextura.index') }}"
                            class="pe-nav-link {{ request()->routeIs('controlTextura.*') ? 'active' : '' }}">
                             Control de Textura
                         </a>
                     </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Densidad Aparente</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Densidad Aparente</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Densidad de Partículas</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Densidad de Partículas</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Porosidad Total</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Porosidad Total</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Humedad Gravimétrica</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Humedad Gravimétrica</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Conductividad Hidráulica</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Conductividad Hidráulica</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Retención de Humedad</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Retención de Humedad</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Curvatura de Retención de Humedad</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Curvatura de Retención de Humedad</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Granulometría de la fracción gruesa</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Granulometría de la fracción gruesa</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Estabilidad de agregados</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Estabilidad de agregados</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Permeabilidad del aire</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Permeabilidad del aire</a>
+                    </li>
                 </ul>
             </li>
-            
+
             <li class="pe-slide pe-has-sub">
                 <a href="#collapseResultados" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseResultados">
                     <i class="ri-check-double-line pe-nav-icon"></i>
@@ -209,56 +214,56 @@
                     <i class="ri-arrow-down-s-line pe-nav-arrow"></i>
                 </a>
                 <ul class="pe-slide-menu collapse" id="collapseResultados">
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Textura</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Textura</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Densidad Aparente</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Densidad Aparente</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Densidad de Partículas</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Densidad de Partículas</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Porosidad Total</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Porosidad Total</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Humedad Gravimétrica</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Humedad Gravimétrica</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Conductividad Hidráulica</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Conductividad Hidráulica</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Retención de Humedad</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Retención de Humedad</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Curvatura de Retención de Humedad</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Curvatura de Retención de Humedad</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Granulometría de la fracción gruesa</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Granulometría de la fracción gruesa</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Estabilidad de agregados</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Estabilidad de agregados</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
+                    </li>
 
-                <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Permeabilidad del aire</a>
-                </li>
+                    <li class="pe-slide-item">
+                        <a href="#" class="pe-nav-link">Permeabilidad del aire</a>
+                    </li>
                 </ul>
             </li>
-            
+
             <li class="pe-slide pe-has-sub">
                 <a href="#collapseClientes" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseClientes">
                     <i class="ri-file-text-line pe-nav-icon"></i>

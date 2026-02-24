@@ -1,10 +1,8 @@
-
 @extends('partials.layouts.master')
 
-@section('title', 'Editar muestra - Permealidad del aire')
+@section('title', 'Editar muestra - Coeficiente de Extensibilidad')
 
 @section('css')
-
 <link rel="stylesheet"
       href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
 <link rel="stylesheet"
@@ -13,10 +11,8 @@
 
 @section('content')
 
-
 <div class="row">
     <div class="col-lg-12">
-
         <br>
 
         <div class="card">
@@ -26,7 +22,7 @@
                 <div class="d-flex flex-wrap gap-4 justify-content-between align-items-center">
 
                     <h5 class="mb-0 fw-semibold">
-                        Editar muestra – Permeabilidad del aire {{ $muestra->idlab }}
+                        Editar muestra – Coeficiente de Extensibilidad {{ $muestra->idlab }}
                     </h5>
 
                     <a href="{{ url()->previous() }}" class="btn btn-primary">
@@ -40,7 +36,7 @@
             <div class="card-body">
 
                 <form method="POST"
-                      action="{{ route('permeabilidad_aire.muestra.update', $muestra->id) }}">
+                      action="{{ route('coeficiente_extensibilidad.muestra.update', $muestra->id) }}">
                     @csrf
                     @method('PUT')
 
@@ -73,13 +69,6 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Método</label>
-                            <input name="metodo"
-                                   class="form-control"
-                                   value="{{ $muestra->metodo }}">
-                        </div>
-
-                        <div class="col-md-4">
                             <label class="form-label">Tipo de muestra</label>
                             <input name="tipo"
                                    class="form-control"
@@ -100,27 +89,29 @@
                                 <option value="0" @selected($muestra->estado == 0)>Anulado</option>
                             </select>
                         </div>
+
                     </div>
 
                     {{-- ================= RESULTADOS DE DENSIDAD ================= --}}
                     <br><br>
                     <h5 class="fw-semibold mb-3">
-                        Resultados de permeabilidad del aire
+                        Resultados de coeficiente de extensibilidad
                     </h5>
+
                     <div class="row g-3">
 
                         @foreach($resultados as $r)
-                        <div class="col-md-3">
-                            <label class="form-label">
-                                {{ $r->analisis }}
-                                <small class="text-muted">({{ $r->siglas }})</small>
-                            </label>
+                            <div class="col-md-3">
+                                <label class="form-label">
+                                    {{ $r->analisis }}
+                                    <small class="text-muted">({{ $r->siglas }})</small>
+                                </label>
 
-                            <input type="text"
-                                   class="form-control"
-                                   name="resultados[{{ $r->id_resultado }}]"
-                                   value="{{ $r->resultado }}">
-                        </div>
+                                <input type="text"
+                                       class="form-control"
+                                       name="resultados[{{ $r->id_resultado }}]"
+                                       value="{{ $r->resultado }}">
+                            </div>
                         @endforeach
 
                     </div>
@@ -129,10 +120,11 @@
                     <br><br>
                     <hr class="my-4">
 
-                        <div class="d-flex gap-2">
+                    <div class="d-flex gap-2">
                         <button class="btn btn-primary">
                             Guardar cambios
                         </button>
+
                         <a href="{{ url()->previous() }}"
                            class="btn btn-light-primary">
                             Cancelar
@@ -143,31 +135,23 @@
 
             </div>
         </div>
-
     </div>
 </div>
+
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
 @endsection
 
-
 @section('js')
-
-<!-- Bootstrap -->
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 
-<!-- DataTables CORE -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
-<!-- FabKin Datatable Init -->
 <script src="{{ asset('js/table/datatable.init.js') }}"></script>
-
-<!-- Buscar en tabla -->
 <script src="{{ asset('js/table/buscarEnTabla.js') }}"></script>
 
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
-
 @endsection

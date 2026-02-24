@@ -4447,6 +4447,266 @@ END$$
 
 DELIMITER ;
 
+-- Muestra
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_granulometria_muestra_ai$$
+CREATE TRIGGER trg_granulometria_muestra_ai
+AFTER INSERT ON trn_granulometria_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_granulometria_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'idlab', NEW.idlab,
+            'rep', NEW.rep,
+            'material', NEW.material,
+            'tipo', NEW.tipo,
+            'posicion', NEW.posicion
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_granulometria_muestra_au$$
+
+CREATE TRIGGER trg_granulometria_muestra_au
+
+AFTER UPDATE ON trn_granulometria_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_granulometria_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_granulometria_muestra_au$$
+
+CREATE TRIGGER trg_granulometria_muestra_au
+
+AFTER UPDATE ON trn_granulometria_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_granulometria_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+-- Resultados
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_granulometria_resultado_au$$
+
+CREATE TRIGGER trg_granulometria_resultado_au
+
+AFTER UPDATE ON trn_granulometria_resultado
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (OLD.resultado <=> NEW.resultado)
+
+    THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_granulometria_resultado',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'id', OLD.id,
+
+                'resultado', OLD.resultado
+
+            ),
+
+            JSON_OBJECT(
+
+                'id', NEW.id,
+
+                'resultado', NEW.resultado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_granulometria_resultado_ad$$
+
+CREATE TRIGGER trg_granulometria_resultado_ad
+
+AFTER DELETE ON trn_granulometria_resultado
+
+FOR EACH ROW
+
+BEGIN
+
+    CALL sp_bitacora_usuario(
+
+        'trn_granulometria_resultado',
+
+        COALESCE(@bitacora_usuario, 0),
+
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+        'DELETE',
+
+        JSON_OBJECT(
+
+            'id', OLD.id,
+
+            'resultado', OLD.resultado
+
+        ),
+
+        NULL
+
+    );
+
+END$$
+
+DELIMITER ;
+
 -- Triggers Estabilidad de Agregados
 DELIMITER $$
 

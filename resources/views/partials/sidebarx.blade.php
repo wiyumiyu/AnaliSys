@@ -126,8 +126,6 @@
                     </li>
 
                     <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/coel/listado.php" class="pe-nav-link">
-                            Coeficiente de extensibilidad lineal (COEL)
                             <a href="{{ route('coeficiente_extensibilidad.index') }}"
                                class="pe-nav-link {{ request()->routeIs('coeficiente_extensibilidad.*') ? 'active' : '' }}">
                                 Coeficiente de extensibilidad lineal

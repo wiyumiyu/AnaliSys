@@ -592,8 +592,8 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     Route::get(
         '/ingreso-datos/permeabilidad-aire',
 
-        [CoeficienteExtensibilidadController::class, 'archivos']
-    )->name('coeficiente_extensibilidad.index');
+        [PermeabilidadAireController::class, 'archivos']
+    )->name('permeabilidad_aire.index');
 
     Route::get(
         '/ingreso-datos/permeabilidad-aire/{archivo}/muestras',

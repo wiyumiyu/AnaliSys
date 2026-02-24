@@ -487,6 +487,35 @@ CREATE TABLE trn_coeficiente_extensibilidad_resultado (
     estado BOOLEAN DEFAULT 1
 );
 
+-- Permeabilidad del Aire
+CREATE TABLE trn_permeabilidad_aire (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255),
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+
+CREATE TABLE trn_permeabilidad_aire_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_permeabilidad_aire INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL DEFAULT 1,
+    material INT NOT NULL,
+    tipo INT NOT NULL,
+    posicion INT NOT NULL,
+    estado BOOLEAN DEFAULT 1,
+    ri BOOLEAN DEFAULT 0
+);
+
+CREATE TABLE trn_permeabilidad_aire_resultado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_permeabilidad_aire_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+    estado BOOLEAN DEFAULT 1
+);
+
 /* ============================================================
    CONTROLES (TABLAS)
    ============================================================ */
@@ -681,6 +710,7 @@ ADD CONSTRAINT fk_rh_resultados_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
 
+
 -- Granulometria
 ALTER TABLE trn_granulometria_muestras
 ADD CONSTRAINT fk_gran_muestras_granulometria
@@ -698,6 +728,7 @@ ALTER TABLE trn_granulometria_resultado
 ADD CONSTRAINT fk_gran_resultados_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
+
 
 -- Estabilidad de Agregados
 ALTER TABLE trn_estabilidad_agregados_muestras
@@ -717,8 +748,8 @@ ADD CONSTRAINT fk_ea_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
 
--- Coeficiente de Extensibilidad 
 
+-- Coeficiente de Extensibilidad 
 ALTER TABLE trn_coeficiente_extensibilidad_muestras
 ADD CONSTRAINT fk_ce_muestras
 FOREIGN KEY (id_coeficiente_extensibilidad)
@@ -735,6 +766,26 @@ ALTER TABLE trn_coeficiente_extensibilidad_resultado
 ADD CONSTRAINT fk_ce_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
+
+
+-- Permeabilidad del Aire
+ALTER TABLE trn_permeabilidad_aire_muestras
+ADD CONSTRAINT fk_pa_muestras
+FOREIGN KEY (id_permeabilidad_aire)
+REFERENCES trn_permeabilidad_aire(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_permeabilidad_aire_resultado
+ADD CONSTRAINT fk_pa_resultado_muestras
+FOREIGN KEY (id_permeabilidad_aire_muestras)
+REFERENCES trn_permeabilidad_aire_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_permeabilidad_aire_resultado
+ADD CONSTRAINT fk_pa_resultado_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
+
 
 ALTER TABLE trn_controles_lista
 ADD CONSTRAINT fk_controles_lista
@@ -3023,6 +3074,204 @@ WHERE id = p_id;
 END$$
 DELIMITER ;
 
+-- Permeabilidad del Aire
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_permeabilidad_aire_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        pa.id AS id_archivo,
+        pa.periodo,
+        pa.fecha,
+        pa.archivo,
+        pa.analista AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_permeabilidad_aire pa
+    INNER JOIN tbl_persona p
+        ON p.id_persona = pa.analista
+    WHERE pa.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY pa.fecha DESC, pa.id DESC;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_permeabilidad_aire_detalle (
+    IN p_id_permeabilidad_aire INT
+)
+BEGIN
+    SELECT
+        m.id AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+        MAX(CASE WHEN a.siglas = 'longitud_muestra' THEN r.resultado END) AS longitud_muestra,
+        MAX(CASE WHEN a.siglas = 'diametro_interno' THEN r.resultado END) AS diametro_interno,
+        MAX(CASE WHEN a.siglas = 'area_transversal' THEN r.resultado END) AS area_transversal,
+        MAX(CASE WHEN a.siglas = 'volumen_muestra' THEN r.resultado END) AS volumen_muestra,
+        MAX(CASE WHEN a.siglas = 'temperatura_aire' THEN r.resultado END) AS temperatura_aire
+        
+    FROM trn_permeabilidad_aire_muestras m
+    LEFT JOIN trn_permeabilidad_aire_resultado r
+        ON r.id_permeabilidad_aire_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'PERMEABILIDAD_AIRE'
+    WHERE m.id_permeabilidad_aire = p_id_permeabilidad_aire
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+    ORDER BY
+        m.idlab, m.rep;
+        
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_permeabilidad_aire (
+    IN p_id INT
+)
+BEGIN
+SELECT
+    id,
+    id_permeabilidad_aire,
+    idlab,
+    rep,
+    material,
+    tipo,
+    posicion,
+    estado,
+    ri
+FROM trn_permeabilidad_aire_muestras
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_permeabilidad_aire_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+SELECT
+
+    r.id AS id_resultado,
+    r.id_analisis,
+    a.analisis,
+    a.siglas,
+    r.resultado,
+    r.estado
+
+FROM trn_permeabilidad_aire_resultado r
+INNER JOIN trn_analisis a
+    ON a.id = r.id_analisis
+   AND a.origen = 'PERMEABILIDAD_AIRE'
+WHERE r.id_permeabilidad_aire_muestras = p_id_muestra
+ORDER BY a.id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_permeabilidad_aire (
+
+IN p_id INT,
+IN p_rep INT,
+IN p_material INT,
+IN p_tipo INT,
+IN p_posicion INT,
+IN p_estado TINYINT
+
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_muestras
+SET
+rep = p_rep,
+material = p_material,
+tipo = p_tipo,
+posicion = p_posicion,
+estado = p_estado
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_permeabilidad_aire (
+IN p_id_resultado INT,
+IN p_resultado VARCHAR(50)
+
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_resultado
+SET resultado = p_resultado
+WHERE id = p_id_resultado;
+
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_permeabilidad_aire (
+IN p_id INT
+
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_muestras
+SET estado = 0
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_permeabilidad_aire (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_permeabilidad_aire_muestras
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_permeabilidad_aire (
+IN p_id INT
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_muestras
+SET estado = IF(estado = 1, 0, 1)
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_permeabilidad_aire (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_permeabilidad_aire
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
 DELIMITER $$
 -- drop PROCEDURE sp_listar_controles_por_anio
 CREATE PROCEDURE sp_listar_controles_por_anio (
@@ -3968,6 +4217,114 @@ END$$
 
 DELIMITER ;
 
+-- Permeabilidad del Aire
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_ai$$
+CREATE TRIGGER trg_permeabilidad_aire_ai
+AFTER INSERT ON trn_permeabilidad_aire
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_permeabilidad_aire',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_au$$
+CREATE TRIGGER trg_permeabilidad_aire_au
+AFTER UPDATE ON trn_permeabilidad_aire
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_permeabilidad_aire',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_ad$$
+CREATE TRIGGER trg_permeabilidad_aire_ad
+AFTER DELETE ON trn_permeabilidad_aire
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_permeabilidad_aire',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+
+END$$
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_bitacora_completa (
+    IN p_id BIGINT
+)
+BEGIN
+    SELECT
+        b.id,
+        b.tabla,
+        SUBSTRING_INDEX(
+            COALESCE(c.correo, b.usuario),
+            '@',
+            1
+        ) AS usuario,
+        b.usuario AS usuario_real,
+        b.ip,
+        b.accion,
+        b.fecha,
+        b.datos_antes,
+        b.datos_despues
+    FROM tbl_bitacora b
+    LEFT JOIN trn_persona_correo c
+        ON c.id_persona = b.usuario
+        AND c.descripcion = 'PRINCIPAL'
+    WHERE b.id = p_id;
+
+END$$
+
+DELIMITER ;
+
 
 
 /* PROCS DE CONTROLES DE TEXTURA */
@@ -4721,24 +5078,74 @@ VALUES
 INSERT INTO trn_coeficiente_extensibilidad_resultado
 (id_coeficiente_extensibilidad_muestras, id_analisis, resultado, estado)
 VALUES
-
 -- Muestra 1
-(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.50',1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20',1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22',1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10:30',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.50', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:30', 1),
 
 -- Muestra 2
-(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.60',1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.25',1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22',1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10:45',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.60', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.25', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:45', 1),
 
 -- Muestra 3
-(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.40',1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.10',1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22',1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'11:00',1);
+(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.40', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.10', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '11:00', 1);
+
+
+-- Permeabilidad del Aire
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+
+('Longitud de la muestra',    'longitud_muestra',     'PERMEABILIDAD_AIRE'),
+('Diametro interno',          'diametro_interno',     'PERMEABILIDAD_AIRE'),
+('Area transversal',          'area_transversal',     'PERMEABILIDAD_AIRE'),
+('Volumen de muestra',        'volumen_muestra',      'PERMEABILIDAD_AIRE'),
+('Temperatura del aire',      'temperatura_aire',     'PERMEABILIDAD_AIRE');
+
+
+INSERT INTO trn_permeabilidad_aire
+(periodo, archivo, fecha, analista)
+
+VALUES
+(2026, 'PA-2026-001', '2024-02-16', 1);
+
+INSERT INTO trn_permeabilidad_aire_muestras
+
+(id_permeabilidad_aire, idlab, rep, material, tipo, posicion, estado, ri)
+
+VALUES
+(1, '3001', 1, 1, 1, 1, 1, 0),
+(1, '3002', 2, 1, 1, 2, 1, 0),
+(1, '3003', 1, 1, 1, 3, 1, 0);
+
+INSERT INTO trn_permeabilidad_aire_resultado
+(id_permeabilidad_aire_muestras, id_analisis, resultado, estado)
+VALUES
+-- Muestra 1
+(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_muestra' AND origen='PERMEABILIDAD_AIRE'),'10.00',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_interno' AND origen='PERMEABILIDAD_AIRE'),'5.00',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='area_transversal' AND origen='PERMEABILIDAD_AIRE'),'19.63',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='volumen_muestra' AND origen='PERMEABILIDAD_AIRE'),'196.35',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='temperatura_aire' AND origen='PERMEABILIDAD_AIRE'),'25.00',1),
+
+-- Muestra 2
+(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_muestra' AND origen='PERMEABILIDAD_AIRE'),'11.00',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_interno' AND origen='PERMEABILIDAD_AIRE'),'5.10',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='area_transversal' AND origen='PERMEABILIDAD_AIRE'),'20.43',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='volumen_muestra' AND origen='PERMEABILIDAD_AIRE'),'224.73',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='temperatura_aire' AND origen='PERMEABILIDAD_AIRE'),'24.50',1),
+
+-- Muestra 3
+(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_muestra' AND origen='PERMEABILIDAD_AIRE'),'9.50',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_interno' AND origen='PERMEABILIDAD_AIRE'),'4.90',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='area_transversal' AND origen='PERMEABILIDAD_AIRE'),'18.85',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='volumen_muestra' AND origen='PERMEABILIDAD_AIRE'),'179.07',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='temperatura_aire' AND origen='PERMEABILIDAD_AIRE'),'26.00',1);
 
 /* ============================================================
    CONTROLES

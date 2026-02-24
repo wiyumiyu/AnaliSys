@@ -28,7 +28,8 @@
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
             || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
             || (Route::has('estabilidad_agregados.index') && request()->routeIs('estabilidad_agregados.*'))
-            || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'));
+            || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'))
+            || (Route::has('permeabilidad_aire.index') && request()->routeIs('permeabilidad_aire.*'));
             @endphp
             <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
                 <a href="#collapseAdvancedUI"
@@ -132,8 +133,8 @@
 
                     {{-- PERMEABILIDAD (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="{{ route('pa.index') }}"
-                           class="pe-nav-link {{ request()->routeIs('pa.*') ? 'active' : '' }}">
+                        <a href="{{ route('permeabilidad_aire.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('permeabilidad_aire.*') ? 'active' : '' }}">
                             Permeabilidad del aire
                         </a>
                     </li>

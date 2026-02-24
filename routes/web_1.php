@@ -285,37 +285,6 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     
 
 });
-//------------------------------------------------------------------------------
-// Permeabilidad de Aire PLANTILLA
-//-------------------------------------------------------------------------------
-use App\Http\Controllers\PermeabilidadAireController;
-
-Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
-
-    //url
-    //controller
-    //sidebar
-    Route::get(
-            '/ingreso-datos/permeabilidad-aire',
-            [PermeabilidadAireController::class, 'lotes']
-    )->name('pa.index');
-
-    Route::get(
-            '/ingreso-datos/permeabilidad-aire/{lote}/muestras',
-            [PermeabilidadAireController::class, 'muestras']
-    )->name('pa.muestras');
-
-    Route::get(
-            '/ingreso-datos/permeabilidad-aire/muestra/{id}/editar',
-            [PermeabilidadAireController::class, 'edit']
-    )->name('pa.muestra.edit');
-
-    Route::put(
-            '/ingreso-datos/permeabilidad-aire/muestra/{id}',
-            [PermeabilidadAireController::class, 'update']
-    )->name('pa.muestra.update');
-});
-
 
 //------------------------------------------------------------------------------
 // HUMEDAD GRAVIMÉTRICA
@@ -623,6 +592,57 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     )->name('coeficiente_extensibilidad.importar');
 
 });
+
+//------------------------------------------------------------------------------
+// Permeabilidad de Aire
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\PermeabilidadAireController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get(
+        '/ingreso-datos/permeabilidad-aire',
+
+        [CoeficienteExtensibilidadController::class, 'archivos']
+    )->name('coeficiente_extensibilidad.index');
+
+    Route::get(
+        '/ingreso-datos/permeabilidad-aire/{archivo}/muestras',
+        [PermeabilidadAireController::class, 'muestras']
+    )->name('permeabilidad_aire.muestras');
+
+    Route::get(
+        '/ingreso-datos/permeabilidad-aire/muestra/{id}/editar',
+        [PermeabilidadAireController::class, 'edit']
+    )->name('permeabilidad_aire.muestra.edit');
+
+    Route::put(
+        '/ingreso-datos/permeabilidad-aire/muestra/{id}',
+        [PermeabilidadAireController::class, 'update']
+    )->name('permeabilidad_aire.muestra.update');
+
+    Route::patch(
+        '/ingreso-datos/permeabilidad-aire/muestra/{id}/estado',
+        [PermeabilidadAireController::class, 'toggleEstado']
+    )->name('permeabilidad_aire.muestra.toggle');
+
+    Route::delete(
+        '/ingreso-datos/permeabilidad-aire/muestra/{id}',
+        [PermeabilidadAireController::class, 'destroy']
+    )->name('permeabilidad_aire.muestra.destroy');
+
+    Route::delete(
+        '/ingreso-datos/permeabilidad-aire/{id}',
+        [PermeabilidadAireController::class, 'destroyArchivo']
+    )->name('permeabilidad_aire.destroy');
+
+    Route::post(
+        '/ingreso-datos/permeabilidad-aire/importar',
+        [PermeabilidadAireController::class, 'importar']
+    )->name('permeabilidad_aire.importar');
+
+});
+
 
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA

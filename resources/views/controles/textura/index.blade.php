@@ -104,7 +104,7 @@
                             <td class="text-end">
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
-                                    <a href="{{ route('controles.textura.graficos', $l->id) }}"
+                                    <a href=""
                                        class="btn bg-primary-subtle text-primary btn-sm">
                                         <i class="ri-eye-line"></i>
                                     </a>
@@ -339,21 +339,25 @@
                                                 }
 </script>
 <script>
-    document.querySelector('#modalNuevoControl form')
-            .addEventListener('submit', function(e) {
+document.querySelector('#modalNuevoControl form')
+    .addEventListener('submit', function(e) {
 
-            const seleccionados = document.querySelectorAll(
-                    '#modalNuevoControl input[name="archivos[]"]:checked'
-                    );
-            if (seleccionados.length === 0) {
-            e.preventDefault();
-            alert('Debe seleccionar al menos un archivo.');
-            const dropdownBtn = document.querySelector(
-                    '#modalNuevoControl [data-bs-toggle="dropdown"]'
-                    );
-            dropdownBtn.click();
-            }
+    const seleccionados = document.querySelectorAll(
+        '#modalNuevoControl input[name="archivos[]"]:checked'
+    );
 
-            });
+    if (seleccionados.length === 0) {
+        e.preventDefault();
+
+        alert('Debe seleccionar al menos un archivo.');
+
+        const dropdownBtn = document.querySelector(
+            '#modalNuevoControl [data-bs-toggle="dropdown"]'
+        );
+
+        dropdownBtn.click();
+    }
+
+});
 </script>
 @endsection

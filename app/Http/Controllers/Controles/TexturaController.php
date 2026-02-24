@@ -73,7 +73,7 @@ class TexturaController extends Controller
      * Guardar nuevo control
      * ------------------------------------------------------------
      */
-    public function store(Request $request)
+    public function guardarControl(Request $request)
     {
         $request->validate([
             'anio'        => 'required|integer',
@@ -128,10 +128,5 @@ class TexturaController extends Controller
             return back()
                 ->with('error', 'No se pudo eliminar el control.');
         }
-    }
-    
-    public function graficos($id)
-    {
-        return view('controles.textura.graficos');
     }
 }

@@ -1,9 +1,9 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Permeabilidad del aire - Archivos')
+@section('title', 'Permeabilidad del aire - Lotes')
 
 @section('css')
-<!-- Datatables CSS -->
+<!-- Datatables CSS (FabKin style) -->
 <link rel="stylesheet"
       href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
 <link rel="stylesheet"
@@ -20,56 +20,45 @@
         {{-- CARD --}}
         <div class="card">
             <div class="card-header">
-                <div class="d-flex gap-4 justify-content-between align-items-center">
+    <div class="d-flex gap-4 justify-content-between align-items-center">
 
-                    {{-- TÍTULO --}}
-                    <h5 class="mb-0 fw-semibold">
-                        Permeabilidad del aire
-                    </h5>
+        {{-- TÍTULO --}}
+        <h5 class="mb-0 fw-semibold">
+            Permeabilidad del aire
+        </h5>
 
-                    {{-- ACCIONES --}}
-                    <div class="d-flex gap-3 align-items-center">
+        {{-- ACCIONES --}}
+        <div class="d-flex gap-3 align-items-center">
 
-                        {{-- AÑO --}}
-                        <select class="form-select w-auto"
-                                onchange="location='?anio='+this.value">
-                            @for($i = date('Y'); $i >= date('Y')-10; $i--)
-                                <option value="{{ $i }}" @selected($anio==$i)>
-                                    {{ $i }}
-                                </option>
-                            @endfor
-                        </select>
+            {{-- AÑO (MISMA ALTURA, MENOR ANCHO) --}}
+            <select class="form-select w-auto"
+                    onchange="location='?anio='+this.value">
+                @for($i = date('Y'); $i >= date('Y')-10; $i--)
+                    <option value="{{ $i }}" @selected($anio==$i)>
+                        {{ $i }}
+                    </option>
+                @endfor
+            </select>
 
-                        {{-- BUSCAR --}}
-                        <div class="form-icon">
-                            <input type="text"
-                                   class="form-control form-control-icon"
-                                   placeholder="Buscar ...">
-                            <i class="ri-search-2-line text-muted"></i>
-                        </div>
-
-                        {{-- IMPORTAR --}}
-                         
-                        <form class="d-flex align-items-center gap-3 m-0" action="{{ route('permeabilidad_aire.importar') }}"
-                              enctype="multipart/form-data"  method="POST">
-                             @csrf
-                            <input type="file"
-                                   name="archivo"
-                                   accept=".xlsx,.xls"
-                                   class="form-control"
-                                   style="max-width: 320px"
-                                   required>
-
-                            <button type="submit"
-                                    class="btn btn-primary mb-0">
-                                <i class="ri-upload-2-line me-1"></i>
-                                Importar
-                            </button>
-                        </form>
-
-                    </div>
-                </div>
+            {{-- BUSCAR (IGUAL A USUARIOS) --}}
+            <div class="form-icon">
+                <input type="text"
+                       class="form-control form-control-icon"
+                       placeholder="Buscar ...">
+                <i class="ri-search-2-line text-muted"></i>
             </div>
+
+            {{-- IMPORTAR --}}
+            <a href="#"
+               class="btn btn-primary">
+                <i class="ri-upload-2-line me-1"></i>
+                Importar
+            </a>
+
+        </div>
+    </div>
+</div>
+
 
             <div class="card-body">
 
@@ -87,18 +76,18 @@
                     </thead>
 
                     <tbody>
-                        @forelse($archivos as $l)
+                        @forelse($lotes as $l)
                         <tr>
 
-                            {{-- ARCHIVO --}}
+                            {{-- LOTE --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('permeabilidad_aire.muestras', $l->id_archivo) }}">
-                                        {{ $l->archivo }}
+                                    <a href="{{ route('pa.muestras', $l->id_lote) }}">
+                                        {{ $l->lote }}
                                     </a>
                                 </h6>
                                 <small class="text-muted">
-                                    ID {{ $l->id_archivo }}
+                                    ID {{ $l->id_lote }}
                                 </small>
                             </td>
 
@@ -112,18 +101,12 @@
                             <td class="text-end">
                                 <div class="hstack gap-2 fs-15 justify-content-end">
 
-                                    {{-- VER --}}
-                                    <a href="{{ route('permeabilidad_aire.muestras', $l->id_archivo) }}"
+                                    <a href="{{ route('pa.muestras', $l->id_lote) }}"
                                        class="btn bg-primary-subtle text-primary btn-sm">
                                         <i class="ri-eye-line"></i>
                                     </a>
 
-                                    {{-- ELIMINAR --}}
-                                    <button type="button"
-                                            class="btn bg-danger-subtle text-danger btn-sm"
-                                            onclick="confirmarEliminarArchivo(
-                                                {{ $l->id_archivo }},'{{ $l->archivo }}'
-                                            )">
+                                    <button class="btn bg-danger-subtle text-danger btn-sm">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
 
@@ -135,7 +118,7 @@
                         <tr>
                             <td colspan="4"
                                 class="text-center text-muted py-4">
-                                No hay archivos registrados para este año.
+                                No hay lotes registrados para este año.
                             </td>
                         </tr>
                         @endforelse
@@ -149,39 +132,7 @@
     </div>
 </div>
 
-{{-- ================= MODAL CONFIRMACIÓN ================= --}}
-<div class="modal fade" id="confirmArchivoModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-semibold" id="modalTitle"></h5>
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body" id="modalBody"></div>
-
-            <div class="modal-footer border-0">
-                <button class="btn btn-light"
-                        data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-
-                <form method="POST" id="modalForm">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-danger">
-                        Eliminar
-                    </button>
-                </form>
-            </div>
-
-        </div>
-    </div>
-</div>
-</div><!--End container-fluid-->
+    </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
 @endsection
 
@@ -203,36 +154,5 @@
 
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
-
-<script>
-let archivoModal;
-
-document.addEventListener('DOMContentLoaded', function () {
-    archivoModal = new bootstrap.Modal(
-        document.getElementById('confirmArchivoModal')
-    );
-});
-
-function confirmarEliminarArchivo(id, nombre) {
-
-    document.getElementById('modalTitle').textContent = 'Eliminar archivo';
-    document.getElementById('modalTitle').className =
-        'modal-title text-danger fw-semibold';
-
-    document.getElementById('modalBody').innerHTML = `
-        ¿Está seguro que desea eliminar el archivo
-        <strong>${nombre}</strong>?
-        <br>
-        <small class="text-muted">
-            Se eliminarán todas las muestras y resultados asociados.
-        </small>
-    `;
-
-    document.getElementById('modalForm').action =
-        `/ingreso-datos/permeabilidad-aire/${id}`;
-
-    archivoModal.show();
-}
-</script>
 
 @endsection

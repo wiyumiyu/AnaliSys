@@ -1,9 +1,9 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Muestras del archivo - Permeabilidad del aire')
+@section('title', 'Muestras del lote')
 
 @section('css')
-<!-- Datatables CSS -->
+<!-- Datatables CSS (FabKin style) -->
 <link rel="stylesheet"
       href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
 <link rel="stylesheet"
@@ -14,6 +14,7 @@
 
 <div class="row">
     <div class="col-lg-12">
+
         <br>
 
         {{-- CARD --}}
@@ -23,15 +24,27 @@
 
                     {{-- TÍTULO --}}
                     <h5 class="mb-0 fw-semibold">
-                        Archivo {{ $archivo }} – Muestras
+                        Lote {{ $lote }} – Muestras
                     </h5>
 
-                    {{-- VOLVER --}}
-                    <a href="{{ route('permeabilidad_aire.index') }}"
-                       class="btn btn-primary">
-                        ← Volver
-                    </a>
+                    {{-- ACCIONES --}}
+                    <div class="d-flex gap-3 align-items-center">
 
+                        {{-- BUSCAR --}}
+                        <div class="form-icon">
+                            <input type="text"
+                                   class="form-control form-control-icon"
+                                   placeholder="Buscar ...">
+                            <i class="ri-search-2-line text-muted"></i>
+                        </div>
+
+                        {{-- VOLVER --}}
+                        <a href="{{ route('pa.index') }}"
+                           class="btn btn-primary">
+                            ← Volver
+                        </a>
+
+                    </div>
                 </div>
             </div>
 
@@ -45,71 +58,79 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Longitud de la muestra</th>
-                            <th>Diametro interno</th>
-                            <th>Area transversal</th>
-                            <th>Volumen de muestra</th>
-                            <th>Temperatura del aire</th>
+                            <th>Material</th>
+                            <th>Método</th>
+                            <th>Tipo muestra</th>
+                            <th>Longitud</th>
+                            <th>Diámetro</th>
+                            <th>Área</th>
+                            <th>Volumen</th>
+                            <th>Temp aire</th>
+                            <th>Prom</th>
+                            <th>Desv</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @forelse($muestras as $m)
-                            @php
-                                $filaInactiva = $m->estado == 0 ? 'opacity-40' : '';
-                            @endphp
+                        <tr>
 
-                            <tr>
-
-                                {{-- ID LAB --}}
-                                <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('permeabilidad_aire.muestra.edit', $m->id_muestra) }}"
-                                       class="fw-semibold text-reset text-decoration-none">
+                            {{-- ID LAB --}}
+                            <td>
+                                <h6 class="mb-0">
+                                    <a href="{{ route('pa.muestra.edit', $m->id) }}">
                                         {{ $m->idlab }}
                                     </a>
-                                </td>
+                                </h6>
+                                <small class="text-muted">
+                                    Rep {{ $m->rep }}
+                                </small>
+                            </td>
 
-                                <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->longitud_muestra }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->diametro_interno }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->area_transversal }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->volumen_muestra }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->temperatura_aire }}</td>
+                            <td>{{ $m->rep }}</td>
+                            <td>{{ $m->material }}</td>
+                            <td>{{ $m->metodo }}</td>
+                            <td>{{ $m->tipomuestra }}</td>
+                            <td>{{ $m->longitud }}</td>
+                            <td>{{ $m->diametrointerno }}</td>
+                            <td>{{ $m->areatransversal }}</td>
+                            <td>{{ $m->volumen }}</td>
+                            <td>{{ $m->temperaturaaire }}</td>
+                            <td>{{ $m->promedio }}</td>
+                            <td>{{ $m->desvEst }}</td>
 
-                                {{-- ACCIONES --}}
-                                <td class="text-end">
-                                    <div class="hstack gap-2 fs-15 justify-content-end">
+                            {{-- ACCIONES --}}
+                            <td class="text-end">
+                                <div class="hstack gap-2 fs-15 justify-content-end">
 
-                                        {{-- ANULAR / ACTIVAR --}}
-                                        <button type="button"
-                                                class="btn {{ $m->estado == 1
-                                                    ? 'bg-warning-subtle text-warning'
-                                                    : 'bg-success-subtle text-success' }} btn-sm"
-                                                onclick="confirmarEstadoMuestra({{ $m->id_muestra }}, {{ $m->estado }})">
-                                            <i class="{{ $m->estado == 1
-                                                ? 'ri-close-circle-line'
-                                                : 'ri-refresh-line' }}"></i>
-                                        </button>
 
-                                        {{-- ELIMINAR --}}
-                                        <button type="button"
-                                                class="btn bg-danger-subtle text-danger btn-sm"
-                                                onclick="confirmarEliminarMuestra({{ $m->id_muestra }})">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
+                                    {{-- ANULAR --}}
+                                    <button class="btn bg-warning-subtle text-warning btn-sm">
+                                        <i class="ri-close-circle-line"></i>
+                                    </button>
 
-                                    </div>
-                                </td>
+                                    {{-- ELIMINAR --}}
+                                    <button class="btn bg-danger-subtle text-danger btn-sm">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </button>
 
-                            </tr>
+                                    {{-- TIMELINE --}}
+                                    <button class="btn bg-info-subtle text-info btn-sm">
+                                        <i class="ri-time-line"></i>
+                                    </button>
+
+                                </div>
+                            </td>
+
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="9"
-                                    class="text-center text-muted py-4">
-                                    No hay muestras registradas para este archivo.
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="13"
+                                class="text-center text-muted py-4">
+                                No hay muestras registradas para este lote.
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
 
@@ -118,37 +139,6 @@
             </div>
         </div>
 
-    </div>
-</div>
-
-{{-- MODAL CONFIRMACIÓN --}}
-<div class="modal fade" id="confirmMuestraModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-semibold" id="modalTitle"></h5>
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body" id="modalBody"></div>
-
-            <div class="modal-footer border-0">
-                <button class="btn btn-light"
-                        data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-
-                <form method="POST" id="modalForm">
-                    @csrf
-                    <input type="hidden" name="_method" id="modalMethod">
-                    <button class="btn" id="modalConfirmBtn"></button>
-                </form>
-            </div>
-
-        </div>
     </div>
 </div>
 </div><!--End container-fluid-->
@@ -160,99 +150,18 @@
 <!-- Bootstrap -->
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 
-<!-- DataTables -->
+<!-- DataTables CORE -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
+<!-- FabKin Datatable Init -->
 <script src="{{ asset('js/table/datatable.init.js') }}"></script>
+
+<!-- Buscar en tabla -->
 <script src="{{ asset('js/table/buscarEnTabla.js') }}"></script>
 
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
-
-<script>
-let muestraModal;
-let modalForm;
-let modalTitle;
-let modalBody;
-let modalBtn;
-let modalMethod;
-
-document.addEventListener('DOMContentLoaded', function () {
-    muestraModal = new bootstrap.Modal(
-        document.getElementById('confirmMuestraModal')
-    );
-
-    modalForm   = document.getElementById('modalForm');
-    modalTitle  = document.getElementById('modalTitle');
-    modalBody   = document.getElementById('modalBody');
-    modalBtn    = document.getElementById('modalConfirmBtn');
-    modalMethod = document.getElementById('modalMethod');
-});
-
-/* ===============================
- * ANULAR / ACTIVAR
- * =============================== */
-function confirmarEstadoMuestra(id, estado) {
-
-    modalForm.action = `/ingreso-datos/permeabilidad-aire/muestra/${id}/estado`;
-    modalMethod.value = 'PATCH';
-
-    if (estado === 1) {
-        modalTitle.textContent = 'Anular muestra';
-        modalTitle.className = 'modal-title text-warning fw-semibold';
-
-        modalBody.innerHTML = `
-            ¿Está seguro que desea <strong>anular</strong> esta muestra?
-            <br>
-            <small class="text-muted">
-                La muestra seguirá visible, pero no se considerará activa.
-            </small>
-        `;
-
-        modalBtn.textContent = 'Anular';
-        modalBtn.className = 'btn btn-warning';
-
-    } else {
-        modalTitle.textContent = 'Reactivar muestra';
-        modalTitle.className = 'modal-title text-success fw-semibold';
-
-        modalBody.innerHTML = `
-            ¿Desea <strong>reactivar</strong> esta muestra?
-        `;
-
-        modalBtn.textContent = 'Reactivar';
-        modalBtn.className = 'btn btn-success';
-    }
-
-    muestraModal.show();
-}
-
-/* ===============================
- * ELIMINAR
- * =============================== */
-function confirmarEliminarMuestra(id) {
-
-    modalForm.action = `/ingreso-datos/permeabilidad-aire/muestra/${id}`;
-    modalMethod.value = 'DELETE';
-
-    modalTitle.textContent = 'Eliminar muestra';
-    modalTitle.className = 'modal-title text-danger fw-semibold';
-
-    modalBody.innerHTML = `
-        Esta acción eliminará la muestra y <strong>todos sus resultados</strong>.
-        <br>
-        <small class="text-muted">
-            Una vez eliminado no se puede deshacer.
-        </small>
-    `;
-
-    modalBtn.textContent = 'Eliminar';
-    modalBtn.className = 'btn btn-danger';
-
-    muestraModal.show();
-}
-</script>
 
 @endsection

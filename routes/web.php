@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PersonaController;
-use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Administracion\BitacoraController;
@@ -53,6 +52,7 @@ Route::post('/reset-password',
   | ADMIN
   |--------------------------------------------------------------------------
  */
+use App\Http\Controllers\Administracion\UsuarioController;
 
 Route::get('/admin', function () {
     return 'Solo ADMIN';
@@ -169,15 +169,11 @@ Route::get(
         '/control-textura/{id}',
         [ControlTexturaController::class, 'destroy']
     )->name('controlTextura.destroy');
-    
-    Route::get('/controles/textura/{id}/graficos',
-        [ControlTexturaController::class, 'graficos']
-    )->name('controles.textura.graficos');
 });
 //------------------------------------------------------------------------------
 // DENSIDAD APARENTE
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\DensidadAparenteController;
+use App\Http\Controllers\IngresoDatos\DensidadAparenteController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -227,7 +223,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // DENSIDAD PARTICULAS
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\DensidadParticulasController;
+use App\Http\Controllers\IngresoDatos\DensidadParticulasController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -273,11 +269,42 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
     
 
 });
+//------------------------------------------------------------------------------
+// Permeabilidad de Aire PLANTILLA
+//-------------------------------------------------------------------------------
+use App\Http\Controllers\PermeabilidadAireController;
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    //url
+    //controller
+    //sidebar
+    Route::get(
+            '/ingreso-datos/permeabilidad-aire',
+            [PermeabilidadAireController::class, 'lotes']
+    )->name('pa.index');
+
+    Route::get(
+            '/ingreso-datos/permeabilidad-aire/{lote}/muestras',
+            [PermeabilidadAireController::class, 'muestras']
+    )->name('pa.muestras');
+
+    Route::get(
+            '/ingreso-datos/permeabilidad-aire/muestra/{id}/editar',
+            [PermeabilidadAireController::class, 'edit']
+    )->name('pa.muestra.edit');
+
+    Route::put(
+            '/ingreso-datos/permeabilidad-aire/muestra/{id}',
+            [PermeabilidadAireController::class, 'update']
+    )->name('pa.muestra.update');
+});
+
 
 //------------------------------------------------------------------------------
 // HUMEDAD GRAVIMÉTRICA
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\HumedadGravimetricaController;
+use App\Http\Controllers\IngresoDatos\HumedadGravimetricaController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -334,7 +361,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // CONDUCTIVIDAD HIDRÁULICA
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\ConductividadHidraulicaController;
+use App\Http\Controllers\IngresoDatos\ConductividadHidraulicaController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -384,7 +411,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // RETENCIÓN DE HUMEDAD
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\RetencionHumedadController;
+use App\Http\Controllers\IngresoDatos\RetencionHumedadController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -434,7 +461,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // Granulometría
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\GranulometriaController;
+use App\Http\Controllers\IngresoDatos\GranulometriaController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -484,7 +511,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 //------------------------------------------------------------------------------
 // Estabilidad de Agregados
 //-------------------------------------------------------------------------------
-use App\Http\Controllers\EstabilidadAgregadosController;
+use App\Http\Controllers\IngresoDatos\EstabilidadAgregadosController;
 
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
@@ -531,106 +558,6 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
 });
 
-//------------------------------------------------------------------------------
-// Coeficiente de Extensibilidad
-//-------------------------------------------------------------------------------
-use App\Http\Controllers\CoeficienteExtensibilidadController;
-
-Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
-
-    Route::get(
-        '/ingreso-datos/coeficiente-extensibilidad',
-
-        [CoeficienteExtensibilidadController::class, 'archivos']
-    )->name('coeficiente_extensibilidad.index');
-
-    Route::get(
-        '/ingreso-datos/coeficiente-extensibilidad/{archivo}/muestras',
-        [CoeficienteExtensibilidadController::class, 'muestras']
-    )->name('coeficiente_extensibilidad.muestras');
-
-    Route::get(
-        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}/editar',
-        [CoeficienteExtensibilidadController::class, 'edit']
-    )->name('coeficiente_extensibilidad.muestra.edit');
-
-    Route::put(
-        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}',
-        [CoeficienteExtensibilidadController::class, 'update']
-    )->name('coeficiente_extensibilidad.muestra.update');
-
-    Route::patch(
-        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}/estado',
-        [CoeficienteExtensibilidadController::class, 'toggleEstado']
-    )->name('coeficiente_extensibilidad.muestra.toggle');
-
-    Route::delete(
-        '/ingreso-datos/coeficiente-extensibilidad/muestra/{id}',
-        [CoeficienteExtensibilidadController::class, 'destroy']
-    )->name('coeficiente_extensibilidad.muestra.destroy');
-
-    Route::delete(
-        '/ingreso-datos/coeficiente-extensibilidad/{id}',
-        [CoeficienteExtensibilidadController::class, 'destroyArchivo']
-    )->name('coeficiente_extensibilidad.destroy');
-
-    Route::post(
-        '/ingreso-datos/coeficiente-extensibilidad/importar',
-        [CoeficienteExtensibilidadController::class, 'importar']
-    )->name('coeficiente_extensibilidad.importar');
-
-});
-
-
-//------------------------------------------------------------------------------
-// Permeabilidad de Aire
-//-------------------------------------------------------------------------------
-use App\Http\Controllers\PermeabilidadAireController;
-
-Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
-
-    Route::get(
-        '/ingreso-datos/permeabilidad-aire',
-
-        [PermeabilidadAireController::class, 'archivos']
-    )->name('permeabilidad_aire.index');
-
-    Route::get(
-        '/ingreso-datos/permeabilidad-aire/{archivo}/muestras',
-        [PermeabilidadAireController::class, 'muestras']
-    )->name('permeabilidad_aire.muestras');
-
-    Route::get(
-        '/ingreso-datos/permeabilidad-aire/muestra/{id}/editar',
-        [PermeabilidadAireController::class, 'edit']
-    )->name('permeabilidad_aire.muestra.edit');
-
-    Route::put(
-        '/ingreso-datos/permeabilidad-aire/muestra/{id}',
-        [PermeabilidadAireController::class, 'update']
-    )->name('permeabilidad_aire.muestra.update');
-
-    Route::patch(
-        '/ingreso-datos/permeabilidad-aire/muestra/{id}/estado',
-        [PermeabilidadAireController::class, 'toggleEstado']
-    )->name('permeabilidad_aire.muestra.toggle');
-
-    Route::delete(
-        '/ingreso-datos/permeabilidad-aire/muestra/{id}',
-        [PermeabilidadAireController::class, 'destroy']
-    )->name('permeabilidad_aire.muestra.destroy');
-
-    Route::delete(
-        '/ingreso-datos/permeabilidad-aire/{id}',
-        [PermeabilidadAireController::class, 'destroyArchivo']
-    )->name('permeabilidad_aire.destroy');
-
-    Route::post(
-        '/ingreso-datos/permeabilidad-aire/importar',
-        [PermeabilidadAireController::class, 'importar']
-    )->name('permeabilidad_aire.importar');
-
-});
 
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA

@@ -44,20 +44,22 @@ class TexturaController extends Controller
      * LISTADO DE MUESTRAS POR LOTE
      * =============================== */
 
-    public function muestras($idArchivo) {
-        // nombre del archivo (luego lo sacas de BD)
-        $archivo = 'PA-2026-001';
+public function muestras($idArchivo)
+{
+    $archivo = DB::table('trn_textura')
+        ->where('id', $idArchivo)
+        ->value('archivo');
 
-        $muestras = DB::select(
-                'CALL sp_listar_muestras_textura_detalle(?)',
-                [$idArchivo]
-        );
+    $muestras = DB::select(
+        'CALL sp_listar_muestras_textura_detalle(?)',
+        [$idArchivo]
+    );
 
-        return view(
-                'ingreso_datos.textura.muestras',
-                compact('muestras', 'archivo', 'idArchivo')
-        );
-    }
+    return view(
+        'ingreso_datos.textura.muestras',
+        compact('muestras', 'archivo', 'idArchivo')
+    );
+}
 
     /* ===============================
      * EDITAR MUESTRA

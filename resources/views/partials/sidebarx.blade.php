@@ -28,8 +28,7 @@
             || (Route::has('curvatura.index') && request()->routeIs('curvatura.*'))
             || (Route::has('granulometria.index') && request()->routeIs('granulometria.*'))
             || (Route::has('estabilidad_agregados.index') && request()->routeIs('estabilidad_agregados.*'))
-            || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'))
-            || (Route::has('permeabilidad_aire.index') && request()->routeIs('permeabilidad_aire.*'));
+            || (Route::has('coel.index') && request()->routeIs('coel.*'));
             @endphp
             <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
                 <a href="#collapseAdvancedUI"
@@ -123,18 +122,17 @@
                             Estabilidad de agregados
                         </a>
                     </li>
-                    {{-- Coeficiente de extensibilidad (LARAVEL) --}}
+
                     <li class="pe-slide-item">
-                        <a href="{{ route('coeficiente_extensibilidad.index') }}"
-                           class="pe-nav-link {{ request()->routeIs('coeficiente_extensibilidad.*') ? 'active' : '' }}">
-                            Coeficiente de extensibilidad lineal
+                        <a href="/pages/ingreso_datos/coel/listado.php" class="pe-nav-link">
+                            Coeficiente de extensibilidad lineal (COEL)
                         </a>
                     </li>
 
                     {{-- PERMEABILIDAD (LARAVEL) --}}
                     <li class="pe-slide-item">
-                        <a href="{{ route('permeabilidad_aire.index') }}"
-                           class="pe-nav-link {{ request()->routeIs('permeabilidad_aire.*') ? 'active' : '' }}">
+                        <a href="{{ route('pa.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('pa.*') ? 'active' : '' }}">
                             Permeabilidad del aire
                         </a>
                     </li>
@@ -195,7 +193,7 @@
                 </li>
 
                 <li class="pe-slide-item">
-                    <a href="#" class="pe-nav-link">Coeficiente de extensibilidad</a>
+                    <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
                 </li>
 
                 <li class="pe-slide-item">

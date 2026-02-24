@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+
+namespace App\Http\Controllers\Administracion;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use App\Http\Controllers\Controller;
 class UsuarioController extends Controller {
     /* ===============================
      * LISTADO
@@ -57,7 +58,7 @@ class UsuarioController extends Controller {
      * =============================== */
 
     public function update(Request $request, $id) {
-        /* CONTEXTO BITÁCORA */
+        /* 🔐 CONTEXTO BITÁCORA */
         DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
         DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
 
@@ -72,7 +73,7 @@ class UsuarioController extends Controller {
                 $request->del_correo
             ]);
 
-            // FORZAR SNAPSHOT
+            // 🔒 FORZAR SNAPSHOT
             DB::statement(
                     'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
                     [$id]
@@ -91,7 +92,7 @@ class UsuarioController extends Controller {
                 $request->del_tel
             ]);
 
-            // FORZAR SNAPSHOT
+            // 🔒 FORZAR SNAPSHOT
             DB::statement(
                     'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
                     [$id]
@@ -206,7 +207,7 @@ class UsuarioController extends Controller {
         }
 
         /* ===============================
-         * COMMIT LÓGICO (BITÁCORA)
+         * 🔒 COMMIT LÓGICO (BITÁCORA)
          * =============================== */
         DB::statement(
                 'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',

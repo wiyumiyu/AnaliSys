@@ -73,6 +73,9 @@ class DensidadAparenteController extends Controller
      * =============================== */
     public function update(Request $request, $id)
     {
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+        
         // obtener id_densidad_aparente antes de actualizar
         $muestra = collect(
             DB::select(

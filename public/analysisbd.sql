@@ -504,6 +504,15 @@ CREATE TABLE trn_controles_lista (
     id_archivo INT NOT NULL
 );
 
+CREATE TABLE trn_control_comentarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_control INT NOT NULL,
+    id_persona INT NOT NULL,
+    comentario TEXT NULL,
+    aprobado BOOLEAN DEFAULT 0,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 /* ============================================================
    BITÁCORA (TABLAS)
    ============================================================ */
@@ -4234,18 +4243,50 @@ DELIMITER ;
 
 DELIMITER $$
 
-DROP PROCEDURE IF EXISTS sp_traer_archivos_textura $$
+DROP PROCEDURE IF EXISTS sp_traer_archivos_textura_por_control $$
 
-CREATE PROCEDURE sp_traer_archivos_textura(
-    IN p_periodo YEAR
+CREATE PROCEDURE sp_traer_archivos_textura_por_control(
+    IN p_id_control INT
 )
 BEGIN
-    SELECT t.id
-    FROM trn_textura t
-    LEFT JOIN trn_controles_lista cl
-        ON cl.id_archivo = t.id
-    WHERE t.periodo = p_periodo
-      AND cl.id IS NULL;
+    SELECT 
+        t.id,
+        t.periodo,
+        t.archivo,
+        t.fecha,
+        t.analista
+    FROM trn_controles_lista cl
+    INNER JOIN trn_textura t 
+        ON t.id = cl.id_archivo
+    WHERE cl.id_control = p_id_control;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_traer_ids_muestras_textura_por_control $$
+
+CREATE PROCEDURE sp_traer_ids_muestras_textura_por_control(
+    IN p_id_control INT
+)
+BEGIN
+    SELECT DISTINCT 
+        t.id AS id_archivo,
+        t.archivo,
+        tm.idlab,
+        tm.rep
+    FROM trn_controles c
+    INNER JOIN trn_controles_lista cl 
+        ON cl.id_control = c.id
+    INNER JOIN trn_textura t 
+        ON t.id = cl.id_archivo
+    INNER JOIN trn_textura_muestras tm
+        ON tm.id_textura = t.id
+    WHERE c.id = p_id_control
+      AND c.tipo = 1
+      AND tm.idlab REGEXP '^[0-9]+$'
+    ORDER BY t.id, tm.rep, CAST(tm.idlab AS UNSIGNED);
 END $$
 
 DELIMITER ;
@@ -4341,6 +4382,111 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_traer_archivos_textura_por_control $$
+
+CREATE PROCEDURE sp_traer_archivos_textura_por_control(
+    IN p_id_control INT
+)
+BEGIN
+    SELECT 
+        t.id,
+        t.periodo,
+        t.fecha,          -- si existe
+        t.nombre_archivo  -- si existe
+    FROM trn_controles_lista cl
+    INNER JOIN trn_textura t 
+        ON t.id = cl.id_archivo
+    WHERE cl.id_control = p_id_control;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_traer_comentarios_control $$
+
+CREATE PROCEDURE sp_traer_comentarios_control(
+    IN p_id_control INT
+)
+BEGIN
+    SELECT 
+        c.id,
+        c.comentario,
+        c.aprobado,
+        c.fecha,
+        CONCAT(p.nombre, ' ', p.apellido1) AS nombre_usuario
+    FROM trn_control_comentarios c
+    INNER JOIN tbl_persona p
+        ON p.id_persona = c.id_persona
+    WHERE c.id_control = p_id_control
+    ORDER BY c.fecha DESC;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_agregar_comentario_control $$
+
+CREATE PROCEDURE sp_agregar_comentario_control(
+    IN p_id_control INT,
+    IN p_id_persona INT,
+    IN p_comentario TEXT,
+    IN p_aprobado BOOLEAN
+)
+BEGIN
+    INSERT INTO trn_control_comentarios
+    (id_control, id_persona, comentario, aprobado, fecha)
+    VALUES
+    (p_id_control, p_id_persona, p_comentario, p_aprobado, NOW());
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_traer_valores_blanco_por_control_textura $$
+
+CREATE PROCEDURE sp_traer_valores_blanco_por_control_textura(
+    IN p_id_control INT
+)
+BEGIN
+
+    SELECT 
+        t.id AS id_archivo,
+        t.archivo AS nombre_archivo,
+        r.id_analisis,
+        CAST(r.resultado AS DECIMAL(10,4)) AS resultado
+    FROM trn_controles c
+
+    INNER JOIN trn_controles_lista cl
+        ON cl.id_control = c.id
+
+    INNER JOIN trn_textura t
+        ON t.id = cl.id_archivo
+
+    INNER JOIN trn_textura_muestras tm
+        ON tm.id_textura = t.id
+
+    INNER JOIN trn_textura_resultados r
+        ON r.id_textura_muestras = tm.id
+
+    WHERE c.id = p_id_control
+      AND c.tipo = 1                -- Solo TEXTURA
+      AND tm.idlab = 'BLANCO'       -- Solo muestra BLANCO
+      AND r.estado = 1              -- Solo resultados activos
+
+    ORDER BY 
+        t.id ASC,
+        r.id_analisis ASC;
+
+END $$
+
+DELIMITER ;
+
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */

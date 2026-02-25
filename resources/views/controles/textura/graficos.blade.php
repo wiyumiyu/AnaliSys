@@ -61,34 +61,7 @@
                         <div class="timeline2">
                             <ul>
 
-                                <li class="card border-0 box mb-3">
-                                    <span></span>
-
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div class="d-flex align-items-center gap-3">
-
-                                            <img 
-                                                src="https://ui-avatars.com/api/?name=Sistema&background=198754&color=fff"
-                                                class="rounded-pill"
-                                                width="40"
-                                                height="40"
-                                                alt="Avatar">
-
-                                            <div>
-                                                <h6 class="mb-1">Sistema UCR</h6>
-                                                <p class="fs-12 text-muted mb-0">22/02/2026</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-muted">10:15 AM</div>
-                                    </div>
-
-                                    <p class="text-muted mb-0">
-                                        Control creado correctamente.
-                                    </p>
-                                </li>
-
-                                <br>
+                                @forelse($comentarios as $comentario)
 
                                 <li class="card border-0 box mb-3">
                                     <span></span>
@@ -97,25 +70,45 @@
                                         <div class="d-flex align-items-center gap-3">
 
                                             <img 
-                                                src="https://ui-avatars.com/api/?name=Sistema&background=198754&color=fff"
+                                                src="https://ui-avatars.com/api/?name={{ urlencode($comentario->nombre_usuario) }}&background=198754&color=fff"
                                                 class="rounded-pill"
                                                 width="40"
                                                 height="40"
                                                 alt="Avatar">
 
                                             <div>
-                                                <h6 class="mb-1">Sistema UCR</h6>
-                                                <p class="fs-12 text-muted mb-0">22/02/2026</p>
+                                                <h6 class="mb-1">
+                                                    {{ $comentario->nombre_usuario }}
+                                                </h6>
+
+                                                <p class="fs-12 text-muted mb-0">
+                                                    {{ \Carbon\Carbon::parse($comentario->fecha)->format('d/m/Y') }}
+                                                </p>
                                             </div>
                                         </div>
 
-                                        <div class="text-muted">10:15 AM</div>
+                                        <div class="text-muted">
+                                            {{ \Carbon\Carbon::parse($comentario->fecha)->format('h:i A') }}
+                                        </div>
                                     </div>
 
-                                    <p class="text-muted mb-0">
-                                        Control creado correctamente.
+                                    @if($comentario->aprobado)
+                                    <p class="text-success fw-semibold mb-0">
+                                        ✔ Aprobado
                                     </p>
+                                    @else
+                                    <p class="text-muted mb-0">
+                                        {{ $comentario->comentario }}
+                                    </p>
+                                    @endif
+
                                 </li>
+
+                                @empty
+                                <li class="text-center text-muted">
+                                    No hay comentarios aún.
+                                </li>
+                                @endforelse
 
                             </ul>
                         </div>
@@ -125,44 +118,125 @@
 
                 {{-- ================= ACCIONES ================= --}}
                 <div class="mb-5 pt-4">
-                    <textarea class="form-control mb-3"
-                              rows="3"
-                              placeholder="Escribir comentario..."></textarea>
 
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary btn-sm">
-                            Publicar
-                        </button>
+                    <form method="POST" action="{{ route('controles.textura.comentar', $id ?? request()->route('id')) }}">
+                        @csrf
 
-                        <button class="btn btn-success btn-sm">
-                            Aprobar
-                        </button>
-                    </div>
+                        <textarea name="comentario"
+                                  class="form-control mb-3"
+                                  rows="3"
+                                  placeholder="Escribir comentario..."></textarea>
+
+                        <div class="d-flex gap-2">
+
+                            {{-- PUBLICAR --}}
+                            <button type="submit"
+                                    name="accion"
+                                    value="comentar"
+                                    class="btn btn-primary btn-sm">
+                                Publicar
+                            </button>
+
+                            {{-- APROBAR --}}
+                            <button type="submit"
+                                    name="accion"
+                                    value="aprobar"
+                                    class="btn btn-success btn-sm">
+                                Aprobar
+                            </button>
+
+                        </div>
+
+                    </form>
+
                 </div>
 
                 <br>
 
 
                 {{-- ================= REP ================= --}}
+
+                @php
+                function convertirARangos($numeros) {
+                $numeros = collect($numeros)
+                ->map(fn($n) => (int)$n)
+                ->unique()
+                ->sort()
+                ->values();
+
+                if ($numeros->isEmpty()) return '';
+
+                $rangos = [];
+                $inicio = $numeros[0];
+                $prev = $inicio;
+
+                foreach ($numeros->slice(1) as $n) {
+                if ($n == $prev + 1) {
+                $prev = $n;
+                } else {
+                $rangos[] = $inicio == $prev ? $inicio : "$inicio - $prev";
+                $inicio = $prev = $n;
+                }
+                }
+
+                $rangos[] = $inicio == $prev ? $inicio : "$inicio - $prev";
+
+                return implode(' , ', $rangos);
+                }
+                @endphp
+
+                {{-- ================= REP ================= --}}
                 <div class="mb-5 pt-4 border-top">
                     <h6 class="fw-semibold mb-4">Repeticiones del blanco</h6>
                     <br>
 
-                    <div class="d-flex flex-wrap gap-3">
+                    @forelse($porArchivo as $index => $items)
 
-                        <div class="px-3 py-2 bg-primary-subtle rounded text-primary border border-primary-subtle">
-                            1: 1 - 5 , 10 - 12
+                    @php
+                    $nombreArchivo = $items->first()->archivo;
+
+                    $numeros = $items->pluck('idlab')
+                    ->map(fn($n) => (int)$n)
+                    ->unique()
+                    ->sort()
+                    ->values();
+
+                    $rangos = [];
+                    $inicio = $numeros[0] ?? null;
+                    $prev = $inicio;
+
+                    foreach ($numeros->slice(1) as $n) {
+                    if ($n == $prev + 1) {
+                    $prev = $n;
+                    } else {
+                    $rangos[] = $inicio == $prev ? $inicio : "$inicio - $prev";
+                    $inicio = $prev = $n;
+                    }
+                    }
+
+                    if ($inicio !== null) {
+                    $rangos[] = $inicio == $prev ? $inicio : "$inicio - $prev";
+                    }
+
+                    $texto = implode(' , ', $rangos);
+
+                    // 🎨 Colores dinámicos por archivo
+                    $colores = ['primary', 'success', 'warning', 'danger', 'info'];
+                    $color = $colores[$loop->index % count($colores)];
+                    @endphp
+
+                    <div class="mb-3">
+
+                        <div class="px-3 py-2 bg-{{ $color }}-subtle rounded text-{{ $color }} border border-{{ $color }}-subtle">
+                            {{ $loop->iteration }}: {{ $texto }}
                         </div>
-
-                        <div class="px-3 py-2 bg-success-subtle rounded text-success border border-success-subtle">
-                            2: 1 - 5 , 10 - 12
-                        </div>
-
-                        <div class="px-3 py-2 bg-warning-subtle rounded text-warning border border-warning-subtle">
-                            3: 1 - 5 , 10 - 12
-                        </div>
-
                     </div>
+
+                    @empty
+                    <div class="text-muted">
+                        No hay datos.
+                    </div>
+                    @endforelse
                 </div>
 
                 <br>
@@ -171,10 +245,11 @@
                 {{-- ================= ARCHIVOS ================= --}}
                 <div class="pt-4 border-top">
                     <br>
+
                     <div class="d-flex justify-content-between align-items-center border-bottom border-dashed pb-3 mb-3">
 
                         <div>
-                            <h3 class="mb-1">3</h3>
+                            <h3 class="mb-1">{{ $archivos->count() }}</h3>
                             <p class="text-muted mb-0">Archivos involucrados</p>
                         </div>
 
@@ -185,22 +260,22 @@
                     </div>
 
                     <div class="d-flex flex-column gap-2">
+                        @forelse($archivos as $archivo)
                         <div class="d-flex justify-content-between p-2 border rounded">
-                            <span class="fw-medium">Archivo 2024-01</span>
-                            <span class="badge bg-light text-dark">1</span>
-                        </div>
+                            <span class="fw-medium">
+                                {{ $archivo->archivo ?? 'Archivo sin nombre' }}
+                            </span>
 
-                        <div class="d-flex justify-content-between p-2 border rounded">
-                            <span class="fw-medium">Archivo 2024-02</span>
-                            <span class="badge bg-light text-dark">2</span>
+                            <span class="badge bg-light text-dark">
+                                {{ $loop->iteration }}
+                            </span>
                         </div>
-
-                        <div class="d-flex justify-content-between p-2 border rounded">
-                            <span class="fw-medium">Archivo 2024-03</span>
-                            <span class="badge bg-light text-dark">3</span>
+                        @empty
+                        <div class="alert alert-light border">
+                            No hay archivos de textura asociados a este control.
                         </div>
+                        @endforelse
                     </div>
-
                 </div>
 
             </div>
@@ -236,27 +311,12 @@
 <script src="{{ asset('libs/apexcharts/apexcharts.min.js') }}"></script>
 <script>
 
-const datos = {
-    R1: [0.35, 0.42, 0.42, 0.42, 0.42, 0.42, 0.42],
-    R2: [0.38, 0.41],
-    R3: [0.33, 0.39],
-    R4: [0.36, 0.40],
-
-    Temp1: [21, 22],
-    Temp2: [22, 23],
-    Temp3: [20, 21],
-    Temp4: [21, 22],
-
-    Tiempo1: [45, 50],
-    Tiempo2: [48, 52],
-    Tiempo3: [40, 95], // este se pone rojo
-    Tiempo4: [47, 53],
-};
+const datos = @json($datosGraficos);
 
 const limites = {
-    R: { min: -0.3, max: 0.6, inferior: 0, superior: 0.5 },
-    Temp: { min: 15, max: 30, inferior: 18, superior: 26 },
-    Tiempo: { min: 0, max: 120, inferior: 30, superior: 90 }
+    R: {min: -0.3, max: 0.6, inferior: 0, superior: 0.5},
+    Temp: {min: 15, max: 30, inferior: 18, superior: 26},
+    Tiempo: {min: 0, max: 120, inferior: 30, superior: 90}
 };
 
 function crearGrafico(id, valores, config) {
@@ -264,31 +324,31 @@ function crearGrafico(id, valores, config) {
     const chart = new ApexCharts(document.querySelector("#" + id), {
 
         series: [{
-            name: "Valor",
-            data: valores
-        }],
+                name: "Valor",
+                data: valores
+            }],
 
         chart: {
             type: 'scatter',
             height: 220,
-            toolbar: { show: false },
-            zoom: { enabled: false }
+            toolbar: {show: false},
+            zoom: {enabled: false}
         },
 
         markers: {
             size: 5,
             colors: valores.map(v =>
                 (v > config.superior || v < config.inferior)
-                    ? '#e74c3c'
-                    : '#27ae60'
+                        ? '#e74c3c'
+                        : '#27ae60'
             ),
             strokeWidth: 0
         },
 
         xaxis: {
             categories: valores.map((_, i) => i + 1),
-            axisBorder: { show: true },
-            axisTicks: { show: false }
+            axisBorder: {show: true},
+            axisTicks: {show: false}
         },
 
         yaxis: {
@@ -301,7 +361,7 @@ function crearGrafico(id, valores, config) {
             borderColor: '#f1f1f1',
             strokeDashArray: 3,
             padding: {
-                left: 30  
+                left: 30
             }
         },
 

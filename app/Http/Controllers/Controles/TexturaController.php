@@ -31,22 +31,22 @@ class TexturaController extends Controller {
                 'CALL sp_listar_controles_por_anio(?,?)',
                 [$periodo, $tipo]
         );
-
-        $archivosDisponibles = DB::select(
-                'CALL sp_traer_archivos_textura()'
-        );
+$archivosDisponibles = DB::select(
+    'CALL sp_traer_archivos_textura(?)',
+    [$periodo]
+);
 
         $siguienteConsecutivo = collect(DB::select(
                         'CALL sp_traer_consecutivo(?,?)',
                         [$tipo, $periodo]
                 ))->first();
 
-        return view('controles.textura.index', compact(
-                        'consecutivosControles',
-                        'periodo',
-                        'archivosDisponibles',
-                        'siguienteConsecutivo'
-                ));
+return view('controles.textura.index', compact(
+    'consecutivosControles',
+    'periodo',
+    'archivosDisponibles',
+    'siguienteConsecutivo'
+));
     }
 
     /**

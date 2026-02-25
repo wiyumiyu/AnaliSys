@@ -187,7 +187,7 @@
 
                 {{-- ================= REP ================= --}}
                 <div class="mb-5 pt-4 border-top">
-                    <h6 class="fw-semibold mb-4">Repeticiones del blanco</h6>
+                    <h6 class="fw-semibold mb-4">Muestras asociadas al blanco</h6>
                     <br>
 
                     @forelse($porArchivo as $index => $items)

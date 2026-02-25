@@ -4200,8 +4200,6 @@ END$$
 
 DELIMITER ;
 
-
-
 /* PROCS DE CONTROLES DE TEXTURA */
 
 DELIMITER $$
@@ -4221,44 +4219,22 @@ END $$
 
 DELIMITER ;
 
-
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS sp_traer_archivos_textura $$
 
 CREATE PROCEDURE sp_traer_archivos_textura(
-    IN p_periodo YEAR
-)
-BEGIN
-    SELECT t.id
-    FROM trn_textura t
-    LEFT JOIN trn_controles_lista cl
-        ON cl.id_archivo = t.id
-    WHERE t.periodo = p_periodo
-      AND cl.id IS NULL;
-END $$
-
-DELIMITER ;
-
-
-DELIMITER $$
-
-DROP PROCEDURE IF EXISTS sp_traer_archivos_textura_por_control $$
-
-CREATE PROCEDURE sp_traer_archivos_textura_por_control(
-    IN p_id_control INT
+    IN p_periodo INT
 )
 BEGIN
     SELECT 
         t.id,
-        t.periodo,
-        t.archivo,
-        t.fecha,
-        t.analista
-    FROM trn_controles_lista cl
-    INNER JOIN trn_textura t 
-        ON t.id = cl.id_archivo
-    WHERE cl.id_control = p_id_control;
+        t.archivo
+    FROM trn_textura t
+    LEFT JOIN trn_controles_lista cl
+        ON cl.id_archivo = t.id
+    WHERE CAST(t.periodo AS UNSIGNED) = p_periodo
+      AND cl.id IS NULL;
 END $$
 
 DELIMITER ;
@@ -4395,7 +4371,7 @@ BEGIN
         t.id,
         t.periodo,
         t.fecha,          -- si existe
-        t.nombre_archivo  -- si existe
+        t.archivo  -- si existe
     FROM trn_controles_lista cl
     INNER JOIN trn_textura t 
         ON t.id = cl.id_archivo
@@ -4476,7 +4452,7 @@ BEGIN
 
     WHERE c.id = p_id_control
       AND c.tipo = 1                -- Solo TEXTURA
-      AND tm.idlab = 'BLANCO'       -- Solo muestra BLANCO
+      AND tm.tipo = 2       -- Solo muestra BLANCO
       AND r.estado = 1              -- Solo resultados activos
 
     ORDER BY 
@@ -4695,25 +4671,6 @@ VALUES
 (3,11, '58',    1), -- TIEMPO2
 (3,12,'122',    1), -- TIEMPO3
 (3,13,'365',    1); -- TIEMPO4
-
-
-DROP PROCEDURE IF EXISTS sp_traer_archivos_textura;
-DELIMITER $$
-
-CREATE PROCEDURE sp_traer_archivos_textura(
-
-)
-BEGIN
-    SELECT 
-        t.id,
-        t.archivo
-    FROM trn_textura t
-    LEFT JOIN trn_controles_lista cl
-        ON cl.id_archivo = t.id
-;
-END $$
-
-DELIMITER ;
 
 SELECT *
 FROM trn_controles_lista;

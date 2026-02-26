@@ -22,13 +22,13 @@
 
                 {{-- ERRORES --}}
                 @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
                 @endif
 
                 <form method="POST" action="{{ route('usuarios.store') }}">
@@ -79,23 +79,22 @@
                         <select name="rol_id" class="form-select" required>
                             <option value="">Seleccione un rol</option>
                             @foreach($roles as $rol)
-                                <option value="{{ $rol->id }}"
+                            <option value="{{ $rol->id }}"
                                     @selected(old('rol_id') == $rol->id)>
-                                    {{ $rol->nombre }}
-                                </option>
+                                {{ $rol->nombre }}
+                            </option>
                             @endforeach
                         </select>
                     </div>
 
                     {{-- ================= CONTRASEÑA ================= --}}
                     <br><br>
-                    <h5 class="fw-semibold">Contraseña</h5>
-
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Contraseña</label>
                             <input type="password"
                                    name="password_nueva"
+                                   id="password_nueva"
                                    class="form-control"
                                    required>
                         </div>
@@ -103,15 +102,22 @@
                         <div class="col-md-6">
                             <label class="form-label">Confirmar contraseña</label>
                             <input type="password"
-                                   name="password_confirmar"
+                                   name="password_nueva_confirmation"
+                                   id="password_confirmar"
                                    class="form-control"
                                    required>
                         </div>
                     </div>
 
-                    <small class="text-muted d-block mt-2">
-                        Mínimo 8 caracteres, una mayúscula, un número y un símbolo.
-                    </small>
+                    <div class="mt-2">
+                        <ul class="small" id="passwordChecklist">
+                            <li id="length" class="text-danger">Mínimo 8 caracteres</li>
+                            <li id="uppercase" class="text-danger">Una mayúscula</li>
+                            <li id="number" class="text-danger">Un número</li>
+                            <li id="symbol" class="text-danger">Un símbolo</li>
+                            <li id="match" class="text-danger">Las contraseñas coinciden</li>
+                        </ul>
+                    </div>
 
                     {{-- ================= CORREOS ================= --}}
                     <br><br>
@@ -162,38 +168,86 @@
 
 
 @section('js')
-
 <!-- Bootstrap -->
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
-
-<!-- DataTables CORE -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
 <!-- FabKin Datatable Init -->
 <script src="{{ asset('js/table/datatable.init.js') }}"></script>
-
-<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
-<!-- FabKin App -->
-<script src="{{ asset('js/app.js') }}"></script>
-
-@endsection
-
-
-@section('js')
-<!-- Bootstrap -->
-<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <!-- FabKin App -->
 <script src="{{ asset('js/app.js') }}"></script>
 
 <script>
-/* ==========================================================
-   AGREGAR CORREO
-========================================================== */
-function agregarCorreo() {
-    document.getElementById('correos-container').insertAdjacentHTML('beforeend', `
+                                const passwordInput = document.getElementById('password_nueva');
+                                const confirmInput = document.getElementById('password_confirmar');
+                                const submitBtn = document.querySelector('button[type="submit"]');
+
+                                const lengthItem = document.getElementById('length');
+                                const uppercaseItem = document.getElementById('uppercase');
+                                const numberItem = document.getElementById('number');
+                                const symbolItem = document.getElementById('symbol');
+                                const matchItem = document.getElementById('match');
+
+                                submitBtn.disabled = true;
+
+                                function validarPassword() {
+                                    const password = passwordInput.value;
+                                    const confirm = confirmInput.value;
+
+                                    const reglas = {
+                                        length: password.length >= 8,
+                                        uppercase: /[A-Z]/.test(password),
+                                        number: /[0-9]/.test(password),
+                                        symbol: /[\W_]/.test(password),
+                                        match: password === confirm && password.length > 0
+                                    };
+
+                                    actualizarEstado(lengthItem, reglas.length);
+                                    actualizarEstado(uppercaseItem, reglas.uppercase);
+                                    actualizarEstado(numberItem, reglas.number);
+                                    actualizarEstado(symbolItem, reglas.symbol);
+                                    actualizarEstado(matchItem, reglas.match);
+
+                                    const valido = Object.values(reglas).every(v => v === true);
+
+                                    submitBtn.disabled = !valido;
+
+                                    if (valido) {
+                                        passwordInput.classList.remove('is-invalid');
+                                        passwordInput.classList.add('is-valid');
+                                        confirmInput.classList.remove('is-invalid');
+                                        confirmInput.classList.add('is-valid');
+                                    } else {
+                                        passwordInput.classList.remove('is-valid');
+                                        passwordInput.classList.add('is-invalid');
+                                        confirmInput.classList.remove('is-valid');
+                                        confirmInput.classList.add('is-invalid');
+                                    }
+                                }
+
+                                function actualizarEstado(elemento, cumple) {
+                                    if (cumple) {
+                                        elemento.classList.remove('text-danger');
+                                        elemento.classList.add('text-success');
+                                    } else {
+                                        elemento.classList.remove('text-success');
+                                        elemento.classList.add('text-danger');
+                                    }
+                                }
+
+                                passwordInput.addEventListener('input', validarPassword);
+                                confirmInput.addEventListener('input', validarPassword);
+</script>
+
+<script>
+    /* ==========================================================
+     AGREGAR CORREO
+     ========================================================== */
+    function agregarCorreo() {
+        document.getElementById('correos-container').insertAdjacentHTML('beforeend', `
         <div class="row g-2 mb-2">
             <div class="col-md-6">
                 <input type="email" name="nuevo_correo[]" class="form-control" required>
@@ -211,19 +265,19 @@ function agregarCorreo() {
             </div>
         </div>
     `);
-}
+    }
 
-/* ==========================================================
-   AGREGAR TELÉFONO
-========================================================== */
-const opcionesTelefono = `
+    /* ==========================================================
+     AGREGAR TELÉFONO
+     ========================================================== */
+    const opcionesTelefono = `
 @foreach($tiposTelefono as $tt)
     <option value="{{ $tt->id }}">{{ $tt->nombre }}</option>
 @endforeach
 `;
 
-function agregarTelefono() {
-    document.getElementById('telefonos-container').insertAdjacentHTML('beforeend', `
+    function agregarTelefono() {
+        document.getElementById('telefonos-container').insertAdjacentHTML('beforeend', `
         <div class="row g-2 mb-2">
             <div class="col-md-5">
                 <input name="nuevo_telefono[]" class="form-control" required>
@@ -240,6 +294,6 @@ function agregarTelefono() {
             </div>
         </div>
     `);
-}
+    }
 </script>
 @endsection

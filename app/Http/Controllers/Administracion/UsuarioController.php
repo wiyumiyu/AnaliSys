@@ -1,11 +1,11 @@
 <?php
 
-
 namespace App\Http\Controllers\Administracion;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+
 class UsuarioController extends Controller {
     /* ===============================
      * LISTADO
@@ -244,13 +244,17 @@ class UsuarioController extends Controller {
             'apellido2' => 'required',
             'cedula' => 'required',
             'rol_id' => 'required',
-            'password_nueva' => 'required',
-            'password_confirmar' => 'required'
+            'password_nueva' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/[A-Z]/', // Mayúscula
+                'regex:/[0-9]/', // Número
+                'regex:/[\W_]/'       // Símbolo
+            ],
+                ], [
+            'password_nueva.regex' => 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.'
         ]);
-
-        if ($request->password_nueva !== $request->password_confirmar) {
-            return back()->withErrors(['password' => 'Las contraseñas no coinciden.']);
-        }
 
         $hash = password_hash($request->password_nueva, PASSWORD_DEFAULT);
 

@@ -8,9 +8,200 @@
 <link rel="stylesheet"
       href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
 
- <link rel="stylesheet"  href="{{ asset('libs/prismjs/themes/prism-coy.min.css') }}">
- 
- 
+<link rel="stylesheet"  href="{{ asset('libs/prismjs/themes/prism-coy.min.css') }}">
+
+<style>
+    /* =====================================================
+       LEYENDA LIMPIA (SIN FONDO)
+    ===================================================== */
+    /* Etiqueta gris del tipo de análisis */
+.file-tag {
+    background: var(--bs-tertiary-bg);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    color: inherit;
+}
+.dual-item .file-tag {
+    color: inherit;
+}
+
+    /* =====================================================
+       COLORES DE CADA TIPO (PUNTO + ITEMS)
+    ===================================================== */
+
+    /* TEXTURA */
+    .textura {
+        background: #F4E8E1;
+        color: #8B5E3C;
+        border: 1px solid #E5CFC2;
+    }
+    .legend-item.textura .legend-dot {
+        background: #8B5E3C;
+    }
+
+    /* DENSIDAD APARENTE */
+    .dens-ap {
+        background: #E4ECFA;
+        color: #1E3A8A;
+        border: 1px solid #C7D6F5;
+    }
+    .legend-item.dens-ap .legend-dot {
+        background: #1E3A8A;
+    }
+
+    /* DENSIDAD PARTICULAS */
+    .dens-par {
+        background: #E6F0FF;
+        color: #3B82F6;
+        border: 1px solid #C9DEFF;
+    }
+    .legend-item.dens-par .legend-dot {
+        background: #3B82F6;
+    }
+
+    /* HUMEDAD */
+    .hum-grav {
+        background: #E6F7EC;
+        color: #16A34A;
+        border: 1px solid #C7EBD6;
+    }
+    .legend-item.hum-grav .legend-dot {
+        background: #16A34A;
+    }
+
+    /* CONDUCTIVIDAD */
+    .cond-hid {
+        background: #E0F7FA;
+        color: #0891B2;
+        border: 1px solid #B9EBF1;
+    }
+    .legend-item.cond-hid .legend-dot {
+        background: #0891B2;
+    }
+
+    /* RETENCION */
+    .ret-hum {
+        background: #EDF7E3;
+        color: #65A30D;
+        border: 1px solid #D4EAB9;
+    }
+    .legend-item.ret-hum .legend-dot {
+        background: #65A30D;
+    }
+
+    /* CURVATURA */
+    .curv-ret {
+        background: #F1ECFF;
+        color: #7C3AED;
+        border: 1px solid #D9CCFF;
+    }
+    .legend-item.curv-ret .legend-dot {
+        background: #7C3AED;
+    }
+
+    /* GRANULOMETRIA */
+    .granul {
+        background: #FFF1E8;
+        color: #EA580C;
+        border: 1px solid #FFD7C2;
+    }
+    .legend-item.granul .legend-dot {
+        background: #EA580C;
+    }
+
+    /* ESTABILIDAD */
+    .estab {
+        background: #FFECEC;
+        color: #DC2626;
+        border: 1px solid #FFC9C9;
+    }
+    .legend-item.estab .legend-dot {
+        background: #DC2626;
+    }
+
+    /* COEF EXTENSIBILIDAD */
+    .coef-ext {
+        background: #FFEAF4;
+        color: #DB2777;
+        border: 1px solid #FFC9E2;
+    }
+    .legend-item.coef-ext .legend-dot {
+        background: #DB2777;
+    }
+
+    /* PERMEABILIDAD */
+    .perm-air {
+        background: #F3F4F6;
+        color: #6B7280;
+        border: 1px solid #E5E7EB;
+    }
+    .legend-item.perm-air .legend-dot {
+        background: #6B7280;
+    }
+
+
+    /* =====================================================
+       LISTAS DUALES (ARCHIVOS)
+    ===================================================== */
+.dual-box {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 220px;
+}
+
+    .dual-item {
+        padding: 10px 14px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.18s ease;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .dual-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .dual-item:hover {
+    background: var(--bs-tertiary-bg);
+}
+    .modal-header {
+        border-bottom: none !important;
+    }
+
+    .modal-footer {
+        border-top: none !important;
+    }
+    
+    /* ===============================
+   DARK MODE – mejorar contraste
+================================ */
+
+[data-bs-theme="dark"] .textura {
+    background: rgba(139, 94, 60, 0.25);
+}
+
+[data-bs-theme="dark"] .hum-grav {
+    background: rgba(22, 163, 74, 0.25);
+}
+
+[data-bs-theme="dark"] .granul {
+    background: rgba(234, 88, 12, 0.25);
+}
+
+[data-bs-theme="dark"] .dual-item {
+    border: 1px solid rgba(255,255,255,0.08);
+}
+</style>
+
 @endsection
 
 @section('content')
@@ -33,11 +224,11 @@
 
                         {{-- AÑO --}}
                         <select class="form-select w-auto"
-                                onchange="location='?periodo='+this.value">
+                                onchange="location = '?periodo=' + this.value">
                             @for($i = date('Y'); $i >= date('Y')-10; $i--)
-                                <option value="{{ $i }}" @selected($periodo==$i)>
-                                    {{ $i }}
-                                </option>
+                            <option value="{{ $i }}" @selected($periodo==$i)>
+                                {{ $i }}
+                            </option>
                             @endfor
                         </select>
 
@@ -125,140 +316,91 @@
      tabindex="-1"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
 
-            <div class="modal-header border-0">
+            {{-- HEADER --}}
+            <div class="modal-header">
                 <h5 class="modal-title fw-semibold">
+                    <i class="ri-file-list-3-line text-primary me-2"></i>
                     Nuevo Resultado
                 </h5>
+
                 <button type="button"
                         class="btn-close"
                         data-bs-dismiss="modal"></button>
             </div>
 
-            <form method="POST"
-                  action="{{ route('resultados.store') }}">
+            <form method="POST" action="{{ route('resultados.store') }}">
                 @csrf
 
                 <div class="modal-body">
 
-                    {{-- Año y Consecutivo --}}
-                    <div class="row mb-4">
+                    {{-- AÑO + CONSECUTIVO --}}
+                    <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Año</label>
-                            <input type="number"
-                                   name="anio"
-                                   class="form-control"
-                                   required>
+                            <input type="number" name="anio" class="form-control" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Consecutivo</label>
-                            <input type="number"
-                                   name="consecutivo"
-                                   class="form-control"
-                                   min="1"
-                                   required>
+                            <input type="number" name="consecutivo" class="form-control" required>
                         </div>
                     </div>
 
-                    <hr>
 
-                    {{-- LISTA DE ANALISIS --}}
-                    <div class="analisis-container">
 
-                        @php
-                            $analisis = [
-                                'Textura',
-                                'Densidad Aparente',
-                                'Densidad de Partículas',
-                                'Humedad Gravimétrica',
-                                'Conductividad Hidráulica',
-                                'Retención de Humedad',
-                                'Curvatura de Retención',
-                                'Granulometría Fracción Gruesa',
-                                'Estabilidad de Agregados',
-                                'Coeficiente de Extensibilidad Lineal',
-                                'Permeabilidad del Aire'
-                            ];
-                        @endphp
 
-                        @foreach($analisis as $index => $nombre)
+                    {{-- LISTA DUAL --}}
+                    <div class="row g-4">
 
-                        <div class="row align-items-start mb-4">
+                        {{-- DISPONIBLES --}}
+                        <div class="col-md-6">
+                            <label class="fw-semibold mb-2">
+                                <i class="ri-folder-open-line text-primary me-1"></i>
+                                Archivos disponibles
+                            </label>
 
-                            {{-- COLUMNA IZQUIERDA (SELECT) --}}
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">
-                                    {{ $nombre }}
-                                </label>
+                            <div class="dual-box" id="listaDisponibles">
+                                {{-- Ejemplo --}}
+                                <div class="dual-item textura">
+                                    <span>textura_2026.xlsx</span>
+                                    <span class="file-tag">Textura</span>
+                                </div>
+                                <div class="dual-item hum-grav">
+                                    <span>humedad_sem1.xlsx</span>
+                                    <span class="file-tag">Humedad Gravimétrica</span>
+                                </div>
 
-                                <div class="dropdown w-100">
-                                    <button class="btn btn-outline-secondary dropdown-toggle w-100"
-                                            type="button"
-                                            data-bs-toggle="dropdown"
-                                            data-bs-auto-close="outside">
-                                        Seleccionar archivos
-                                    </button>
-
-                                    <div class="dropdown-menu p-3 w-100 shadow-sm"
-                                         style="max-height: 220px; overflow-y: auto;">
-
-                                        @forelse($archivosDisponibles as $archivo)
-                                            <div class="form-check">
-                                                <input class="form-check-input"
-                                                       type="checkbox"
-                                                       name="archivos[{{ $index }}][]"
-                                                       value="{{ $archivo->id }}"
-                                                       id="archivo_{{ $index }}_{{ $archivo->id }}">
-                                                <label class="form-check-label small"
-                                                       for="archivo_{{ $index }}_{{ $archivo->id }}">
-                                                    {{ $archivo->archivo }}
-                                                </label>
-                                            </div>
-                                        @empty
-                                            <span class="text-muted small">
-                                                No hay archivos disponibles
-                                            </span>
-                                        @endforelse
-
-                                    </div>
+                                <div class="dual-item granul">
+                                    <span>granulometria_A.xlsx</span>
+                                    <span class="file-tag">Granulometría</span>
                                 </div>
                             </div>
-
-                            {{-- COLUMNA DERECHA (ARCHIVOS SELECCIONADOS) --}}
-                            <div class="col-md-8">
-                                <label class="form-label fw-semibold text-muted">
-                                    Archivos seleccionados
-                                </label>
-
-                                <div class="border rounded p-3 bg-light"
-                                     style="min-height: 70px; max-height: 150px; overflow-y: auto;">
-
-                                    <div class="selected-files small text-muted">
-                                        Aquí se mostrarán los archivos seleccionados
-                                    </div>
-
-                                </div>
-                            </div>
-
                         </div>
 
-                        @endforeach
+                        {{-- SELECCIONADOS --}}
+                        <div class="col-md-6">
+                            <label class="fw-semibold mb-2">
+                                <i class="ri-check-line text-success me-1"></i>
+                                Archivos seleccionados
+                            </label>
+
+                            <div class="dual-box" id="listaSeleccionados">
+                            </div>
+                        </div>
 
                     </div>
 
                 </div>
 
-                <div class="modal-footer border-0 justify-content-center">
-                    <button type="submit"
-                            class="btn btn-primary px-4">
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
                         Guardar
                     </button>
-
                     <button type="button"
-                            class="btn btn-light px-4"
+                            class="btn btn-light"
                             data-bs-dismiss="modal">
                         Cancelar
                     </button>
@@ -324,30 +466,41 @@
 @endsection
 
 @section('js')
-    <script src="{{ asset('libs/prismjs/prism.js') }}"></script>
-    <script  src="{{ asset('libs/sortablejs/Sortable.min.js') }}"></script>
-    
-        <!--App js-->
-    <script type="module" src="{{ asset('js/app.js') }}"></script>
-    
+<script src="{{ asset('libs/prismjs/prism.js') }}"></script>
+<script  src="{{ asset('libs/sortablejs/Sortable.min.js') }}"></script>
+
+<!--App js-->
+<script type="module" src="{{ asset('js/app.js') }}"></script>
+
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-function confirmarEliminacion(id, consecutivo) {
+                                                function confirmarEliminacion(id, consecutivo) {
 
-    document.getElementById('resultadoNumero').textContent = consecutivo;
+                                                document.getElementById('resultadoNumero').textContent = consecutivo;
+                                                const form = document.getElementById('formEliminar');
+                                                form.action = `/resultados/${id}`;
+                                                const modal = new bootstrap.Modal(
+                                                        document.getElementById('modalEliminarResultado')
+                                                        );
+                                                modal.show();
+                                                }
 
-    const form = document.getElementById('formEliminar');
-    form.action = `/resultados/${id}`;
 
-    const modal = new bootstrap.Modal(
-        document.getElementById('modalEliminarResultado')
-    );
-
-    modal.show();
-}
+                                                document.addEventListener("click", function(e) {
+                                                if (e.target.classList.contains("dual-item")) {
+                                                const item = e.target;
+                                                const disponible = document.getElementById("listaDisponibles");
+                                                const seleccionado = document.getElementById("listaSeleccionados");
+                                                if (item.parentElement.id === "listaDisponibles") {
+                                                seleccionado.appendChild(item);
+                                                } else {
+                                                disponible.appendChild(item);
+                                                }
+                                                }
+                                                });
 </script>
 
 @endsection

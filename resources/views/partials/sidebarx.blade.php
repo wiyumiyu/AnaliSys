@@ -31,6 +31,9 @@
             || (Route::has('coel.index') && request()->routeIs('coel.*'))
             || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'))
             || (Route::has('permeabilidad_aire.index') && request()->routeIs('permeabilidad_aire.*'));
+            
+            $resultadosActive =
+            Route::has('resultados.index') && request()->routeIs('resultados.*');
             @endphp
             <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
                 <a href="#collapseAdvancedUI"
@@ -126,14 +129,14 @@
                     </li>
 
                     <li class="pe-slide-item">
-                            <a href="{{ route('coeficiente_extensibilidad.index') }}"
-                               class="pe-nav-link {{ request()->routeIs('coeficiente_extensibilidad.*') ? 'active' : '' }}">
-                                Coeficiente de extensibilidad lineal
-                            </a>
+                        <a href="{{ route('coeficiente_extensibilidad.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('coeficiente_extensibilidad.*') ? 'active' : '' }}">
+                            Coeficiente de extensibilidad lineal
+                        </a>
                     </li>
                     {{-- PERMEABILIDAD (LARAVEL) --}}
                     <li class="pe-slide-item">
-    
+
                         <a href="{{ route('permeabilidad_aire.index') }}"
                            class="pe-nav-link {{ request()->routeIs('permeabilidad_aire.*') ? 'active' : '' }}">
                             Permeabilidad del aire
@@ -162,104 +165,14 @@
                     <li class="pe-slide-item">
                         <a href="#" class="pe-nav-link">Densidad Aparente</a>
                     </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Densidad de Partículas</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Porosidad Total</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Humedad Gravimétrica</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Conductividad Hidráulica</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Retención de Humedad</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Curvatura de Retención de Humedad</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Granulometría de la fracción gruesa</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Estabilidad de agregados</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Permeabilidad del aire</a>
-                    </li>
                 </ul>
             </li>
 
-            <li class="pe-slide pe-has-sub">
-                <a href="#collapseResultados" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseResultados">
+            <li class="pe-slide">
+                <a href="{{ route('resultados.index') }}" class="pe-nav-link">
                     <i class="ri-check-double-line pe-nav-icon"></i>
                     <span class="pe-nav-content">Resultados</span>
-                    <i class="ri-arrow-down-s-line pe-nav-arrow"></i>
                 </a>
-                <ul class="pe-slide-menu collapse" id="collapseResultados">
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Textura</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Densidad Aparente</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Densidad de Partículas</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Porosidad Total</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Humedad Gravimétrica</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Conductividad Hidráulica</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Retención de Humedad</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Curvatura de Retención de Humedad</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Granulometría de la fracción gruesa</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Estabilidad de agregados</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Coeficiente de extensibilidad lineal (COEL)</a>
-                    </li>
-
-                    <li class="pe-slide-item">
-                        <a href="#" class="pe-nav-link">Permeabilidad del aire</a>
-                    </li>
-                </ul>
             </li>
 
             <li class="pe-slide pe-has-sub">

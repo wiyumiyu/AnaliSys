@@ -514,6 +514,23 @@ CREATE TABLE trn_control_comentarios (
 );
 
 /* ============================================================
+   RESULTADOS (TABLAS)
+   ============================================================ */
+CREATE TABLE trn_resultados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    consecutivo INT NOT NULL,
+    tipo INT NOT NULL,
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    id_persona INT NOT NULL
+);
+
+CREATE TABLE trn_resultados_lista (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_resultado INT NOT NULL,
+    id_archivo INT NOT NULL
+);
+
+/* ============================================================
    BITÁCORA (TABLAS)
    ============================================================ */
 
@@ -4458,6 +4475,200 @@ BEGIN
     ORDER BY 
         t.id ASC,
         r.id_analisis ASC;
+
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_todos_los_archivos (
+    IN p_periodo INT
+)
+BEGIN
+
+    SELECT *
+    FROM (
+        SELECT 'TEXTURA' AS tipo, id, archivo, fecha, periodo
+        FROM trn_textura
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'GRANULOMETRIA', id, archivo, fecha, periodo
+        FROM trn_granulometria
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'DENSIDAD_APARENTE', id, archivo, fecha, periodo
+        FROM trn_densidad_aparente
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'DENSIDAD_PARTICULAS', id, archivo, fecha, periodo
+        FROM trn_densidad_particulas
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'HUMEDAD_GRAVIMETRICA', id, archivo, fecha, periodo
+        FROM trn_humedad_gravimetrica
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'CONDUCTIVIDAD_HIDRAULICA', id, archivo, fecha, periodo
+        FROM trn_conductividad_hidraulica
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'RETENCION_HUMEDAD', id, archivo, fecha, periodo
+        FROM trn_retencion_humedad
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'ESTABILIDAD_AGREGADOS', id, archivo, fecha, periodo
+        FROM trn_estabilidad_agregados
+        WHERE periodo = p_periodo
+
+        UNION ALL
+        SELECT 'COEFICIENTE_EXTENSIBILIDAD', id, archivo, fecha, periodo
+        FROM trn_coeficiente_extensibilidad
+        WHERE periodo = p_periodo
+
+    ) AS archivos_unificados
+    ORDER BY fecha DESC;
+
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_guardar_resultado $$
+
+CREATE PROCEDURE sp_guardar_resultado(
+    IN p_tipo INT,
+    IN p_consecutivo INT,
+    IN p_id_persona INT,
+    IN p_lista_archivos TEXT
+)
+BEGIN
+    DECLARE v_id_resultado INT;
+    DECLARE v_id_archivo INT;
+    DECLARE v_pos INT DEFAULT 1;
+    DECLARE v_coma INT;
+    DECLARE v_existe INT DEFAULT 0;
+
+    START TRANSACTION;
+
+    -- Validar que no exista el consecutivo para el mismo tipo
+    SELECT COUNT(*)
+    INTO v_existe
+    FROM trn_resultados
+    WHERE tipo = p_tipo
+      AND consecutivo = p_consecutivo;
+
+    IF v_existe > 0 THEN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El consecutivo ya existe para este tipo';
+    END IF;
+
+    -- Insertar resultado
+    INSERT INTO trn_resultados(
+        consecutivo,
+        tipo,
+        fecha,
+        id_persona
+    )
+    VALUES (
+        p_consecutivo,
+        p_tipo,
+        CURDATE(),
+        p_id_persona
+    );
+
+    SET v_id_resultado = LAST_INSERT_ID();
+
+    -- Procesar lista CSV
+    archivos_loop: LOOP
+
+        SET v_coma = LOCATE(',', p_lista_archivos, v_pos);
+
+        IF v_coma = 0 THEN
+            SET v_id_archivo = TRIM(SUBSTRING(p_lista_archivos, v_pos));
+        ELSE
+            SET v_id_archivo = TRIM(SUBSTRING(p_lista_archivos, v_pos, v_coma - v_pos));
+        END IF;
+
+        -- Insertar detalle
+        INSERT INTO trn_resultados_lista(
+            id_resultado, 
+            id_archivo
+        )
+        VALUES (
+            v_id_resultado,
+            v_id_archivo
+        );
+
+        IF v_coma = 0 THEN
+            LEAVE archivos_loop;
+        END IF;
+
+        SET v_pos = v_coma + 1;
+
+    END LOOP;
+
+    COMMIT;
+
+    SELECT v_id_resultado AS id_generado;
+
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_listar_resultados_por_anio $$
+
+CREATE PROCEDURE sp_listar_resultados_por_anio(
+    IN p_periodo INT
+)
+BEGIN
+
+    SELECT 
+        r.id,
+        r.consecutivo,
+        r.tipo,
+        r.fecha,
+        COUNT(rl.id_archivo) AS total_archivos
+    FROM trn_resultados r
+    LEFT JOIN trn_resultados_lista rl
+        ON rl.id_resultado = r.id
+    WHERE YEAR(r.fecha) = p_periodo
+    GROUP BY r.id
+    ORDER BY r.fecha DESC;
+
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_eliminar_resultado $$
+
+CREATE PROCEDURE sp_eliminar_resultado(
+    IN p_id INT
+)
+BEGIN
+
+    START TRANSACTION;
+
+    DELETE FROM trn_resultados_lista
+    WHERE id_resultado = p_id;
+
+    DELETE FROM trn_resultados
+    WHERE id = p_id;
+
+    COMMIT;
 
 END $$
 

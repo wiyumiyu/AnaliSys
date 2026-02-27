@@ -6,6 +6,7 @@ use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Administracion\BitacoraController;
+use App\Http\Controllers\Resultados\ResultadosController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -615,6 +616,39 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             [CoeficienteExtensibilidadController::class, 'importar']
     )->name('coeficiente_extensibilidad.importar');
 });
+
+//------------------------------------------------------------------------------
+// RESULTADOS
+//------------------------------------------------------------------------------
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    // Listado
+    Route::get(
+        '/resultados',
+        [ResultadosController::class, 'index']
+    )->name('resultados.index');
+
+    // Guardar
+    Route::post(
+        '/resultados',
+        [ResultadosController::class, 'guardarResultado']
+    )->name('resultados.store');
+
+    // Eliminar
+    Route::delete(
+        '/resultados/{id}',
+        [ResultadosController::class, 'destroy']
+    )->name('resultados.destroy');
+
+    // (Opcional) Ver detalle
+    Route::get(
+        '/resultados/{id}',
+        [ResultadosController::class, 'show']
+    )->name('resultados.show');
+
+});
+
 
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA

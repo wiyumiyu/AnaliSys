@@ -78,13 +78,13 @@ class DensidadAparenteController extends Controller {
         DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
         DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
 
-// obtener id_densidad_aparente antes de actualizar
+        // obtener id_densidad_aparente antes de actualizar
         $muestra = collect(
                 DB::select(
                         'CALL sp_obtener_muestra_densidad_aparente(?)',
                         [$id]
                 )
-                )->first();
+        )->first();
 
         // actualizar muestra
         DB::statement(
@@ -122,33 +122,41 @@ class DensidadAparenteController extends Controller {
      * TOGGLE ESTADO
      * =============================== */
 
-    public function toggleEstado($id) {
+    public function toggleEstado(Request $request, $id)
+    {
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_toggle_estado_muestra_densidad_aparente(?)',
                 [$id]
         );
 
-        return redirect()
-                        ->back()
-                        ->with('success', 'Estado de la muestra actualizado correctamente');
-    }
+        return redirect()->back()->with('success', 'Estado actualizado correctamente');
+     }
 
     /* ===============================
      * ELIMINAR MUESTRA
      * =============================== */
 
-    public function destroy($id) {
+    public function destroy(Request $request, $id)
+    {
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_eliminar_muestra_densidad_aparente(?)',
                 [$id]
         );
 
-        return redirect()
-                        ->back()
-                        ->with('success', 'Muestra eliminada correctamente');
+        return redirect()->back()->with('success', 'Muestra eliminada correctamente');
     }
 
-    public function destroyArchivo($id) {
+    public function destroyArchivo(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_eliminar_densidad_aparente(?)',
                 [$id]
@@ -160,6 +168,10 @@ class DensidadAparenteController extends Controller {
     }
 
     public function importar(Request $request) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         $request->validate([
             'archivo' => 'required|file|mimes:xlsx,xls'
         ]);
@@ -258,4 +270,5 @@ class DensidadAparenteController extends Controller {
                     );
         }
     }
+
 }

@@ -74,6 +74,10 @@ class ConductividadHidraulicaController extends Controller {
      * =============================== */
 
     public function update(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+    
         $muestra = collect(
                 DB::select(
                         'CALL sp_obtener_muestra_conductividad_hidraulica(?)',
@@ -114,7 +118,11 @@ class ConductividadHidraulicaController extends Controller {
      * TOGGLE ESTADO
      * =============================== */
 
-    public function toggleEstado($id) {
+    public function toggleEstado(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_toggle_estado_muestra_conductividad_hidraulica(?)',
                 [$id]
@@ -129,7 +137,11 @@ class ConductividadHidraulicaController extends Controller {
      * ELIMINAR MUESTRA
      * =============================== */
 
-    public function destroy($id) {
+    public function destroy(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_eliminar_muestra_conductividad_hidraulica(?)',
                 [$id]
@@ -144,7 +156,11 @@ class ConductividadHidraulicaController extends Controller {
      * ELIMINAR ARCHIVO
      * =============================== */
 
-    public function destroyArchivo($id) {
+    public function destroyArchivo(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_eliminar_conductividad_hidraulica(?)',
                 [$id]
@@ -160,6 +176,10 @@ class ConductividadHidraulicaController extends Controller {
      * =============================== */
 
     public function importar(Request $request) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         $request->validate([
             'archivo' => 'required|file|mimes:xlsx,xls'
         ]);

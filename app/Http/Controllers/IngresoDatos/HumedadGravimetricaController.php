@@ -121,7 +121,11 @@ class HumedadGravimetricaController extends Controller {
      * TOGGLE ESTADO
      * =============================== */
 
-    public function toggleEstado($id) {
+    public function toggleEstado(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_toggle_estado_muestra_humedad_gravimetrica(?)',
                 [$id]
@@ -136,7 +140,11 @@ class HumedadGravimetricaController extends Controller {
      * ELIMINAR MUESTRA
      * =============================== */
 
-    public function destroy($id) {
+    public function destroy(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_eliminar_muestra_humedad_gravimetrica(?)',
                 [$id]
@@ -151,7 +159,11 @@ class HumedadGravimetricaController extends Controller {
      * ELIMINAR ARCHIVO
      * =============================== */
 
-    public function destroyArchivo($id) {
+    public function destroyArchivo(Request $request, $id) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         DB::statement(
                 'CALL sp_eliminar_humedad_gravimetrica(?)',
                 [$id]
@@ -167,6 +179,10 @@ class HumedadGravimetricaController extends Controller {
      * =============================== */
 
     public function importar(Request $request) {
+        
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
         $request->validate([
             'archivo' => 'required|file|mimes:xlsx,xls'
         ]);

@@ -3584,7 +3584,6 @@ DELIMITER ;
 DELIMITER $$
 
 -- Densidad Aparente
-DROP TRIGGER IF EXISTS trg_densidad_aparente_ai$$
 CREATE TRIGGER trg_densidad_aparente_ai
 AFTER INSERT ON trn_densidad_aparente
 FOR EACH ROW
@@ -3655,6 +3654,223 @@ BEGIN
                 'fecha', NEW.fecha,
                 'archivo', NEW.archivo,
                 'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Muestras
+-- Densidad Aparente
+DROP TRIGGER IF EXISTS trg_densidad_aparente_ai$$;
+CREATE TRIGGER trg_densidad_aparente_ai
+AFTER INSERT ON trn_densidad_aparente
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_densidad_aparente',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    )
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_densidad_aparente_ad$$
+CREATE TRIGGER trg_densidad_aparente_ad
+AFTER DELETE ON trn_densidad_aparente
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_densidad_aparente',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_densidad_aparente_au$$
+CREATE TRIGGER trg_densidad_aparente_au
+AFTER UPDATE ON trn_densidad_aparente
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_densidad_aparente',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_densidad_aparente_muestra_au$$
+CREATE TRIGGER trg_densidad_aparente_muestra_au
+AFTER UPDATE ON trn_densidad_aparente_muestras
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.rep      <=> NEW.rep AND
+        OLD.material <=> NEW.material AND
+        OLD.tipo     <=> NEW.tipo AND
+        OLD.posicion <=> NEW.posicion AND
+        OLD.estado   <=> NEW.estado
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_densidad_aparente_muestras',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'rep', OLD.rep,
+                'material', OLD.material,
+                'tipo', OLD.tipo,
+                'posicion', OLD.posicion,
+                'estado', OLD.estado
+            ),
+            JSON_OBJECT(
+                'rep', NEW.rep,
+                'material', NEW.material,
+                'tipo', NEW.tipo,
+                'posicion', NEW.posicion,
+                'estado', NEW.estado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_densidad_aparente_muestra_au$$
+CREATE TRIGGER trg_densidad_aparente_muestra_au
+AFTER UPDATE ON trn_densidad_aparente_muestras
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.rep      <=> NEW.rep AND
+        OLD.material <=> NEW.material AND
+        OLD.tipo     <=> NEW.tipo AND
+        OLD.posicion <=> NEW.posicion AND
+        OLD.estado   <=> NEW.estado
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_densidad_aparente_muestras',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'rep', OLD.rep,
+                'material', OLD.material,
+                'tipo', OLD.tipo,
+                'posicion', OLD.posicion,
+                'estado', OLD.estado
+            ),
+            JSON_OBJECT(
+                'rep', NEW.rep,
+                'material', NEW.material,
+                'tipo', NEW.tipo,
+                'posicion', NEW.posicion,
+                'estado', NEW.estado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Resultados
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_densidad_aparente_resultado_au$$
+CREATE TRIGGER trg_densidad_aparente_resultado_au
+AFTER UPDATE ON trn_densidad_aparente_resultados
+FOR EACH ROW
+BEGIN
+    IF NOT (OLD.resultado <=> NEW.resultado) THEN
+        CALL sp_bitacora_usuario(
+            'trn_densidad_aparente_resultados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'id', OLD.id,
+                'id_muestra', OLD.id_densidad_aparente_muestras,
+                'resultado', OLD.resultado
+            ),
+            JSON_OBJECT(
+                'id', NEW.id,
+                'id_muestra', NEW.id_densidad_aparente_muestras,
+                'resultado', NEW.resultado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_densidad_aparente_resultado_au$$
+CREATE TRIGGER trg_densidad_aparente_resultado_au
+AFTER UPDATE ON trn_densidad_aparente_resultados
+FOR EACH ROW
+BEGIN
+    IF NOT (OLD.resultado <=> NEW.resultado) THEN
+        CALL sp_bitacora_usuario(
+            'trn_densidad_aparente_resultados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'id', OLD.id,
+                'id_muestra', OLD.id_densidad_aparente_muestras,
+                'resultado', OLD.resultado
+            ),
+            JSON_OBJECT(
+                'id', NEW.id,
+                'id_muestra', NEW.id_densidad_aparente_muestras,
+                'resultado', NEW.resultado
             )
         );
     END IF;
@@ -3741,6 +3957,156 @@ BEGIN
                 'fecha', NEW.fecha,
                 'archivo', NEW.archivo,
                 'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Muestras
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_muestra_ai$$
+CREATE TRIGGER trg_humedad_gravimetrica_muestra_ai
+AFTER INSERT ON trn_humedad_gravimetrica_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_humedad_gravimetrica_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'id_humedad_gravimetrica', NEW.id_humedad_gravimetrica,
+            'idlab', NEW.idlab,
+            'rep', NEW.rep,
+            'material', NEW.material,
+            'tipo', NEW.tipo,
+            'posicion', NEW.posicion,
+            'estado', NEW.estado
+        )
+    );
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_muestra_au$$
+CREATE TRIGGER trg_humedad_gravimetrica_muestra_au
+AFTER UPDATE ON trn_humedad_gravimetrica_muestras
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.rep      <=> NEW.rep AND
+        OLD.material <=> NEW.material AND
+        OLD.tipo     <=> NEW.tipo AND
+        OLD.posicion <=> NEW.posicion AND
+        OLD.estado   <=> NEW.estado
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_humedad_gravimetrica_muestras',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'rep', OLD.rep,
+                'material', OLD.material,
+                'tipo', OLD.tipo,
+                'posicion', OLD.posicion,
+                'estado', OLD.estado
+            ),
+            JSON_OBJECT(
+                'rep', NEW.rep,
+                'material', NEW.material,
+                'tipo', NEW.tipo,
+                'posicion', NEW.posicion,
+                'estado', NEW.estado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_muestra_ad$$
+CREATE TRIGGER trg_humedad_gravimetrica_muestra_ad
+AFTER DELETE ON trn_humedad_gravimetrica_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_humedad_gravimetrica_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'idlab', OLD.idlab,
+            'rep', OLD.rep
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+-- Resultados
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_resultado_au$$
+CREATE TRIGGER trg_humedad_gravimetrica_resultado_au
+AFTER UPDATE ON trn_humedad_gravimetrica_resultados
+FOR EACH ROW
+BEGIN
+    IF NOT (OLD.resultado <=> NEW.resultado) THEN
+        CALL sp_bitacora_usuario(
+            'trn_humedad_gravimetrica_resultados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'id', OLD.id,
+                'id_muestra', OLD.id_humedad_gravimetrica_muestras,
+                'resultado', OLD.resultado
+            ),
+            JSON_OBJECT(
+                'id', NEW.id,
+                'id_muestra', NEW.id_humedad_gravimetrica_muestras,
+                'resultado', NEW.resultado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_humedad_gravimetrica_resultado_au$$
+CREATE TRIGGER trg_humedad_gravimetrica_resultado_au
+AFTER UPDATE ON trn_humedad_gravimetrica_resultados
+FOR EACH ROW
+BEGIN
+    IF NOT (OLD.resultado <=> NEW.resultado) THEN
+        CALL sp_bitacora_usuario(
+            'trn_humedad_gravimetrica_resultados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'id', OLD.id,
+                'id_muestra', OLD.id_humedad_gravimetrica_muestras,
+                'resultado', OLD.resultado
+            ),
+            JSON_OBJECT(
+                'id', NEW.id,
+                'id_muestra', NEW.id_humedad_gravimetrica_muestras,
+                'resultado', NEW.resultado
             )
         );
     END IF;
@@ -3862,6 +4228,158 @@ DELIMITER ;
 
 DELIMITER $$
 
+-- Muestras
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_conductividad_hidraulica_muestra_ai$$
+CREATE TRIGGER trg_conductividad_hidraulica_muestra_ai
+AFTER INSERT ON trn_conductividad_hidraulica_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_conductividad_hidraulica_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'id_conductividad_hidraulica', NEW.id_conductividad_hidraulica,
+            'idlab', NEW.idlab,
+            'rep', NEW.rep,
+            'material', NEW.material,
+            'tipo', NEW.tipo,
+            'posicion', NEW.posicion,
+            'estado', NEW.estado
+        )
+    );
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_conductividad_hidraulica_muestra_au$$
+CREATE TRIGGER trg_conductividad_hidraulica_muestra_au
+AFTER UPDATE ON trn_conductividad_hidraulica_muestras
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.rep      <=> NEW.rep AND
+        OLD.material <=> NEW.material AND
+        OLD.tipo     <=> NEW.tipo AND
+        OLD.posicion <=> NEW.posicion AND
+        OLD.estado   <=> NEW.estado
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_conductividad_hidraulica_muestras',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'rep', OLD.rep,
+                'material', OLD.material,
+                'tipo', OLD.tipo,
+                'posicion', OLD.posicion,
+                'estado', OLD.estado
+            ),
+            JSON_OBJECT(
+                'rep', NEW.rep,
+                'material', NEW.material,
+                'tipo', NEW.tipo,
+                'posicion', NEW.posicion,
+                'estado', NEW.estado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_conductividad_hidraulica_muestra_ad$$
+CREATE TRIGGER trg_conductividad_hidraulica_muestra_ad
+AFTER DELETE ON trn_conductividad_hidraulica_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_conductividad_hidraulica_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'idlab', OLD.idlab,
+            'rep', OLD.rep
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+-- Resultados
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_conductividad_hidraulica_resultado_au$$
+CREATE TRIGGER trg_conductividad_hidraulica_resultado_au
+AFTER UPDATE ON trn_conductividad_hidraulica_resultados
+FOR EACH ROW
+BEGIN
+    IF NOT (OLD.resultado <=> NEW.resultado) THEN
+        CALL sp_bitacora_usuario(
+            'trn_conductividad_hidraulica_resultados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'id', OLD.id,
+                'id_muestra', OLD.id_conductividad_hidraulica_muestras,
+                'resultado', OLD.resultado
+            ),
+            JSON_OBJECT(
+                'id', NEW.id,
+                'id_muestra', NEW.id_conductividad_hidraulica_muestras,
+                'resultado', NEW.resultado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_conductividad_hidraulica_resultado_au$$
+CREATE TRIGGER trg_conductividad_hidraulica_resultado_au
+AFTER UPDATE ON trn_conductividad_hidraulica_resultados
+FOR EACH ROW
+BEGIN
+    IF NOT (OLD.resultado <=> NEW.resultado) THEN
+        CALL sp_bitacora_usuario(
+            'trn_conductividad_hidraulica_resultados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'id', OLD.id,
+                'id_muestra', OLD.id_conductividad_hidraulica_muestras,
+                'resultado', OLD.resultado
+            ),
+            JSON_OBJECT(
+                'id', NEW.id,
+                'id_muestra', NEW.id_conductividad_hidraulica_muestras,
+                'resultado', NEW.resultado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
 -- Retencion Humedad
 
 -- Insert
@@ -3943,6 +4461,151 @@ BEGIN
             )
         );
     END IF;
+END$$
+
+DELIMITER ;
+
+-- Muestras
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_muestra_ai$$
+CREATE TRIGGER trg_retencion_humedad_muestra_ai
+AFTER INSERT ON trn_retencion_humedad_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_retencion_humedad_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'id_retencion_humedad', NEW.id_retencion_humedad,
+            'idlab', NEW.idlab,
+            'rep', NEW.rep,
+            'material', NEW.material,
+            'tipo', NEW.tipo,
+            'posicion', NEW.posicion,
+            'estado', NEW.estado
+        )
+    );
+END$$
+
+DELIMITER ;
+
+-- Update
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_muestra_au$$
+CREATE TRIGGER trg_retencion_humedad_muestra_au
+AFTER UPDATE ON trn_retencion_humedad_muestras
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.rep      <=> NEW.rep AND
+        OLD.material <=> NEW.material AND
+        OLD.tipo     <=> NEW.tipo AND
+        OLD.posicion <=> NEW.posicion AND
+        OLD.estado   <=> NEW.estado
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_retencion_humedad_muestras',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'rep', OLD.rep,
+                'material', OLD.material,
+                'tipo', OLD.tipo,
+                'posicion', OLD.posicion,
+                'estado', OLD.estado
+            ),
+            JSON_OBJECT(
+                'rep', NEW.rep,
+                'material', NEW.material,
+                'tipo', NEW.tipo,
+                'posicion', NEW.posicion,
+                'estado', NEW.estado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_muestra_ad$$
+CREATE TRIGGER trg_retencion_humedad_muestra_ad
+AFTER DELETE ON trn_retencion_humedad_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_retencion_humedad_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'idlab', OLD.idlab,
+            'rep', OLD.rep
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+-- Resultados
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_resultado_au$$
+CREATE TRIGGER trg_retencion_humedad_resultado_au
+AFTER UPDATE ON trn_retencion_humedad_resultados
+FOR EACH ROW
+BEGIN
+    IF NOT (OLD.resultado <=> NEW.resultado) THEN
+        CALL sp_bitacora_usuario(
+            'trn_retencion_humedad_resultados',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'id', OLD.id,
+                'id_muestra', OLD.id_retencion_humedad_muestras,
+                'resultado', OLD.resultado
+            ),
+            JSON_OBJECT(
+                'id', NEW.id,
+                'id_muestra', NEW.id_retencion_humedad_muestras,
+                'resultado', NEW.resultado
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_retencion_humedad_resultado_ad$$
+CREATE TRIGGER trg_retencion_humedad_resultado_ad
+AFTER DELETE ON trn_retencion_humedad_resultados
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_retencion_humedad_resultados',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'id_muestra', OLD.id_retencion_humedad_muestras,
+            'resultado', OLD.resultado
+        ),
+        NULL
+    );
 END$$
 
 DELIMITER ;

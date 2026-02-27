@@ -7,6 +7,10 @@
       href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
 <link rel="stylesheet"
       href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
+
+ <link rel="stylesheet"  href="{{ asset('libs/prismjs/themes/prism-coy.min.css') }}">
+ 
+ 
 @endsection
 
 @section('content')
@@ -116,15 +120,12 @@
     </div>
 </div>
 
-{{-- =========================================================
-   MODAL NUEVO RESULTADO
-   ========================================================= --}}
 <div class="modal fade"
      id="modalNuevoResultado"
      tabindex="-1"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
 
             <div class="modal-header border-0">
@@ -142,19 +143,17 @@
 
                 <div class="modal-body">
 
-                    <div class="d-flex flex-wrap gap-4 justify-content-center">
-
-                        {{-- TIPO --}}
-                        <div>
+                    {{-- Año y Consecutivo --}}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Año</label>
                             <input type="number"
-                                   name="tipo"
+                                   name="anio"
                                    class="form-control"
                                    required>
                         </div>
 
-                        {{-- CONSECUTIVO --}}
-                        <div>
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Consecutivo</label>
                             <input type="number"
                                    name="consecutivo"
@@ -162,57 +161,104 @@
                                    min="1"
                                    required>
                         </div>
+                    </div>
 
-                        {{-- ARCHIVOS --}}
-                        <div>
-                            <label class="form-label fw-semibold">Archivos</label>
+                    <hr>
 
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary dropdown-toggle"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        data-bs-auto-close="outside">
-                                    Seleccionar archivos
-                                </button>
+                    {{-- LISTA DE ANALISIS --}}
+                    <div class="analisis-container">
 
-                                <div class="dropdown-menu p-3"
-                                     style="min-width: 260px; max-height: 250px; overflow-y: auto;">
+                        @php
+                            $analisis = [
+                                'Textura',
+                                'Densidad Aparente',
+                                'Densidad de Partículas',
+                                'Humedad Gravimétrica',
+                                'Conductividad Hidráulica',
+                                'Retención de Humedad',
+                                'Curvatura de Retención',
+                                'Granulometría Fracción Gruesa',
+                                'Estabilidad de Agregados',
+                                'Coeficiente de Extensibilidad Lineal',
+                                'Permeabilidad del Aire'
+                            ];
+                        @endphp
 
-                                    @forelse($archivosDisponibles as $archivo)
+                        @foreach($analisis as $index => $nombre)
 
-                                        <div class="form-check">
-                                            <input class="form-check-input"
-                                                   type="checkbox"
-                                                   name="archivos[]"
-                                                   value="{{ $archivo->id }}"
-                                                   id="archivo{{ $archivo->id }}">
-                                            <label class="form-check-label"
-                                                   for="archivo{{ $archivo->id }}">
-                                                {{ $archivo->tipo }} - {{ $archivo->archivo }}
-                                            </label>
-                                        </div>
+                        <div class="row align-items-start mb-4">
 
-                                    @empty
-                                        <span class="text-muted small">
-                                            No hay archivos disponibles
-                                        </span>
-                                    @endforelse
+                            {{-- COLUMNA IZQUIERDA (SELECT) --}}
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">
+                                    {{ $nombre }}
+                                </label>
+
+                                <div class="dropdown w-100">
+                                    <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            data-bs-auto-close="outside">
+                                        Seleccionar archivos
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 w-100 shadow-sm"
+                                         style="max-height: 220px; overflow-y: auto;">
+
+                                        @forelse($archivosDisponibles as $archivo)
+                                            <div class="form-check">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       name="archivos[{{ $index }}][]"
+                                                       value="{{ $archivo->id }}"
+                                                       id="archivo_{{ $index }}_{{ $archivo->id }}">
+                                                <label class="form-check-label small"
+                                                       for="archivo_{{ $index }}_{{ $archivo->id }}">
+                                                    {{ $archivo->archivo }}
+                                                </label>
+                                            </div>
+                                        @empty
+                                            <span class="text-muted small">
+                                                No hay archivos disponibles
+                                            </span>
+                                        @endforelse
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- COLUMNA DERECHA (ARCHIVOS SELECCIONADOS) --}}
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold text-muted">
+                                    Archivos seleccionados
+                                </label>
+
+                                <div class="border rounded p-3 bg-light"
+                                     style="min-height: 70px; max-height: 150px; overflow-y: auto;">
+
+                                    <div class="selected-files small text-muted">
+                                        Aquí se mostrarán los archivos seleccionados
+                                    </div>
 
                                 </div>
                             </div>
+
                         </div>
 
+                        @endforeach
+
                     </div>
+
                 </div>
 
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="submit"
-                            class="btn btn-primary">
+                            class="btn btn-primary px-4">
                         Guardar
                     </button>
 
                     <button type="button"
-                            class="btn btn-light"
+                            class="btn btn-light px-4"
                             data-bs-dismiss="modal">
                         Cancelar
                     </button>
@@ -223,7 +269,6 @@
         </div>
     </div>
 </div>
-
 {{-- =========================================================
    MODAL ELIMINAR RESULTADO
    ========================================================= --}}
@@ -279,7 +324,12 @@
 @endsection
 
 @section('js')
-
+    <script src="{{ asset('libs/prismjs/prism.js') }}"></script>
+    <script  src="{{ asset('libs/sortablejs/Sortable.min.js') }}"></script>
+    
+        <!--App js-->
+    <script type="module" src="{{ asset('js/app.js') }}"></script>
+    
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>

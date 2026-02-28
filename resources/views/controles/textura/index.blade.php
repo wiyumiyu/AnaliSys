@@ -84,11 +84,12 @@
                             {{-- ARCHIVO --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href=""
-                                       class="text-reset fw-semibold text-decoration-none fs-6">
-                                        {{ $l->consecutivo }}
+                                    <a href="{{ route('controles.textura.graficos', $l->id) }}"
+                                       class="fw-semibold text-primary text-decoration-none fs-6">
+                                         {{ $l->consecutivo }}
                                     </a>
                                 </h6>
+
                                 <small class="text-muted">
                                     ID {{ $l->id}}
                                 </small>
@@ -339,7 +340,7 @@
                                                 }
 </script>
 <script>
- document.querySelector('#modalNuevoControl form')
+    document.querySelector('#modalNuevoControl form')
             .addEventListener('submit', function(e) {
 
             const seleccionados = document.querySelectorAll(

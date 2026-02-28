@@ -95,7 +95,8 @@
                             {{-- ARCHIVO --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('conductividad_hidraulica.muestras', $l->id_archivo) }}">
+                                    <a href="{{ route('conductividad_hidraulica.muestras', $l->id_archivo) }}"
+                                       class="fw-semibold text-primary text-decoration-none fs-6">
                                         {{ $l->archivo }}
                                     </a>
                                 </h6>

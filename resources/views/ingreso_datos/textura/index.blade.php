@@ -55,7 +55,7 @@
 
                         <form class="d-flex align-items-center gap-3 m-0" action="{{ route('textura.importar') }}"
                               enctype="multipart/form-data"  method="POST">
-                             @csrf
+                            @csrf
                             <input type="file"
                                    name="archivo"
                                    accept=".xlsx,.xls"
@@ -69,8 +69,8 @@
                                 Importar
                             </button>
                         </form>
-                        
-                      
+
+
 
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                             <td>
                                 <h6 class="mb-0">
                                     <a href="{{ route('textura.muestras', $l->id_archivo) }}"
-                                       class="text-reset fw-semibold text-decoration-none fs-6">
+                                       class="fw-semibold text-primary text-decoration-none fs-6">
                                         {{ $l->archivo }}
                                     </a>
                                 </h6>

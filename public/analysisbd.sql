@@ -487,6 +487,35 @@ CREATE TABLE trn_coeficiente_extensibilidad_resultado (
     estado BOOLEAN DEFAULT 1
 );
 
+-- Permeabilidad del Aire
+CREATE TABLE trn_permeabilidad_aire (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periodo YEAR NOT NULL DEFAULT (YEAR(CURDATE())),
+    archivo VARCHAR(255),
+    fecha DATE NOT NULL DEFAULT (CURDATE()),
+    analista INT NOT NULL
+);
+
+CREATE TABLE trn_permeabilidad_aire_muestras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_permeabilidad_aire INT NOT NULL,
+    idlab VARCHAR(25) NOT NULL,
+    rep INT NOT NULL DEFAULT 1,
+    material INT NOT NULL,
+    tipo INT NOT NULL,
+    posicion INT NOT NULL,
+    estado BOOLEAN DEFAULT 1,
+    ri BOOLEAN DEFAULT 0
+);
+
+CREATE TABLE trn_permeabilidad_aire_resultado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_permeabilidad_aire_muestras INT NOT NULL,
+    id_analisis INT NOT NULL,
+    resultado VARCHAR(25),
+    estado BOOLEAN DEFAULT 1
+);
+
 /* ============================================================
    CONTROLES (TABLAS)
    ============================================================ */
@@ -761,6 +790,25 @@ ALTER TABLE trn_coeficiente_extensibilidad_resultado
 ADD CONSTRAINT fk_ce_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
+
+-- Permeabilidad del Aire
+ALTER TABLE trn_permeabilidad_aire_muestras
+ADD CONSTRAINT fk_pa_muestras
+FOREIGN KEY (id_permeabilidad_aire)
+REFERENCES trn_permeabilidad_aire(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_permeabilidad_aire_resultado
+ADD CONSTRAINT fk_pa_resultado_muestras
+FOREIGN KEY (id_permeabilidad_aire_muestras)
+REFERENCES trn_permeabilidad_aire_muestras(id)
+ON DELETE CASCADE;
+
+ALTER TABLE trn_permeabilidad_aire_resultado
+ADD CONSTRAINT fk_pa_resultado_analisis
+FOREIGN KEY (id_analisis)
+REFERENCES trn_analisis(id);
+
 
 ALTER TABLE trn_controles_lista
 ADD CONSTRAINT fk_controles_lista
@@ -3067,14 +3115,6 @@ END $$
 DELIMITER ;
 
 
-
-
-
-
-
-
-
-
 -- Coeficiente de Extensibilidad
 DELIMITER $$
 
@@ -3272,6 +3312,201 @@ WHERE id = p_id;
 END$$
 DELIMITER ;
 
+-- Permeabilidad del Aire
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_permeabilidad_aire_por_periodo (
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT
+        pa.id AS id_archivo,
+        pa.periodo,
+        pa.fecha,
+        pa.archivo,
+        pa.analista AS id_analista,
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista
+    FROM trn_permeabilidad_aire pa
+    INNER JOIN tbl_persona p
+        ON p.id_persona = pa.analista
+    WHERE pa.periodo = IFNULL(p_periodo, YEAR(CURDATE()))
+    ORDER BY pa.fecha DESC, pa.id DESC;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_muestras_permeabilidad_aire_detalle (
+    IN p_id_permeabilidad_aire INT
+)
+BEGIN
+    SELECT
+        m.id AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+        MAX(CASE WHEN a.siglas = 'longitud_muestra' THEN r.resultado END) AS longitud_muestra,
+        MAX(CASE WHEN a.siglas = 'diametro_interno' THEN r.resultado END) AS diametro_interno,
+        MAX(CASE WHEN a.siglas = 'area_transversal' THEN r.resultado END) AS area_transversal,
+        MAX(CASE WHEN a.siglas = 'volumen_muestra' THEN r.resultado END) AS volumen_muestra,
+        MAX(CASE WHEN a.siglas = 'temperatura_aire' THEN r.resultado END) AS temperatura_aire
+        
+    FROM trn_permeabilidad_aire_muestras m
+    LEFT JOIN trn_permeabilidad_aire_resultado r
+        ON r.id_permeabilidad_aire_muestras = m.id
+       AND r.estado = 1
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'PERMEABILIDAD_AIRE'
+    WHERE m.id_permeabilidad_aire = p_id_permeabilidad_aire
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+    ORDER BY
+        m.idlab, m.rep;
+        
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_muestra_permeabilidad_aire (
+    IN p_id INT
+)
+BEGIN
+SELECT
+    id,
+    id_permeabilidad_aire,
+    idlab,
+    rep,
+    material,
+    tipo,
+    posicion,
+    estado,
+    ri
+FROM trn_permeabilidad_aire_muestras
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_resultados_permeabilidad_aire_por_muestra (
+    IN p_id_muestra INT
+)
+BEGIN
+    SELECT
+        r.id AS id_resultado,
+        r.id_analisis,
+        a.analisis,
+        a.siglas,
+        r.resultado,
+        r.estado
+    FROM trn_permeabilidad_aire_resultado r
+    INNER JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'PERMEABILIDAD_AIRE'
+    WHERE r.id_permeabilidad_aire_muestras = p_id_muestra
+    ORDER BY a.id;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_muestra_permeabilidad_aire (
+
+IN p_id INT,
+IN p_rep INT,
+IN p_material INT,
+IN p_tipo INT,
+IN p_posicion INT,
+IN p_estado TINYINT
+
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_muestras
+SET
+rep = p_rep,
+material = p_material,
+tipo = p_tipo,
+posicion = p_posicion,
+estado = p_estado
+WHERE id = p_id;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_actualizar_resultado_permeabilidad_aire (
+IN p_id_resultado INT,
+IN p_resultado VARCHAR(50)
+
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_resultado
+SET resultado = p_resultado
+WHERE id = p_id_resultado;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_anular_muestra_permeabilidad_aire (
+IN p_id INT
+
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_muestras
+SET estado = 0
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_muestra_permeabilidad_aire (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_permeabilidad_aire_muestras
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_estado_muestra_permeabilidad_aire (
+IN p_id INT
+)
+BEGIN
+UPDATE trn_permeabilidad_aire_muestras
+SET estado = IF(estado = 1, 0, 1)
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_eliminar_permeabilidad_aire (
+IN p_id INT
+)
+BEGIN
+DELETE FROM trn_permeabilidad_aire
+WHERE id = p_id;
+
+END$$
+DELIMITER ;
+
+
 DELIMITER $$
 -- drop PROCEDURE sp_listar_controles_por_anio
 CREATE PROCEDURE sp_listar_controles_por_anio (
@@ -3293,6 +3528,10 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+
+
 
 /* ============================================================
    6. TRIGGERS
@@ -4771,6 +5010,268 @@ END$$
 
 DELIMITER ;
 
+-- Muestra
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_muestra_ai$$
+CREATE TRIGGER trg_estabilidad_agregados_muestra_ai
+AFTER INSERT ON trn_estabilidad_agregados_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_estabilidad_agregados_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'idlab', NEW.idlab,
+            'rep', NEW.rep,
+            'material', NEW.material,
+            'tipo', NEW.tipo,
+            'posicion', NEW.posicion
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_muestra_au$$
+
+CREATE TRIGGER trg_estabilidad_agregados_muestra_au
+
+AFTER UPDATE ON trn_estabilidad_agregados_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_estabilidad_agregados_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_muestra_au$$
+
+CREATE TRIGGER trg_estabilidad_agregados_muestra_au
+
+AFTER UPDATE ON trn_estabilidad_agregados_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_estabilidad_agregados_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+-- Resultados
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_resultado_au$$
+
+CREATE TRIGGER trg_estabilidad_agregados_resultado_au
+
+AFTER UPDATE ON trn_estabilidad_agregados_resultado
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (OLD.resultado <=> NEW.resultado)
+
+    THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_estabilidad_agregados_resultado',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'id', OLD.id,
+
+                'resultado', OLD.resultado
+
+            ),
+
+            JSON_OBJECT(
+
+                'id', NEW.id,
+
+                'resultado', NEW.resultado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_resultado_ad$$
+
+CREATE TRIGGER trg_estabilidad_agregados_resultado_ad
+
+AFTER DELETE ON trn_estabilidad_agregados_resultado
+
+FOR EACH ROW
+
+BEGIN
+
+    CALL sp_bitacora_usuario(
+
+        'trn_estabilidad_agregados_resultado',
+
+        COALESCE(@bitacora_usuario, 0),
+
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+        'DELETE',
+
+        JSON_OBJECT(
+
+            'id', OLD.id,
+
+            'resultado', OLD.resultado
+
+        ),
+
+        NULL
+
+    );
+
+END$$
+
+DELIMITER ;
+
+
+
 -- Coeficiente de  Extensibilidad
 DELIMITER $$
 
@@ -4851,6 +5352,268 @@ BEGIN
 
 END$$
 DELIMITER $$
+
+-- Muestra
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_muestra_ai$$
+CREATE TRIGGER trg_coeficiente_extensibilidad_muestra_ai
+AFTER INSERT ON trn_coeficiente_extensibilidad_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_coeficiente_extensibilidad_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'idlab', NEW.idlab,
+            'rep', NEW.rep,
+            'material', NEW.material,
+            'tipo', NEW.tipo,
+            'posicion', NEW.posicion
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_muestra_au$$
+
+CREATE TRIGGER trg_coeficiente_extensibilidad_muestra_au
+
+AFTER UPDATE ON trn_coeficiente_extensibilidad_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_coeficiente_extensibilidad_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_muestra_au$$
+
+CREATE TRIGGER trg_coeficiente_extensibilidad_muestra_au
+
+AFTER UPDATE ON trn_coeficiente_extensibilidad_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_coeficiente_extensibilidad_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+-- Resultados
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_resultado_au$$
+
+CREATE TRIGGER trg_coeficiente_extensibilidad_resultado_au
+
+AFTER UPDATE ON trn_coeficiente_extensibilidad_resultado
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (OLD.resultado <=> NEW.resultado)
+
+    THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_coeficiente_extensibilidad_resultado',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'id', OLD.id,
+
+                'resultado', OLD.resultado
+
+            ),
+
+            JSON_OBJECT(
+
+                'id', NEW.id,
+
+                'resultado', NEW.resultado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_resultado_ad$$
+
+CREATE TRIGGER trg_coeficiente_extensibilidad_resultado_ad
+
+AFTER DELETE ON trn_coeficiente_extensibilidad_resultado
+
+FOR EACH ROW
+
+BEGIN
+
+    CALL sp_bitacora_usuario(
+
+        'trn_coeficiente_extensibilidad_resultado',
+
+        COALESCE(@bitacora_usuario, 0),
+
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+        'DELETE',
+
+        JSON_OBJECT(
+
+            'id', OLD.id,
+
+            'resultado', OLD.resultado
+
+        ),
+
+        NULL
+
+    );
+
+END$$
+
+DELIMITER ;
+
+
 
 CREATE PROCEDURE sp_obtener_bitacora_completa (
     IN p_id BIGINT
@@ -6007,4 +6770,122 @@ VALUES
 SELECT * 
 FROM tbl_bitacora 
 ORDER BY fecha DESC;
+
+
+
+
+-- CIASI
+
+CREATE TABLE IF NOT EXISTS `tbm_cliente` (
+  `id_cliente` int(11) NOT NULL AUTO_INCREMENT,
+  `identificacion` varchar(100) COLLATE latin1_general_ci NOT NULL,
+  `id_tipo_identificacion` int(11) NOT NULL,
+  `nombre` varchar(100) COLLATE latin1_general_ci NOT NULL,
+  `nombre_comercial` varchar(100) COLLATE latin1_general_ci NOT NULL,
+  `id_pais` int(11) NOT NULL,
+  `id_provincia` int(11) NOT NULL,
+  `id_canton` int(11) NOT NULL,
+  `id_distrito` int(11) NOT NULL,
+  `id_barrio` int(11) NOT NULL,
+  `otras_senas` text COLLATE latin1_general_ci NOT NULL,
+  `fecha_ingreso` date NOT NULL,
+  `observaciones` text COLLATE latin1_general_ci NOT NULL,
+  `id_fundevi` int(11) NOT NULL DEFAULT '0',
+  `id_access` int(11) NOT NULL DEFAULT '0',
+  `id_categoria` int(11) NOT NULL DEFAULT '1',
+  `validado` tinyint(1) NOT NULL DEFAULT '0',
+  `exentodeimpuestos` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id_cliente`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=8025 ;
+
+
+INSERT INTO tbm_cliente (
+identificacion,
+id_tipo_identificacion,
+nombre,
+nombre_comercial,
+id_pais,
+id_provincia,
+id_canton,
+id_distrito,
+id_barrio,
+otras_senas,
+fecha_ingreso,
+observaciones,
+id_fundevi,
+id_access,
+id_categoria,
+validado,
+exentodeimpuestos
+) VALUES
+
+('3-101-000001', 1, 'AgroDesarrollo del Norte S.A.', 'AgroNorte', 1, 1, 1, 1, 1,
+ '500 metros norte de la iglesia central, finca agrícola',
+ '2024-01-15',
+ 'Cliente ficticio creado para pruebas de reportes.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000002', 1, 'Productores Unidos del Valle S.A.', 'ProValle', 1, 2, 3, 2, 4,
+ '200 metros este del colegio técnico, bodegas verdes',
+ '2024-02-10',
+ 'Cliente ficticio para simulación de datos.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000003', 1, 'Finca Experimental Los Pinos S.A.', 'Los Pinos', 1, 3, 5, 1, 2,
+ 'Ruta 32, kilómetro 85, entrada principal',
+ '2024-03-05',
+ 'Cliente ficticio de laboratorio agrícola.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000004', 1, 'Servicios Agrícolas del Pacífico S.A.', 'AgroPacífico', 1, 4, 7, 3, 5,
+ 'Frente a la estación de servicio, edificio azul',
+ '2024-04-20',
+ 'Cliente ficticio para pruebas de confidencialidad.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000005', 1, 'Corporación AgroInnovación S.A.', 'AgroInnovación', 1, 5, 9, 4, 6,
+ 'Parque industrial agrícola, lote 12',
+ '2024-05-12',
+ 'Cliente ficticio para pruebas internas del sistema.',
+ 0, 0, 1, 1, 0);
+ 
+ CREATE TABLE IF NOT EXISTS `tbm_solicitud` (
+  `id_solicitud` int(11) NOT NULL AUTO_INCREMENT,
+  `numero` varchar(10) COLLATE latin1_general_ci NOT NULL,
+  `fecha` datetime NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `id_persona` int(11) NOT NULL COMMENT 'USUARIO',
+  `id_cultivo` int(11) NOT NULL,
+  `id_dirpais` int(11) NOT NULL,
+  `id_dirprovincia` int(11) NOT NULL,
+  `id_dircanton` int(11) NOT NULL,
+  `id_dirdistrito` int(11) NOT NULL,
+  `id_dirbarrio` int(11) NOT NULL,
+  `otras_senas` text COLLATE latin1_general_ci NOT NULL,
+  `id_laboratorio` int(11) NOT NULL,
+  `entrega` int(11) NOT NULL DEFAULT '0',
+  `area_muestreada` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `edadcultivo` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `coordenadax` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `coordenaday` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `observaciones` text COLLATE latin1_general_ci NOT NULL,
+  `estado` tinyint(1) NOT NULL,
+  `id_moneda` int(11) NOT NULL,
+  `exento` tinyint(1) NOT NULL,
+  `id_access` int(11) NOT NULL DEFAULT '0',
+  `id_categoria` int(11) NOT NULL DEFAULT '1',
+  `responsable` int(11) NOT NULL DEFAULT '0',
+  `id_cliente_subcliente` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id_solicitud`),
+  KEY `idx_s_exento` (`exento`),
+  KEY `idx_solicitud_id_persona` (`id_persona`),
+  KEY `idx_solicitud_id_laboratorio` (`id_laboratorio`),
+  KEY `idx_solicitud_id_cliente` (`id_cliente`),
+  KEY `idx_solicitud_id_cliente_subcliente` (`id_cliente_subcliente`),
+  KEY `idx_solicitud_responsable` (`responsable`),
+  KEY `idx_solicitud_fecha` (`fecha`),
+  KEY `idx_solicitud_cliente` (`id_cliente`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=42567 ;
+
+
 

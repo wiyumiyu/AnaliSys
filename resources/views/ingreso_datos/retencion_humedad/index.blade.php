@@ -32,11 +32,11 @@
 
                         {{-- AÑO --}}
                         <select class="form-select w-auto"
-                                onchange="location='?anio='+this.value">
+                                onchange="location = '?anio=' + this.value">
                             @for($i = date('Y'); $i >= date('Y')-10; $i--)
-                                <option value="{{ $i }}" @selected($anio==$i)>
-                                    {{ $i }}
-                                </option>
+                            <option value="{{ $i }}" @selected($anio==$i)>
+                                {{ $i }}
+                            </option>
                             @endfor
                         </select>
 
@@ -95,9 +95,11 @@
                             {{-- ARCHIVO --}}
                             <td>
                                 <h6 class="mb-0">
-                                    <a href="{{ route('retencion_humedad.muestras', $l->id_archivo) }}">
+                                    <a href="{{ route('retencion_humedad.muestras', $l->id_archivo) }}
+                                       class="fw-semibold text-primary text-decoration-none fs-6"">
                                         {{ $l->archivo }}
                                     </a>
+                                  
                                 </h6>
                                 <small class="text-muted">
                                     ID {{ $l->id_archivo }}
@@ -124,8 +126,8 @@
                                     <button type="button"
                                             class="btn bg-danger-subtle text-danger btn-sm"
                                             onclick="confirmarEliminarArchivo(
-                                                {{ $l->id_archivo }}, '{{ $l->archivo }}'
-                                            )">
+                                            {{ $l->id_archivo }}, '{{ $l->archivo }}'
+                                                            )">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
 
@@ -205,21 +207,18 @@
 <script src="{{ asset('js/app.js') }}"></script>
 
 <script>
-let archivoModal;
+                                                            let archivoModal;
+                                                            document.addEventListener('DOMContentLoaded', function () {
+                                                            archivoModal = new bootstrap.Modal(
+                                                                    document.getElementById('confirmArchivoModal')
+                                                                    );
+                                                            });
+                                                            function confirmarEliminarArchivo(id, nombre) {
 
-document.addEventListener('DOMContentLoaded', function () {
-    archivoModal = new bootstrap.Modal(
-        document.getElementById('confirmArchivoModal')
-    );
-});
-
-function confirmarEliminarArchivo(id, nombre) {
-
-    document.getElementById('modalTitle').textContent = 'Eliminar archivo';
-    document.getElementById('modalTitle').className =
-        'modal-title text-danger fw-semibold';
-
-    document.getElementById('modalBody').innerHTML = `
+                                                            document.getElementById('modalTitle').textContent = 'Eliminar archivo';
+                                                            document.getElementById('modalTitle').className =
+                                                                    'modal-title text-danger fw-semibold';
+                                                            document.getElementById('modalBody').innerHTML = `
         ¿Está seguro que desea eliminar el archivo
         <strong>${nombre}</strong>?
         <br>
@@ -227,12 +226,10 @@ function confirmarEliminarArchivo(id, nombre) {
             Se eliminarán todas las muestras y resultados asociados.
         </small>
     `;
-
-    document.getElementById('modalForm').action =
-        `/ingreso-datos/retencion-humedad/${id}`;
-
-    archivoModal.show();
-}
+                                                            document.getElementById('modalForm').action =
+                                                                    `/ingreso-datos/retencion-humedad/${id}`;
+                                                            archivoModal.show();
+                                                            }
 </script>
 
 @endsection

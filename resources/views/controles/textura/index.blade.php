@@ -20,15 +20,6 @@
         {{-- CARD --}}
         <div class="card">
             <div class="card-header">
-                
-                {{-- BUSCAR --}}
-<div class="form-icon">
-    <input type="text"
-           id="buscarResultados"
-           class="form-control form-control-icon"
-           placeholder="Buscar ...">
-    <i class="ri-search-2-line text-muted"></i>
-</div>
                 <div class="d-flex gap-4 justify-content-between align-items-center">
 
                     {{-- TÍTULO --}}
@@ -75,74 +66,64 @@
 
                 {{-- TABLE --}}
                 <table id="default_datatable"
-       class="table table-nowrap align-middle">
+                       class="table table-nowrap align-middle">
 
-    <thead>
-        <tr>
-            <th>Consecutivo</th>
-            <th>Tipo</th>
-            <th>Fecha</th>
-            <th>Archivos</th>
-            <th class="text-end">Acciones</th>
-        </tr>
-    </thead>
+                    <thead>
+                        <tr>
+                            <th>Consecutivo</th>
+                            <th>Fecha</th>
+                            <th>Analista</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
 
-    <tbody>
-        @forelse($resultados as $r)
-        <tr>
+                    <tbody>
+                        @foreach($consecutivosControles as $l)
+                        <tr>
 
-            {{-- CONSECUTIVO --}}
-            <td>
-                <h6 class="mb-0">
-                    {{ $r->consecutivo }}
-                </h6>
-                <small class="text-muted">
-                    ID {{ $r->id }}
-                </small>
-            </td>
+                            {{-- ARCHIVO --}}
+                            <td>
+                                <h6 class="mb-0">
+                                    <a href="{{ route('controles.textura.graficos', $l->id) }}"
+                                       class="fw-semibold text-primary text-decoration-none fs-6">
+                                         {{ $l->consecutivo }}
+                                    </a>
+                                </h6>
 
-            {{-- TIPO --}}
-            <td>
-                <span class="badge bg-primary-subtle text-primary">
-                    {{ ucwords(str_replace('_', ' ', $r->tipo)) }}
-                </span>
-            </td>
+                                <small class="text-muted">
+                                    ID {{ $l->id}}
+                                </small>
+                            </td>
 
-            {{-- FECHA --}}
-            <td>{{ $r->fecha }}</td>
+                            {{-- FECHA --}}
+                            <td>{{ $l->fecha }}</td>
 
-            {{-- TOTAL ARCHIVOS --}}
-            <td>{{ $r->total_archivos }}</td>
+                            {{-- ANALISTA --}}
+                            <td>{{ $l->responsable }}</td>
 
-            {{-- ACCIONES --}}
-            <td class="text-end">
-                <div class="hstack gap-2 fs-15 justify-content-end">
+                            {{-- ACCIONES --}}
+                            <td class="text-end">
+                                <div class="hstack gap-2 fs-15 justify-content-end">
 
-                    <a href="{{ route('resultados.show', $r->id) }}"
-                       class="btn bg-primary-subtle text-primary btn-sm">
-                        <i class="ri-eye-line"></i>
-                    </a>
+                                    <a href="{{ route('controles.textura.graficos', $l->id) }}"
+                                       class="btn bg-primary-subtle text-primary btn-sm">
+                                        <i class="ri-eye-line"></i>
+                                    </a>
 
-                    <button type="button"
-                            class="btn bg-danger-subtle text-danger btn-sm"
-                            onclick="confirmarEliminacion({{ $r->id }}, '{{ $r->consecutivo }}')">
-                        <i class="ri-delete-bin-line"></i>
-                    </button>
+                                    <button type="button" class="btn bg-danger-subtle text-danger btn-sm"
+                                            onclick="confirmarEliminacion({{ $l->id }}, {{ $l->consecutivo }})">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </button>
 
-                </div>
-            </td>
+                                </div>
+                            </td>
 
-        </tr>
-        @empty
-        <tr>
-            <td colspan="5" class="text-center text-muted">
-                No hay resultados registrados.
-            </td>
-        </tr>
-        @endforelse
-    </tbody>
+                        </tr>
+                        @endforeach
+                    </tbody>
 
-</table>
+
+                </table>
 
             </div>
         </div>
@@ -153,9 +134,8 @@
 {{-- =========================================================
    MODAL NUEVO CONTROL
    ========================================================= --}}
-<!-- MODAL NUEVO RESULTADO -->
 <div class="modal fade"
-     id="modalNuevoResultado"
+     id="modalNuevoControl"
      tabindex="-1"
      aria-hidden="true">
 
@@ -164,7 +144,7 @@
 
             <div class="modal-header border-0">
                 <h5 class="modal-title fw-semibold">
-                    Nuevo Resultado
+                    Nuevo control de textura
                 </h5>
                 <button type="button"
                         class="btn-close"
@@ -172,15 +152,24 @@
             </div>
 
             <form method="POST"
-                  action="{{ route('resultados.store') }}">
+                  action="{{ route('controlTextura.store') }}">
                 @csrf
-
-                <!-- IMPORTANTE: TIPO -->
-                <input type="hidden" name="tipo" value="1">
 
                 <div class="modal-body">
 
                     <div class="d-flex flex-wrap gap-4 justify-content-center">
+
+                        {{-- AÑO --}}
+                        <div>
+                            <label class="form-label fw-semibold">Año</label>
+                            <select name="anio" class="form-select">
+                                @for($i = date('Y'); $i >= date('Y')-10; $i--)
+                                <option value="{{ $i }}" @selected($periodo==$i)>
+                                    {{ $i }}
+                                </option>
+                                @endfor
+                            </select>
+                        </div>
 
                         {{-- CONSECUTIVO --}}
                         <div>
@@ -188,10 +177,12 @@
                             <input type="number"
                                    name="consecutivo"
                                    class="form-control"
+                                   value="{{ old('consecutivo', $siguienteConsecutivo->siguiente_consecutivo ?? 1) }}"
                                    min="1"
                                    required>
                         </div>
 
+                        {{-- ARCHIVOS --}}
                         {{-- ARCHIVOS --}}
                         <div>
                             <label class="form-label fw-semibold">Archivos</label>
@@ -207,25 +198,27 @@
                                 <div class="dropdown-menu p-3"
                                      style="min-width: 260px; max-height: 250px; overflow-y: auto;">
 
+                                    @php
+                                    $archivosOld = old('archivos', []);
+                                    @endphp
                                     @forelse($archivosDisponibles as $archivo)
 
-                                        <div class="form-check">
-                                            <input class="form-check-input"
-                                                   type="checkbox"
-                                                   name="archivos[]"
-                                                   value="{{ $archivo->id }}"
-                                                   id="archivo{{ $archivo->id }}">
-
-                                            <label class="form-check-label"
-                                                   for="archivo{{ $archivo->id }}">
-                                                {{ $archivo->archivo }}
-                                            </label>
-                                        </div>
-
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="archivos[]"
+                                               value="{{ $archivo->id }}"
+                                               id="archivo{{ $archivo->id }}"
+                                               @checked(in_array($archivo->id, $archivosOld))>
+                                        <label class="form-check-label"
+                                               for="archivo{{ $archivo->id }}">
+                                            {{ $archivo->archivo }}
+                                        </label>
+                                    </div>
                                     @empty
-                                        <span class="text-muted small">
-                                            No hay archivos disponibles
-                                        </span>
+                                    <span class="text-muted small">
+                                        No hay archivos disponibles
+                                    </span>
                                     @endforelse
 
                                 </div>
@@ -347,7 +340,7 @@
                                                 }
 </script>
 <script>
- document.querySelector('#modalNuevoControl form')
+    document.querySelector('#modalNuevoControl form')
             .addEventListener('submit', function(e) {
 
             const seleccionados = document.querySelectorAll(
@@ -364,20 +357,6 @@
 
             });
 
-$(document).ready(function() {
 
-    const table = $('#default_datatable').DataTable({
-        responsive: true,
-        language: {
-            url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
-        }
-    });
-
-    // Buscador externo
-    $('#buscarResultados').on('keyup', function() {
-        table.search(this.value).draw();
-    });
-
-});
 </script>
 @endsection

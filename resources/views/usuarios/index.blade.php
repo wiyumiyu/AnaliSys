@@ -67,7 +67,13 @@
                                          alt="avatar">
                                     <div>
                                         <h6 class="mb-0">
+                                        <a href="{{ route('usuarios.edit', $u->id_persona) }}"
+                                           class="fw-semibold text-primary text-decoration-none fs-6">
                                             {{ $u->nombre_completo }}
+                                        </a>
+
+
+              
                                         </h6>
                                         <small class="text-muted">
                                             ID {{ $u->id_persona }}
@@ -206,56 +212,46 @@
 
 
 <script>
-    let statusModal;
-    let statusForm;
+                                                let statusModal;
+                                                let statusForm;
+                                                document.addEventListener('DOMContentLoaded', function () {
+                                                statusModal = new bootstrap.Modal(
+                                                        document.getElementById('confirmUserStatusModal')
+                                                        );
+                                                statusForm = document.getElementById('userStatusForm');
+                                                });
+                                                function confirmarCambioEstado(id, accion) {
 
-    document.addEventListener('DOMContentLoaded', function () {
-        statusModal = new bootstrap.Modal(
-            document.getElementById('confirmUserStatusModal')
-        );
-
-        statusForm = document.getElementById('userStatusForm');
-    });
-
-    function confirmarCambioEstado(id, accion) {
-
-        const title = document.getElementById('modalTitle');
-        const body = document.getElementById('modalBody');
-        const btn = document.getElementById('modalConfirmBtn');
-
-        statusForm.action = `/usuarios/${id}/estado`;
-
-        if (accion === 'inactivar') {
-            title.textContent = 'Inactivar usuario';
-            title.className = 'modal-title text-danger';
-
-            body.innerHTML = `
+                                                const title = document.getElementById('modalTitle');
+                                                const body = document.getElementById('modalBody');
+                                                const btn = document.getElementById('modalConfirmBtn');
+                                                statusForm.action = `/usuarios/${id}/estado`;
+                                                if (accion === 'inactivar') {
+                                                title.textContent = 'Inactivar usuario';
+                                                title.className = 'modal-title text-danger';
+                                                body.innerHTML = `
                 ¿Está seguro que desea inactivar este usuario?
                 <br>
                 <small class="text-muted">
                     El usuario no podrá acceder al sistema.
                 </small>
             `;
-
-            btn.textContent = 'Inactivar';
-            btn.className = 'btn btn-danger';
-
-        } else {
-            title.textContent = 'Activar usuario';
-            title.className = 'modal-title text-success';
-
-            body.innerHTML = `
+                                                btn.textContent = 'Inactivar';
+                                                btn.className = 'btn btn-danger';
+                                                } else {
+                                                title.textContent = 'Activar usuario';
+                                                title.className = 'modal-title text-success';
+                                                body.innerHTML = `
                 ¿Desea activar nuevamente este usuario?
                 <br>
                 <small class="text-muted">
                     El usuario recuperará el acceso al sistema.
                 </small>
             `;
+                                                btn.textContent = 'Activar';
+                                                btn.className = 'btn btn-success';
+                                                }
 
-            btn.textContent = 'Activar';
-            btn.className = 'btn btn-success';
-        }
-
-        statusModal.show();
-    }
+                                                statusModal.show();
+                                                }
 </script>

@@ -13,35 +13,58 @@ class ResultadosController extends Controller
      * Listado de resultados por período
      * ------------------------------------------------------------
      */
-    public function index(Request $request)
-    {
-        $periodo = $request->get('periodo', date('Y'));
+public function index(Request $request)
+{
+    $periodo = $request->get('periodo', date('Y'));
 
-        $resultados = DB::select(
-            'CALL sp_listar_resultados_por_anio(?)',
-            [$periodo]
-        );
+    $rows = DB::select(
+        'CALL sp_listar_resultados_por_anio(?)',
+        [$periodo]
+    );
 
-        $archivosDisponibles = DB::select(
-            'CALL sp_listar_todos_los_archivos(?)',
-            [$periodo]
-        );
+    // 🔥 Agrupar resultados con sus archivos
+$resultados = collect($rows)
+    ->groupBy('id')
+    ->map(function ($items) {
 
-        // 🔥 Traer siguiente consecutivo automáticamente
-        $siguienteConsecutivo = DB::select(
-            'CALL sp_traer_consecutivo_resultados(?)',
-            [$periodo]
-        );
+        $first = $items->first();
 
-        $siguienteConsecutivo = $siguienteConsecutivo[0]->siguiente_consecutivo ?? 1;
+        return (object)[
+            'id' => $first->id,
+            'consecutivo' => $first->consecutivo,
+            'fecha' => $first->fecha,
+            'archivos' => $items
+                ->filter(fn($item) => !is_null($item->archivo))
+                ->map(function ($item) {
+                    return (object)[
+                        'tipo' => $item->tipo,
+                        'archivo' => $item->archivo
+                    ];
+                })
+                ->values()
+        ];
+    })
+    ->values();
 
-        return view('resultados.index', compact(
-            'resultados',
-            'periodo',
-            'archivosDisponibles',
-            'siguienteConsecutivo'
-        ));
-    }
+    $archivosDisponibles = DB::select(
+        'CALL sp_listar_todos_los_archivos(?)',
+        [$periodo]
+    );
+
+    $siguienteConsecutivo = DB::select(
+        'CALL sp_traer_consecutivo_resultados(?)',
+        [$periodo]
+    );
+
+    $siguienteConsecutivo = $siguienteConsecutivo[0]->siguiente_consecutivo ?? 1;
+
+    return view('resultados.index', compact(
+        'resultados',
+        'periodo',
+        'archivosDisponibles',
+        'siguienteConsecutivo'
+    ));
+}
 
     /**
      * ------------------------------------------------------------

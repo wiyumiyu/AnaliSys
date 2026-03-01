@@ -557,7 +557,8 @@ CREATE TABLE trn_resultados (
 CREATE TABLE trn_resultados_lista (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_resultado INT NOT NULL,
-    id_archivo INT NOT NULL
+    id_archivo INT NOT NULL,
+    tipo VARCHAR(50) NOT NULL
 );
 
 /* ============================================================
@@ -6253,6 +6254,7 @@ BEGIN
 END $$
 
 DELIMITER ;
+
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS sp_listar_todos_los_archivos $$
@@ -6332,27 +6334,14 @@ CREATE PROCEDURE sp_guardar_resultado(
 )
 BEGIN
     DECLARE v_id_resultado INT;
+    DECLARE v_item TEXT;
+    DECLARE v_tipo VARCHAR(50);
     DECLARE v_id_archivo INT;
     DECLARE v_pos INT DEFAULT 1;
     DECLARE v_coma INT;
-    DECLARE v_existe INT DEFAULT 0;
 
     START TRANSACTION;
 
-    -- Validar consecutivo por año
-    SELECT COUNT(*)
-    INTO v_existe
-    FROM trn_resultados
-    WHERE consecutivo = p_consecutivo
-      AND YEAR(fecha) = YEAR(CURDATE());
-
-    IF v_existe > 0 THEN
-        ROLLBACK;
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El consecutivo ya existe para este año';
-    END IF;
-
-    -- Insertar cabecera
     INSERT INTO trn_resultados (
         consecutivo,
         fecha,
@@ -6366,24 +6355,29 @@ BEGIN
 
     SET v_id_resultado = LAST_INSERT_ID();
 
-    -- Procesar lista CSV
     archivos_loop: LOOP
 
         SET v_coma = LOCATE(',', p_lista_archivos, v_pos);
 
         IF v_coma = 0 THEN
-            SET v_id_archivo = TRIM(SUBSTRING(p_lista_archivos, v_pos));
+            SET v_item = TRIM(SUBSTRING(p_lista_archivos, v_pos));
         ELSE
-            SET v_id_archivo = TRIM(SUBSTRING(p_lista_archivos, v_pos, v_coma - v_pos));
+            SET v_item = TRIM(SUBSTRING(p_lista_archivos, v_pos, v_coma - v_pos));
         END IF;
+
+        -- Separar tipo e id
+        SET v_tipo = SUBSTRING_INDEX(v_item, '|', 1);
+        SET v_id_archivo = SUBSTRING_INDEX(v_item, '|', -1);
 
         INSERT INTO trn_resultados_lista (
             id_resultado,
-            id_archivo
+            id_archivo,
+            tipo
         )
         VALUES (
             v_id_resultado,
-            v_id_archivo
+            v_id_archivo,
+            v_tipo
         );
 
         IF v_coma = 0 THEN
@@ -6396,14 +6390,11 @@ BEGIN
 
     COMMIT;
 
-    SELECT v_id_resultado AS id_generado;
-
 END $$
 
 DELIMITER ;
 
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_listar_resultados_por_anio $$
 
 CREATE PROCEDURE sp_listar_resultados_por_anio(
@@ -6415,12 +6406,53 @@ BEGIN
         r.id,
         r.consecutivo,
         r.fecha,
-        COUNT(rl.id_archivo) AS total_archivos
+        rl.tipo,
+
+        COALESCE(
+            t.archivo,
+            g.archivo,
+            da.archivo,
+            dp.archivo,
+            hg.archivo,
+            ch.archivo,
+            rh.archivo,
+            ea.archivo,
+            ce.archivo
+        ) AS archivo
+
     FROM trn_resultados r
+
     LEFT JOIN trn_resultados_lista rl
         ON rl.id_resultado = r.id
+
+    LEFT JOIN trn_textura t 
+        ON rl.id_archivo = t.id AND rl.tipo = 'TEXTURA'
+
+    LEFT JOIN trn_granulometria g 
+        ON rl.id_archivo = g.id AND rl.tipo = 'GRANULOMETRIA'
+
+    LEFT JOIN trn_densidad_aparente da 
+        ON rl.id_archivo = da.id AND rl.tipo = 'DENSIDAD_APARENTE'
+
+    LEFT JOIN trn_densidad_particulas dp 
+        ON rl.id_archivo = dp.id AND rl.tipo = 'DENSIDAD_PARTICULAS'
+
+    LEFT JOIN trn_humedad_gravimetrica hg 
+        ON rl.id_archivo = hg.id AND rl.tipo = 'HUMEDAD_GRAVIMETRICA'
+
+    LEFT JOIN trn_conductividad_hidraulica ch 
+        ON rl.id_archivo = ch.id AND rl.tipo = 'CONDUCTIVIDAD_HIDRAULICA'
+
+    LEFT JOIN trn_retencion_humedad rh 
+        ON rl.id_archivo = rh.id AND rl.tipo = 'RETENCION_HUMEDAD'
+
+    LEFT JOIN trn_estabilidad_agregados ea 
+        ON rl.id_archivo = ea.id AND rl.tipo = 'ESTABILIDAD_AGREGADOS'
+
+    LEFT JOIN trn_coeficiente_extensibilidad ce 
+        ON rl.id_archivo = ce.id AND rl.tipo = 'COEFICIENTE_EXTENSIBILIDAD'
+
     WHERE YEAR(r.fecha) = p_periodo
-    GROUP BY r.id
     ORDER BY r.fecha DESC;
 
 END $$

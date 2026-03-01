@@ -113,7 +113,42 @@
 
                             <td>{{ $r->fecha }}</td>
 
-                            <td>{{ $r->total_archivos }}</td>
+<td>
+
+@php $typeMap = []; @endphp
+
+@foreach($r->archivos as $archivo)
+
+    @php
+        if (!isset($typeMap[$archivo->tipo])) {
+            $typeMap[$archivo->tipo] = count($typeMap);
+        }
+
+        $index = $typeMap[$archivo->tipo];
+        $hue = fmod(($index * 137.508), 360);
+
+        $textColor = "hsl($hue, 85%, 65%)";
+        $bgColor   = "hsla($hue, 90%, 50%, 0.12)";
+        $borderColor = "hsl($hue, 85%, 50%)";
+    @endphp
+
+    <span class="badge d-inline-flex align-items-center mb-1"
+          style="background-color: {{ $bgColor }};
+                 color: {{ $textColor }};
+                 border: 1px solid {{ $borderColor }};">
+
+        <span class="me-2">{{ $archivo->archivo }}</span>
+
+        <span class="tipo-badge"
+              style="color: {{ $textColor }};">
+            {{ str_replace('_', ' ', $archivo->tipo) }}
+        </span>
+
+    </span>
+
+@endforeach
+
+</td>
 
                             <td class="text-end">
                                 <div class="hstack gap-2 fs-15 justify-content-end">
@@ -261,7 +296,7 @@
                                         <!-- input oculto -->
                                         <input type="checkbox"
                                                name="archivos[]"
-                                               value="{{ $archivo->id }}"
+                                               value="{{ $archivo->tipo }}|{{ $archivo->id }}"
                                                class="d-none">
 
                                     </span>

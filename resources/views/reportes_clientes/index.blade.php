@@ -45,14 +45,11 @@
 
                             {{-- Buscar --}}
                             <input type="text"
-                                   name="buscar"
-                                   value="{{ $buscar ?? '' }}"
+                                   id="busquedaEnVivo"
                                    class="form-control"
                                    placeholder="Buscar solicitud o cliente">
 
-                            <button type="submit" class="btn btn-primary">
-                                Buscar
-                            </button>
+
 
                         </form>
 
@@ -75,41 +72,42 @@
                     </thead>
 
                     <tbody>
-    @forelse($solicitudes as $l)
+                        @forelse($solicitudes as $l)
 
-        <tr>
+                        <tr>
 
-            <td>
-                <a href="{{ route('reportes_clientes.show', $l->id_solicitud) }}"
-                   class="fw-semibold text-primary text-decoration-none">
-                    {{ $l->numero }}
-                </a>
-            </td>
+                            <td>
+                                <h6>
+                                    <a href="{{ route('reportes_clientes.show', $l->id_solicitud) }}"
+                                       class="fw-semibold text-primary text-decoration-none">
+                                        {{ $l->numero }}
+                                </h6>
+                            </td>
 
-            <td>{{ $l->nombre }}</td>
+                            <td>{{ $l->nombre }}</td>
 
-            <td>{{ \Carbon\Carbon::parse($l->fecha)->format('d/m/Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($l->fecha)->format('d/m/Y') }}</td>
 
-            <td>
-                @if($l->estado == 1)
-                    <span class="badge bg-success">Activa</span>
-                @else
-                    <span class="badge bg-secondary">Inactiva</span>
-                @endif
-            </td>
+                            <td>
+                                @if($l->estado_reporte == 'Generada')
+                                <span class="badge bg-success">Generada</span>
+                                @else
+                                <span class="badge bg-warning">Pendiente</span>
+                                @endif
+                            </td>
 
-        </tr>
+                        </tr>
 
-    @empty
+                        @empty
 
-        <tr>
-            <td colspan="4" class="text-center text-muted">
-                No se encontraron solicitudes para los filtros seleccionados.
-            </td>
-        </tr>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">
+                                No se encontraron solicitudes para los filtros seleccionados.
+                            </td>
+                        </tr>
 
-    @endforelse
-</tbody>
+                        @endforelse
+                    </tbody>
 
                 </table>
 
@@ -142,5 +140,16 @@
 
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
+<script>
+    $(document).ready(function () {
+
+        var table = $('#default_datatable').DataTable();
+
+        $('#busquedaEnVivo').on('keyup', function () {
+            table.search($(this).val()).draw();
+        });
+
+    });
+</script>
 
 @endsection

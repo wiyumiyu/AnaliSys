@@ -6463,6 +6463,61 @@ END $$
 
 DELIMITER ;
 
+
+-- ESTO ES DE REPORTES DE CLIENTES
+
+DROP PROCEDURE IF EXISTS sp_listar_reportes_clientes; 
+DELIMITER $$ 
+
+CREATE PROCEDURE sp_listar_reportes_clientes 
+( 
+IN p_periodo INT,
+IN p_tipo INT, -- 0 = pendientes, 1 = generadas 
+IN p_buscar VARCHAR(100)
+) 
+BEGIN 
+
+SELECT 
+    s.id_solicitud, 
+    s.numero, 
+    s.fecha, 
+    c.nombre, 
+    CASE 
+        WHEN si.id_solicitud IS NULL THEN 'Pendiente' 
+        ELSE 'Generada'
+    END AS estado_reporte 
+
+FROM tbm_solicitud s 
+INNER JOIN tbm_cliente c 
+    ON c.id_cliente = s.id_cliente
+
+LEFT JOIN tbm_solicitud_impresa si 
+    ON si.id_solicitud = CAST(s.id_solicitud AS CHAR) 
+
+WHERE YEAR(s.fecha) = p_periodo
+AND s.id_laboratorio = 9
+
+AND 
+(
+    (p_tipo = 0 AND si.id_solicitud IS NULL) 
+    OR 
+    (p_tipo = 1 AND si.id_solicitud IS NOT NULL)
+)
+
+AND
+(
+    p_buscar IS NULL 
+    OR p_buscar = '' 
+    OR s.numero LIKE CONCAT('%', p_buscar, '%') 
+    OR c.nombre LIKE CONCAT('%', p_buscar, '%')
+)
+
+ORDER BY s.fecha DESC; 
+
+END$$ 
+DELIMITER ;
+
+
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */

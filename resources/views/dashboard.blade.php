@@ -88,52 +88,25 @@
 
                 <hr class="my-4">
 
-                <!-- ================= ARCHIVOS POR MÓDULO ================= -->
-                <h6 class="fw-semibold mb-3">Archivos generados por módulo</h6>
+<!-- ================= REPORTES POR ANÁLISIS ================= -->
+<div class="row mb-4">
+    <div class="col-12 col-xl-12">
 
-                <div class="row g-4 text-center mb-4">
+        <div class="card card-h-100 shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0 fw-semibold">
+                    Reportes generados por Análisis
+                </h6>
+            </div>
 
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-primary">{{ $textura }}</h4>
-                        <small class="text-muted">Textura</small>
-                    </div>
+            <div class="card-body">
+                <div id="analisisChart" style="min-height: 350px;"></div>
+            </div>
 
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-success">{{ $densidadAparente }}</h4>
-                        <small class="text-muted">Densidad Aparente</small>
-                    </div>
+        </div>
 
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-info">{{ $densidadParticulas }}</h4>
-                        <small class="text-muted">Densidad Partículas</small>
-                    </div>
-
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-warning">{{ $humedad }}</h4>
-                        <small class="text-muted">Humedad Gravimétrica</small>
-                    </div>
-
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-danger">{{ $retencion }}</h4>
-                        <small class="text-muted">Retención</small>
-                    </div>
-
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-dark">{{ $granulometria }}</h4>
-                        <small class="text-muted">Granulometría</small>
-                    </div>
-
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-secondary">{{ $estabilidad }}</h4>
-                        <small class="text-muted">Estabilidad</small>
-                    </div>
-
-                    <div class="col-xl-2 col-md-4 col-6">
-                        <h4 class="fw-bold text-primary">{{ $coel }}</h4>
-                        <small class="text-muted">COEL</small>
-                    </div>
-
-                </div>
+    </div>
+</div>
 
                 <hr class="my-4">
 
@@ -183,4 +156,84 @@
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    var options = {
+        series: [{
+            name: 'Reportes',
+            data: @json(array_values($analisisData))
+        }],
+        chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: {
+                show: true
+            }
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 6,
+                columnWidth: '45%',
+                distributed: true,
+                dataLabels: {
+                    position: 'top'
+                }
+            }
+        },
+        colors: [
+            '#3b82f6','#10b981','#0dcaf0','#ffc107',
+            '#dc3545','#6f42c1','#6c757d','#0d6efd'
+        ],
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+                return val;
+            },
+            offsetY: -20,
+            style: {
+                fontSize: '12px',
+                fontWeight: 600,
+                colors: ["#304758"]
+            }
+        },
+        xaxis: {
+            categories: @json(array_keys($analisisData)),
+            position: 'bottom',
+            labels: {
+                style: {
+                    fontSize: '12px'
+                }
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Cantidad de Reportes'
+            },
+            min: 0,
+            forceNiceScale: true
+        },
+        grid: {
+            borderColor: '#e0e0e0'
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val + " reportes";
+                }
+            }
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#analisisChart"), options);
+    chart.render();
+
+});
+</script>
+
 @endsection

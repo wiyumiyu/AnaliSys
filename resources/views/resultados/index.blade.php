@@ -7,203 +7,36 @@
       href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"/>
 <link rel="stylesheet"
       href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css"/>
-
-<link rel="stylesheet"  href="{{ asset('libs/prismjs/themes/prism-coy.min.css') }}">
+<link rel="stylesheet"
+      href="{{ asset('libs/prismjs/themes/prism-coy.min.css') }}">
 
 <style>
-    /* =====================================================
-       LEYENDA LIMPIA (SIN FONDO)
-    ===================================================== */
-    /* Etiqueta gris del tipo de análisis */
-.file-tag {
-    background: var(--bs-tertiary-bg);
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-    color: inherit;
-}
-.dual-item .file-tag {
-    color: inherit;
-}
-
-    /* =====================================================
-       COLORES DE CADA TIPO (PUNTO + ITEMS)
-    ===================================================== */
-
-    /* TEXTURA */
-    .textura {
-        background: #F4E8E1;
-        color: #8B5E3C;
-        border: 1px solid #E5CFC2;
-    }
-    .legend-item.textura .legend-dot {
-        background: #8B5E3C;
+    /* Scroll interno del modal */
+    #modalNuevoResultado .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
     }
 
-    /* DENSIDAD APARENTE */
-    .dens-ap {
-        background: #E4ECFA;
-        color: #1E3A8A;
-        border: 1px solid #C7D6F5;
-    }
-    .legend-item.dens-ap .legend-dot {
-        background: #1E3A8A;
-    }
-
-    /* DENSIDAD PARTICULAS */
-    .dens-par {
-        background: #E6F0FF;
-        color: #3B82F6;
-        border: 1px solid #C9DEFF;
-    }
-    .legend-item.dens-par .legend-dot {
-        background: #3B82F6;
+    /* Badge interno del tipo */
+    .tipo-badge {
+        font-size: 0.70rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
     }
 
-    /* HUMEDAD */
-    .hum-grav {
-        background: #E6F7EC;
-        color: #16A34A;
-        border: 1px solid #C7EBD6;
-    }
-    .legend-item.hum-grav .legend-dot {
-        background: #16A34A;
+    /* Modo claro */
+    [data-bs-theme="light"] .tipo-badge {
+        background-color: #ffffff;
     }
 
-    /* CONDUCTIVIDAD */
-    .cond-hid {
-        background: #E0F7FA;
-        color: #0891B2;
-        border: 1px solid #B9EBF1;
+    /* Modo oscuro */
+    [data-bs-theme="dark"] .tipo-badge {
+        background-color: #1e1e1e;
     }
-    .legend-item.cond-hid .legend-dot {
-        background: #0891B2;
-    }
-
-    /* RETENCION */
-    .ret-hum {
-        background: #EDF7E3;
-        color: #65A30D;
-        border: 1px solid #D4EAB9;
-    }
-    .legend-item.ret-hum .legend-dot {
-        background: #65A30D;
-    }
-
-    /* CURVATURA */
-    .curv-ret {
-        background: #F1ECFF;
-        color: #7C3AED;
-        border: 1px solid #D9CCFF;
-    }
-    .legend-item.curv-ret .legend-dot {
-        background: #7C3AED;
-    }
-
-    /* GRANULOMETRIA */
-    .granul {
-        background: #FFF1E8;
-        color: #EA580C;
-        border: 1px solid #FFD7C2;
-    }
-    .legend-item.granul .legend-dot {
-        background: #EA580C;
-    }
-
-    /* ESTABILIDAD */
-    .estab {
-        background: #FFECEC;
-        color: #DC2626;
-        border: 1px solid #FFC9C9;
-    }
-    .legend-item.estab .legend-dot {
-        background: #DC2626;
-    }
-
-    /* COEF EXTENSIBILIDAD */
-    .coef-ext {
-        background: #FFEAF4;
-        color: #DB2777;
-        border: 1px solid #FFC9E2;
-    }
-    .legend-item.coef-ext .legend-dot {
-        background: #DB2777;
-    }
-
-    /* PERMEABILIDAD */
-    .perm-air {
-        background: #F3F4F6;
-        color: #6B7280;
-        border: 1px solid #E5E7EB;
-    }
-    .legend-item.perm-air .legend-dot {
-        background: #6B7280;
-    }
-
-
-    /* =====================================================
-       LISTAS DUALES (ARCHIVOS)
-    ===================================================== */
-.dual-box {
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: 8px;
-    padding: 15px;
-    min-height: 220px;
-}
-
-    .dual-item {
-        padding: 10px 14px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.18s ease;
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .dual-item:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .dual-item:hover {
-    background: var(--bs-tertiary-bg);
-}
-    .modal-header {
-        border-bottom: none !important;
-    }
-
-    .modal-footer {
-        border-top: none !important;
-    }
-    
-    /* ===============================
-   DARK MODE – mejorar contraste
-================================ */
-
-[data-bs-theme="dark"] .textura {
-    background: rgba(139, 94, 60, 0.25);
-}
-
-[data-bs-theme="dark"] .hum-grav {
-    background: rgba(22, 163, 74, 0.25);
-}
-
-[data-bs-theme="dark"] .granul {
-    background: rgba(234, 88, 12, 0.25);
-}
-
-[data-bs-theme="dark"] .dual-item {
-    border: 1px solid rgba(255,255,255,0.08);
-}
 </style>
-
 @endsection
-
 @section('content')
 
 <div class="row">
@@ -253,11 +86,10 @@
                         <tr>
                             <th>Consecutivo</th>
                             <th>Fecha</th>
-                            <th>Analista</th>
+                            <th>Archivos</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         @forelse($resultados as $r)
                         <tr>
@@ -310,107 +142,164 @@
         </div>
     </div>
 </div>
-
+<!-- start:: Scrollable Modal -->
 <div class="modal fade"
      id="modalNuevoResultado"
      tabindex="-1"
+     aria-labelledby="modalNuevoResultadoLabel"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
-
-            {{-- HEADER --}}
-            <div class="modal-header">
-                <h5 class="modal-title fw-semibold">
-                    <i class="ri-file-list-3-line text-primary me-2"></i>
-                    Nuevo Resultado
-                </h5>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"></button>
-            </div>
 
             <form method="POST" action="{{ route('resultados.store') }}">
                 @csrf
 
+                <!-- HEADER -->
+                <div class="modal-header">
+                    <h5 class="modal-title fw-semibold"
+                        id="modalNuevoResultadoLabel">
+                        <i class="ri-file-list-3-line text-primary me-2"></i>
+                        Nuevo Resultado
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <!-- BODY (SCROLL INTERNO AQUÍ) -->
                 <div class="modal-body">
 
-                    {{-- AÑO + CONSECUTIVO --}}
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Año</label>
-                            <input type="number" name="anio" class="form-control" required>
+                    <div class="d-flex flex-wrap gap-3 ">
+
+                        {{-- AÑO --}}
+                        <div>
+                            <label class="form-label fw-semibold mb-1">
+                                Año
+                            </label>
+                            <select name="anio"
+                                    class="form-select"
+                                    style="width:150px;">
+                                @for($i = date('Y'); $i >= date('Y')-10; $i--)
+                                <option value="{{ $i }}" @selected($periodo==$i)>
+                                    {{ $i }}
+                                </option>
+                                @endfor
+                            </select>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Consecutivo</label>
-                            <input type="number" name="consecutivo" class="form-control" required>
+                        {{-- CONSECUTIVO --}}
+                        <div>
+                            <label class="form-label fw-semibold mb-1">
+                                Consecutivo
+                            </label>
+                            <input type="number"
+                                   name="consecutivo"
+                                   class="form-control"
+                                   style="width:150px;"
+                                   value="{{ old('consecutivo', $siguienteConsecutivo->siguiente_consecutivo ?? 1) }}"
+                                   min="1"
+                                   required>
                         </div>
+
                     </div>
+                    <br>
 
-
-
-
-                    {{-- LISTA DUAL --}}
+                    <!-- LISTA DUAL -->
                     <div class="row g-4">
 
                         {{-- DISPONIBLES --}}
-                        <div class="col-md-6">
-                            <label class="fw-semibold mb-2">
+                        <div class="col-lg-6">
+                            <label class="fw-semibold mb-3 d-block">
                                 <i class="ri-folder-open-line text-primary me-1"></i>
                                 Archivos disponibles
                             </label>
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="dual-box d-flex flex-column gap-2"
+                                     id="listaDisponibles">
 
-                            <div class="dual-box" id="listaDisponibles">
-                                {{-- Ejemplo --}}
-                                <div class="dual-item textura">
-                                    <span>textura_2026.xlsx</span>
-                                    <span class="file-tag">Textura</span>
-                                </div>
-                                <div class="dual-item hum-grav">
-                                    <span>humedad_sem1.xlsx</span>
-                                    <span class="file-tag">Humedad Gravimétrica</span>
-                                </div>
+                                    @php $typeMap = []; @endphp
 
-                                <div class="dual-item granul">
-                                    <span>granulometria_A.xlsx</span>
-                                    <span class="file-tag">Granulometría</span>
+                                    @foreach($archivosDisponibles as $archivo)
+
+                                    @php
+                                    if (!isset($typeMap[$archivo->tipo])) {
+                                    $typeMap[$archivo->tipo] = count($typeMap);
+                                    }
+
+                                    $index = $typeMap[$archivo->tipo];
+                                    $hue = fmod(($index * 137.508), 360);
+
+                                    $textColor = "hsl($hue, 85%, 65%)";
+                                    $bgColor   = "hsla($hue, 90%, 50%, 0.12)";
+                                    $borderColor = "hsl($hue, 85%, 50%)";
+                                    @endphp
+
+                                    <span class="badge dual-item w-100 d-flex justify-content-between align-items-center"
+                                          data-id="{{ $archivo->id }}"
+                                          data-tipo="{{ $archivo->tipo }}"
+                                          style="background-color: {{ $bgColor }};
+                                          color: {{ $textColor }};
+                                          border: 1px solid {{ $borderColor }};
+                                          cursor:pointer;">
+
+                                        <span>{{ $archivo->archivo }}</span>
+
+                                        <span class="tipo-badge"
+                                              style="color: {{ $textColor }};">
+                                            {{ str_replace('_', ' ', $archivo->tipo) }}
+                                        </span>
+
+                                    </span>
+
+                                    @endforeach
+
                                 </div>
                             </div>
                         </div>
 
                         {{-- SELECCIONADOS --}}
-                        <div class="col-md-6">
-                            <label class="fw-semibold mb-2">
+                        <div class="col-lg-6">
+                            <label class="fw-semibold mb-3 d-block">
                                 <i class="ri-check-line text-success me-1"></i>
                                 Archivos seleccionados
                             </label>
-
-                            <div class="dual-box" id="listaSeleccionados">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="dual-box d-flex flex-column gap-2" 
+                                     id="listaSeleccionados">
+                                </div>
                             </div>
                         </div>
-
                     </div>
+                    <br><br>
 
                 </div>
 
+                <!-- FOOTER (FIJO) -->
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">
-                        Guardar
-                    </button>
                     <button type="button"
                             class="btn btn-light"
                             data-bs-dismiss="modal">
                         Cancelar
                     </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Guardar
+                    </button>
                 </div>
+
 
             </form>
 
         </div>
+
     </div>
+
 </div>
+<!-- end:: Scrollable Modal -->
 {{-- =========================================================
    MODAL ELIMINAR RESULTADO
    ========================================================= --}}
@@ -490,8 +379,10 @@
 
 
                                                 document.addEventListener("click", function(e) {
-                                                if (e.target.classList.contains("dual-item")) {
-                                                const item = e.target;
+
+                                                const item = e.target.closest(".dual-item");
+                                                if (!item) return; // si no hizo click dentro de un badge, salir
+
                                                 const disponible = document.getElementById("listaDisponibles");
                                                 const seleccionado = document.getElementById("listaSeleccionados");
                                                 if (item.parentElement.id === "listaDisponibles") {
@@ -499,7 +390,7 @@
                                                 } else {
                                                 disponible.appendChild(item);
                                                 }
-                                                }
+
                                                 });
 </script>
 

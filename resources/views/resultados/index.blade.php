@@ -113,20 +113,18 @@
                             </td>
 
                             <td>{{ $r->fecha }}</td>
-                            <td class="d-flex flex-column gap-1">
-
-                                @foreach($r->archivos as $archivo)
-
-                                <div class="badge bg-light text-secondary d-flex justify-content-between">
-                                    {{ $archivo->archivo }}
-                                    <span class="text-muted small">
-                                        {{ str_replace('_', ' ', $archivo->tipo) }}
-                                    </span>
-                                </div>
-
-                                @endforeach
-
-                            </td>
+<td>
+    <div class="d-flex flex-column gap-1">
+        @foreach($r->archivos as $archivo)
+            <div class="badge bg-light text-secondary d-flex justify-content-between">
+                {{ $archivo->archivo }}
+                <span class="text-muted small">
+                    {{ str_replace('_', ' ', $archivo->tipo) }}
+                </span>
+            </div>
+        @endforeach
+    </div>
+</td>
                             <td>{{ $r->analista }}</td>
 
                             <td class="text-end">
@@ -376,6 +374,8 @@
     </div>
 </div>
 
+</div><!--End container-fluid-->
+</main><!--End app-wrapper-->
 @endsection
 
 @section('js')

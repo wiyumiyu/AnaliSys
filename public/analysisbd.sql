@@ -818,6 +818,10 @@ FOREIGN KEY (id_control)
 REFERENCES trn_controles(id)
 ON DELETE CASCADE;
 
+ALTER TABLE trn_resultados_lista
+ADD CONSTRAINT uk_resultado_archivo_tipo
+UNIQUE (id_resultado, id_archivo, tipo);
+
 
 /* ============================================================
    5. PROCEDIMIENTOS ALMACENADOS
@@ -6312,10 +6316,15 @@ BEGIN
 
     ) AS archivos_unificados
 
-    WHERE archivos_unificados.id NOT IN (
-        SELECT id_archivo
-        FROM trn_resultados_lista
-    )
+    WHERE NOT EXISTS (
+    SELECT 1
+    FROM trn_resultados_lista rl
+    INNER JOIN trn_resultados r
+        ON r.id = rl.id_resultado
+    WHERE rl.id_archivo = archivos_unificados.id
+      AND rl.tipo = archivos_unificados.tipo
+      AND YEAR(r.fecha) = p_periodo
+)
 
     ORDER BY fecha DESC;
 

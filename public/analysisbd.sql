@@ -5994,11 +5994,10 @@ BEGIN
 
 /* PROCS DE CONTROLES DE TEXTURA */
 
+DROP PROCEDURE IF EXISTS sp_traer_consecutivo_controles;
 DELIMITER $$
 
-DROP PROCEDURE IF EXISTS sp_traer_consecutivo_controles $$
-
-CREATE PROCEDURE sp_traer_consecutivo(
+CREATE PROCEDURE sp_traer_consecutivo_controles(
     IN p_tipo INT,
     IN p_periodo YEAR
 )
@@ -6254,8 +6253,9 @@ BEGIN
 END $$
 
 DELIMITER ;
-
 DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_listar_todos_los_archivos $$
 
 CREATE PROCEDURE sp_listar_todos_los_archivos (
     IN p_periodo INT
@@ -6309,6 +6309,12 @@ BEGIN
         WHERE periodo = p_periodo
 
     ) AS archivos_unificados
+
+    WHERE archivos_unificados.id NOT IN (
+        SELECT id_archivo
+        FROM trn_resultados_lista
+    )
+
     ORDER BY fecha DESC;
 
 END $$

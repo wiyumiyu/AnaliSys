@@ -76,6 +76,8 @@ class PermeabilidadAireController extends Controller {
 
     public function update(Request $request, $id) {
 
+        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
         $muestra = collect(
                 DB::select(
                         'CALL sp_obtener_muestra_permeabilidad_aire(?)',

@@ -33,6 +33,7 @@ $resultados = collect($rows)
             'id' => $first->id,
             'consecutivo' => $first->consecutivo,
             'fecha' => $first->fecha,
+            'analista' => $first->analista,
             'archivos' => $items
                 ->filter(fn($item) => !is_null($item->archivo))
                 ->map(function ($item) {

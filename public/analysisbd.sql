@@ -6393,9 +6393,9 @@ BEGIN
 END $$
 
 DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_listar_resultados_por_anio;
 
 DELIMITER $$
-DROP PROCEDURE IF EXISTS sp_listar_resultados_por_anio $$
 
 CREATE PROCEDURE sp_listar_resultados_por_anio(
     IN p_periodo INT
@@ -6406,53 +6406,41 @@ BEGIN
         r.id,
         r.consecutivo,
         r.fecha,
-        rl.tipo,
-
-        COALESCE(
-            t.archivo,
-            g.archivo,
-            da.archivo,
-            dp.archivo,
-            hg.archivo,
-            ch.archivo,
-            rh.archivo,
-            ea.archivo,
-            ce.archivo
-        ) AS archivo
-
+        CONCAT(p.nombre, ' ', p.apellido1, ' ', p.apellido2) AS analista,
+        v.tipo,
+        v.archivo
     FROM trn_resultados r
+
+    INNER JOIN tbl_persona p
+        ON p.id_persona = r.id_persona
 
     LEFT JOIN trn_resultados_lista rl
         ON rl.id_resultado = r.id
 
-    LEFT JOIN trn_textura t 
-        ON rl.id_archivo = t.id AND rl.tipo = 'TEXTURA'
-
-    LEFT JOIN trn_granulometria g 
-        ON rl.id_archivo = g.id AND rl.tipo = 'GRANULOMETRIA'
-
-    LEFT JOIN trn_densidad_aparente da 
-        ON rl.id_archivo = da.id AND rl.tipo = 'DENSIDAD_APARENTE'
-
-    LEFT JOIN trn_densidad_particulas dp 
-        ON rl.id_archivo = dp.id AND rl.tipo = 'DENSIDAD_PARTICULAS'
-
-    LEFT JOIN trn_humedad_gravimetrica hg 
-        ON rl.id_archivo = hg.id AND rl.tipo = 'HUMEDAD_GRAVIMETRICA'
-
-    LEFT JOIN trn_conductividad_hidraulica ch 
-        ON rl.id_archivo = ch.id AND rl.tipo = 'CONDUCTIVIDAD_HIDRAULICA'
-
-    LEFT JOIN trn_retencion_humedad rh 
-        ON rl.id_archivo = rh.id AND rl.tipo = 'RETENCION_HUMEDAD'
-
-    LEFT JOIN trn_estabilidad_agregados ea 
-        ON rl.id_archivo = ea.id AND rl.tipo = 'ESTABILIDAD_AGREGADOS'
-
-    LEFT JOIN trn_coeficiente_extensibilidad ce 
-        ON rl.id_archivo = ce.id AND rl.tipo = 'COEFICIENTE_EXTENSIBILIDAD'
+LEFT JOIN (
+    SELECT 'TEXTURA' AS tipo, id, archivo FROM trn_textura
+    UNION ALL
+    SELECT 'GRANULOMETRIA', id, archivo FROM trn_granulometria
+    UNION ALL
+    SELECT 'DENSIDAD_APARENTE', id, archivo FROM trn_densidad_aparente
+    UNION ALL
+    SELECT 'DENSIDAD_PARTICULAS', id, archivo FROM trn_densidad_particulas
+    UNION ALL
+    SELECT 'HUMEDAD_GRAVIMETRICA', id, archivo FROM trn_humedad_gravimetrica
+    UNION ALL
+    SELECT 'CONDUCTIVIDAD_HIDRAULICA', id, archivo FROM trn_conductividad_hidraulica
+    UNION ALL
+    SELECT 'RETENCION_HUMEDAD', id, archivo FROM trn_retencion_humedad
+    UNION ALL
+    SELECT 'ESTABILIDAD_AGREGADOS', id, archivo FROM trn_estabilidad_agregados
+    UNION ALL
+    SELECT 'COEFICIENTE_EXTENSIBILIDAD', id, archivo FROM trn_coeficiente_extensibilidad
+) v
+    ON v.id = rl.id_archivo
+   AND v.tipo = rl.tipo   -- 
 
     WHERE YEAR(r.fecha) = p_periodo
+
     ORDER BY r.fecha DESC;
 
 END $$

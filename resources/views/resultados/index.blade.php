@@ -95,6 +95,7 @@
                             <th>Consecutivo</th>
                             <th>Fecha</th>
                             <th>Archivos</th>
+                            <th>Analista</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -112,52 +113,24 @@
                             </td>
 
                             <td>{{ $r->fecha }}</td>
+                            <td class="d-flex flex-column gap-1">
 
-<td>
+                                @foreach($r->archivos as $archivo)
 
-@php $typeMap = []; @endphp
+                                <div class="badge bg-light text-secondary d-flex justify-content-between">
+                                    {{ $archivo->archivo }}
+                                    <span class="text-muted small">
+                                        {{ str_replace('_', ' ', $archivo->tipo) }}
+                                    </span>
+                                </div>
 
-@foreach($r->archivos as $archivo)
+                                @endforeach
 
-    @php
-        if (!isset($typeMap[$archivo->tipo])) {
-            $typeMap[$archivo->tipo] = count($typeMap);
-        }
-
-        $index = $typeMap[$archivo->tipo];
-        $hue = fmod(($index * 137.508), 360);
-
-        $textColor = "hsl($hue, 85%, 65%)";
-        $bgColor   = "hsla($hue, 90%, 50%, 0.12)";
-        $borderColor = "hsl($hue, 85%, 50%)";
-    @endphp
-
-    <span class="badge d-inline-flex align-items-center mb-1"
-          style="background-color: {{ $bgColor }};
-                 color: {{ $textColor }};
-                 border: 1px solid {{ $borderColor }};">
-
-        <span class="me-2">{{ $archivo->archivo }}</span>
-
-        <span class="tipo-badge"
-              style="color: {{ $textColor }};">
-            {{ str_replace('_', ' ', $archivo->tipo) }}
-        </span>
-
-    </span>
-
-@endforeach
-
-</td>
+                            </td>
+                            <td>{{ $r->analista }}</td>
 
                             <td class="text-end">
                                 <div class="hstack gap-2 fs-15 justify-content-end">
-
-                                    {{-- Ver --}}
-                                    <a href="{{ route('resultados.show', $r->id) }}"
-                                       class="btn bg-primary-subtle text-primary btn-sm">
-                                        <i class="ri-eye-line"></i>
-                                    </a>
 
                                     {{-- Eliminar --}}
                                     <button type="button"
@@ -257,54 +230,58 @@
                                 <i class="ri-folder-open-line text-primary me-1"></i>
                                 Archivos disponibles
                             </label>
+<div class="border rounded-3 p-3 h-100">
+                            <div class="dual-box d-flex flex-column gap-2"
+                                 id="listaDisponibles">
 
-                            <div class="border rounded-3 p-3 h-100">
-                                <div class="dual-box d-flex flex-column gap-2"
-                                     id="listaDisponibles">
+                                @foreach($archivosDisponibles as $archivo)
 
-                                    @php $typeMap = []; @endphp
+                                @php
+                                $colorMap = [
+                                'TEXTURA' => 0,
+                                'GRANULOMETRIA' => 1,
+                                'DENSIDAD_APARENTE' => 2,
+                                'DENSIDAD_PARTICULAS' => 3,
+                                'HUMEDAD_GRAVIMETRICA' => 4,
+                                'CONDUCTIVIDAD_HIDRAULICA' => 5,
+                                'RETENCION_HUMEDAD' => 6,
+                                'ESTABILIDAD_AGREGADOS' => 7,
+                                'COEFICIENTE_EXTENSIBILIDAD' => 8,
+                                ];
 
-                                    @foreach($archivosDisponibles as $archivo)
+                                $index = $colorMap[$archivo->tipo] ?? 0;
+                                $hue = fmod(($index * 137.508), 360);
 
-                                    @php
-                                    if (!isset($typeMap[$archivo->tipo])) {
-                                    $typeMap[$archivo->tipo] = count($typeMap);
-                                    }
+                                $textColor = "hsl($hue, 85%, 65%)";
+                                $bgColor   = "hsla($hue, 90%, 50%, 0.12)";
+                                $borderColor = "hsl($hue, 85%, 50%)";
+                                @endphp
 
-                                    $index = $typeMap[$archivo->tipo];
-                                    $hue = fmod(($index * 137.508), 360);
+                                <span class="badge dual-item w-100 d-flex justify-content-between align-items-center"
+                                      data-id="{{ $archivo->id }}"
+                                      style="background-color: {{ $bgColor }};
+                                      color: {{ $textColor }};
+                                      border: 1px solid {{ $borderColor }};
+                                      cursor:pointer;">
 
-                                    $textColor = "hsl($hue, 85%, 65%)";
-                                    $bgColor   = "hsla($hue, 90%, 50%, 0.12)";
-                                    $borderColor = "hsl($hue, 85%, 50%)";
-                                    @endphp
+                                    <span>{{ $archivo->archivo }}</span>
 
-                                    <span class="badge dual-item w-100 d-flex justify-content-between align-items-center"
-                                          data-id="{{ $archivo->id }}"
-                                          style="background-color: {{ $bgColor }};
-                                          color: {{ $textColor }};
-                                          border: 1px solid {{ $borderColor }};
-                                          cursor:pointer;">
-
-                                        <span>{{ $archivo->archivo }}</span>
-
-                                        <span class="tipo-badge"
-                                              style="color: {{ $textColor }};">
-                                            {{ str_replace('_', ' ', $archivo->tipo) }}
-                                        </span>
-
-                                        <!-- input oculto -->
-                                        <input type="checkbox"
-                                               name="archivos[]"
-                                               value="{{ $archivo->tipo }}|{{ $archivo->id }}"
-                                               class="d-none">
-
+                                    <span class="tipo-badge"
+                                          style="color: {{ $textColor }};">
+                                        {{ str_replace('_', ' ', $archivo->tipo) }}
                                     </span>
 
-                                    @endforeach
+                                    <input type="checkbox"
+                                           name="archivos[]"
+                                           value="{{ $archivo->tipo }}|{{ $archivo->id }}"
+                                           class="d-none">
 
-                                </div>
+                                </span>
+
+                                @endforeach
+
                             </div>
+    </div>
                         </div>
 
                         <!-- SELECCIONADOS -->
@@ -324,6 +301,7 @@
                     </div>
 
                 </div>
+                <br><br>
 
                 <!-- FOOTER -->
                 <div class="modal-footer">

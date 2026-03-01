@@ -27,10 +27,19 @@ class ResultadosController extends Controller
             [$periodo]
         );
 
+        // 🔥 Traer siguiente consecutivo automáticamente
+        $siguienteConsecutivo = DB::select(
+            'CALL sp_traer_consecutivo_resultados(?)',
+            [$periodo]
+        );
+
+        $siguienteConsecutivo = $siguienteConsecutivo[0]->siguiente_consecutivo ?? 1;
+
         return view('resultados.index', compact(
             'resultados',
             'periodo',
-            'archivosDisponibles'
+            'archivosDisponibles',
+            'siguienteConsecutivo'
         ));
     }
 
@@ -42,7 +51,6 @@ class ResultadosController extends Controller
     public function guardarResultado(Request $request)
     {
         $request->validate([
-            'tipo' => 'required|integer',
             'consecutivo' => 'required|integer|min:1',
             'archivos' => 'required|array|min:1'
         ]);
@@ -52,9 +60,8 @@ class ResultadosController extends Controller
         try {
 
             DB::select(
-                'CALL sp_guardar_resultado(?,?,?,?)',
+                'CALL sp_guardar_resultado(?,?,?)',
                 [
-                    $request->tipo,
                     $request->consecutivo,
                     session('id_persona'),
                     $listaArchivos

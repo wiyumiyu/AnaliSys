@@ -65,6 +65,14 @@
                             @endfor
                         </select>
 
+                        {{-- BUSCAR --}}
+                        <div class="form-icon">
+                            <input type="text"
+                                   class="form-control form-control-icon"
+                                   placeholder="Buscar ...">
+                            <i class="ri-search-2-line text-muted"></i>
+                        </div>
+
                         {{-- NUEVO --}}
                         <button class="btn btn-primary"
                                 data-bs-toggle="modal"
@@ -172,9 +180,9 @@
                 <!-- BODY (SCROLL INTERNO AQUÍ) -->
                 <div class="modal-body">
 
-                    <div class="d-flex flex-wrap gap-3 ">
+                    <!-- AÑO + CONSECUTIVO -->
+                    <div class="d-flex flex-wrap gap-3">
 
-                        {{-- AÑO --}}
                         <div>
                             <label class="form-label fw-semibold mb-1">
                                 Año
@@ -192,30 +200,29 @@
 
                         {{-- CONSECUTIVO --}}
                         <div>
-                            <label class="form-label fw-semibold mb-1">
-                                Consecutivo
-                            </label>
+                            <label class="form-label fw-semibold">Consecutivo</label>
                             <input type="number"
                                    name="consecutivo"
                                    class="form-control"
-                                   style="width:150px;"
-                                   value="{{ old('consecutivo', $siguienteConsecutivo->siguiente_consecutivo ?? 1) }}"
+                                   value="{{ old('consecutivo', $siguienteConsecutivo ?? 1) }}"
                                    min="1"
-                                   required>
+                                   readonly>
                         </div>
 
                     </div>
+
                     <br>
 
                     <!-- LISTA DUAL -->
                     <div class="row g-4">
 
-                        {{-- DISPONIBLES --}}
+                        <!-- DISPONIBLES -->
                         <div class="col-lg-6">
                             <label class="fw-semibold mb-3 d-block">
                                 <i class="ri-folder-open-line text-primary me-1"></i>
                                 Archivos disponibles
                             </label>
+
                             <div class="border rounded-3 p-3 h-100">
                                 <div class="dual-box d-flex flex-column gap-2"
                                      id="listaDisponibles">
@@ -239,7 +246,6 @@
 
                                     <span class="badge dual-item w-100 d-flex justify-content-between align-items-center"
                                           data-id="{{ $archivo->id }}"
-                                          data-tipo="{{ $archivo->tipo }}"
                                           style="background-color: {{ $bgColor }};
                                           color: {{ $textColor }};
                                           border: 1px solid {{ $borderColor }};
@@ -252,6 +258,12 @@
                                             {{ str_replace('_', ' ', $archivo->tipo) }}
                                         </span>
 
+                                        <!-- input oculto -->
+                                        <input type="checkbox"
+                                               name="archivos[]"
+                                               value="{{ $archivo->id }}"
+                                               class="d-none">
+
                                     </span>
 
                                     @endforeach
@@ -260,24 +272,25 @@
                             </div>
                         </div>
 
-                        {{-- SELECCIONADOS --}}
+                        <!-- SELECCIONADOS -->
                         <div class="col-lg-6">
                             <label class="fw-semibold mb-3 d-block">
                                 <i class="ri-check-line text-success me-1"></i>
                                 Archivos seleccionados
                             </label>
+
                             <div class="border rounded-3 p-3 h-100">
-                                <div class="dual-box d-flex flex-column gap-2" 
+                                <div class="dual-box d-flex flex-column gap-2"
                                      id="listaSeleccionados">
                                 </div>
                             </div>
                         </div>
+
                     </div>
-                    <br><br>
 
                 </div>
 
-                <!-- FOOTER (FIJO) -->
+                <!-- FOOTER -->
                 <div class="modal-footer">
                     <button type="button"
                             class="btn btn-light"
@@ -291,11 +304,9 @@
                     </button>
                 </div>
 
-
             </form>
 
         </div>
-
     </div>
 
 </div>
@@ -360,10 +371,19 @@
 
 <!--App js-->
 <script type="module" src="{{ asset('js/app.js') }}"></script>
-
 <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<!-- FabKin Datatable Init -->
+<script src="{{ asset('js/table/datatable.init.js') }}"></script>
+
+<!-- Buscar en tabla -->
+<script src="{{ asset('js/table/buscarEnTabla.js') }}"></script>
+
+<script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
+<script src="{{ asset('js/app.js') }}"></script>
 
 <script>
                                                 function confirmarEliminacion(id, consecutivo) {
@@ -381,17 +401,20 @@
                                                 document.addEventListener("click", function(e) {
 
                                                 const item = e.target.closest(".dual-item");
-                                                if (!item) return; // si no hizo click dentro de un badge, salir
-
+                                                if (!item) return;
                                                 const disponible = document.getElementById("listaDisponibles");
                                                 const seleccionado = document.getElementById("listaSeleccionados");
+                                                const checkbox = item.querySelector('input[type="checkbox"]');
                                                 if (item.parentElement.id === "listaDisponibles") {
                                                 seleccionado.appendChild(item);
+                                                if (checkbox) checkbox.checked = true;
                                                 } else {
                                                 disponible.appendChild(item);
+                                                if (checkbox) checkbox.checked = false;
                                                 }
 
                                                 });
+
 </script>
 
 @endsection

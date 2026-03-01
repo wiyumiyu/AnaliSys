@@ -550,7 +550,6 @@ CREATE TABLE trn_control_comentarios (
 CREATE TABLE trn_resultados (
     id INT AUTO_INCREMENT PRIMARY KEY,
     consecutivo INT NOT NULL,
-    tipo INT NOT NULL,
     fecha DATE NOT NULL DEFAULT (CURDATE()),
     id_persona INT NOT NULL
 );
@@ -5997,7 +5996,7 @@ BEGIN
 
 DELIMITER $$
 
-DROP PROCEDURE IF EXISTS sp_traer_consecutivo $$
+DROP PROCEDURE IF EXISTS sp_traer_consecutivo_controles $$
 
 CREATE PROCEDURE sp_traer_consecutivo(
     IN p_tipo INT,
@@ -6321,7 +6320,6 @@ DELIMITER $$
 DROP PROCEDURE IF EXISTS sp_guardar_resultado $$
 
 CREATE PROCEDURE sp_guardar_resultado(
-    IN p_tipo INT,
     IN p_consecutivo INT,
     IN p_id_persona INT,
     IN p_lista_archivos TEXT
@@ -6335,29 +6333,27 @@ BEGIN
 
     START TRANSACTION;
 
-    -- Validar que no exista el consecutivo para el mismo tipo
+    -- Validar consecutivo por año
     SELECT COUNT(*)
     INTO v_existe
     FROM trn_resultados
-    WHERE tipo = p_tipo
-      AND consecutivo = p_consecutivo;
+    WHERE consecutivo = p_consecutivo
+      AND YEAR(fecha) = YEAR(CURDATE());
 
     IF v_existe > 0 THEN
         ROLLBACK;
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El consecutivo ya existe para este tipo';
+        SET MESSAGE_TEXT = 'El consecutivo ya existe para este año';
     END IF;
 
-    -- Insertar resultado
-    INSERT INTO trn_resultados(
+    -- Insertar cabecera
+    INSERT INTO trn_resultados (
         consecutivo,
-        tipo,
         fecha,
         id_persona
     )
     VALUES (
         p_consecutivo,
-        p_tipo,
         CURDATE(),
         p_id_persona
     );
@@ -6375,9 +6371,8 @@ BEGIN
             SET v_id_archivo = TRIM(SUBSTRING(p_lista_archivos, v_pos, v_coma - v_pos));
         END IF;
 
-        -- Insertar detalle
-        INSERT INTO trn_resultados_lista(
-            id_resultado, 
+        INSERT INTO trn_resultados_lista (
+            id_resultado,
             id_archivo
         )
         VALUES (
@@ -6413,7 +6408,6 @@ BEGIN
     SELECT 
         r.id,
         r.consecutivo,
-        r.tipo,
         r.fecha,
         COUNT(rl.id_archivo) AS total_archivos
     FROM trn_resultados r
@@ -6423,6 +6417,19 @@ BEGIN
     GROUP BY r.id
     ORDER BY r.fecha DESC;
 
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_traer_consecutivo_resultados $$
+CREATE PROCEDURE sp_traer_consecutivo_resultados(
+    IN p_periodo YEAR
+)
+BEGIN
+    SELECT IFNULL(MAX(consecutivo), 0) + 1 AS siguiente_consecutivo
+    FROM trn_resultados
+    WHERE YEAR(fecha) = p_periodo;
 END $$
 
 DELIMITER ;

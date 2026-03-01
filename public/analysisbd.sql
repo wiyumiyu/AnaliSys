@@ -6771,3 +6771,121 @@ SELECT *
 FROM tbl_bitacora 
 ORDER BY fecha DESC;
 
+
+
+
+-- CIASI
+
+CREATE TABLE IF NOT EXISTS `tbm_cliente` (
+  `id_cliente` int(11) NOT NULL AUTO_INCREMENT,
+  `identificacion` varchar(100) COLLATE latin1_general_ci NOT NULL,
+  `id_tipo_identificacion` int(11) NOT NULL,
+  `nombre` varchar(100) COLLATE latin1_general_ci NOT NULL,
+  `nombre_comercial` varchar(100) COLLATE latin1_general_ci NOT NULL,
+  `id_pais` int(11) NOT NULL,
+  `id_provincia` int(11) NOT NULL,
+  `id_canton` int(11) NOT NULL,
+  `id_distrito` int(11) NOT NULL,
+  `id_barrio` int(11) NOT NULL,
+  `otras_senas` text COLLATE latin1_general_ci NOT NULL,
+  `fecha_ingreso` date NOT NULL,
+  `observaciones` text COLLATE latin1_general_ci NOT NULL,
+  `id_fundevi` int(11) NOT NULL DEFAULT '0',
+  `id_access` int(11) NOT NULL DEFAULT '0',
+  `id_categoria` int(11) NOT NULL DEFAULT '1',
+  `validado` tinyint(1) NOT NULL DEFAULT '0',
+  `exentodeimpuestos` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id_cliente`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=8025 ;
+
+
+INSERT INTO tbm_cliente (
+identificacion,
+id_tipo_identificacion,
+nombre,
+nombre_comercial,
+id_pais,
+id_provincia,
+id_canton,
+id_distrito,
+id_barrio,
+otras_senas,
+fecha_ingreso,
+observaciones,
+id_fundevi,
+id_access,
+id_categoria,
+validado,
+exentodeimpuestos
+) VALUES
+
+('3-101-000001', 1, 'AgroDesarrollo del Norte S.A.', 'AgroNorte', 1, 1, 1, 1, 1,
+ '500 metros norte de la iglesia central, finca agrícola',
+ '2024-01-15',
+ 'Cliente ficticio creado para pruebas de reportes.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000002', 1, 'Productores Unidos del Valle S.A.', 'ProValle', 1, 2, 3, 2, 4,
+ '200 metros este del colegio técnico, bodegas verdes',
+ '2024-02-10',
+ 'Cliente ficticio para simulación de datos.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000003', 1, 'Finca Experimental Los Pinos S.A.', 'Los Pinos', 1, 3, 5, 1, 2,
+ 'Ruta 32, kilómetro 85, entrada principal',
+ '2024-03-05',
+ 'Cliente ficticio de laboratorio agrícola.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000004', 1, 'Servicios Agrícolas del Pacífico S.A.', 'AgroPacífico', 1, 4, 7, 3, 5,
+ 'Frente a la estación de servicio, edificio azul',
+ '2024-04-20',
+ 'Cliente ficticio para pruebas de confidencialidad.',
+ 0, 0, 1, 1, 0),
+
+('3-101-000005', 1, 'Corporación AgroInnovación S.A.', 'AgroInnovación', 1, 5, 9, 4, 6,
+ 'Parque industrial agrícola, lote 12',
+ '2024-05-12',
+ 'Cliente ficticio para pruebas internas del sistema.',
+ 0, 0, 1, 1, 0);
+ 
+ CREATE TABLE IF NOT EXISTS `tbm_solicitud` (
+  `id_solicitud` int(11) NOT NULL AUTO_INCREMENT,
+  `numero` varchar(10) COLLATE latin1_general_ci NOT NULL,
+  `fecha` datetime NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `id_persona` int(11) NOT NULL COMMENT 'USUARIO',
+  `id_cultivo` int(11) NOT NULL,
+  `id_dirpais` int(11) NOT NULL,
+  `id_dirprovincia` int(11) NOT NULL,
+  `id_dircanton` int(11) NOT NULL,
+  `id_dirdistrito` int(11) NOT NULL,
+  `id_dirbarrio` int(11) NOT NULL,
+  `otras_senas` text COLLATE latin1_general_ci NOT NULL,
+  `id_laboratorio` int(11) NOT NULL,
+  `entrega` int(11) NOT NULL DEFAULT '0',
+  `area_muestreada` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `edadcultivo` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `coordenadax` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `coordenaday` varchar(50) COLLATE latin1_general_ci NOT NULL,
+  `observaciones` text COLLATE latin1_general_ci NOT NULL,
+  `estado` tinyint(1) NOT NULL,
+  `id_moneda` int(11) NOT NULL,
+  `exento` tinyint(1) NOT NULL,
+  `id_access` int(11) NOT NULL DEFAULT '0',
+  `id_categoria` int(11) NOT NULL DEFAULT '1',
+  `responsable` int(11) NOT NULL DEFAULT '0',
+  `id_cliente_subcliente` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id_solicitud`),
+  KEY `idx_s_exento` (`exento`),
+  KEY `idx_solicitud_id_persona` (`id_persona`),
+  KEY `idx_solicitud_id_laboratorio` (`id_laboratorio`),
+  KEY `idx_solicitud_id_cliente` (`id_cliente`),
+  KEY `idx_solicitud_id_cliente_subcliente` (`id_cliente_subcliente`),
+  KEY `idx_solicitud_responsable` (`responsable`),
+  KEY `idx_solicitud_fecha` (`fecha`),
+  KEY `idx_solicitud_cliente` (`id_cliente`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=42567 ;
+
+
+

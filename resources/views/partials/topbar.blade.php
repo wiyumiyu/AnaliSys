@@ -74,11 +74,18 @@
 
                             <div>
                                 <h6 class="mb-0 lh-base">
-                                    {{ session('nombre') }} {{ session('apellido1') }}
+                                    <a href="{{ route('usuarios.mi_perfil') }}"
+                                       class="text-decoration-none text-dark">
+                                        {{ session('nombre') }} {{ session('apellido1') }}
+                                    </a>
                                 </h6>
-                                <p class="mb-0 fs-13 text-muted">
-                                    Usuario del sistema
-                                </p>
+                                <a href="{{ route('usuarios.mi_perfil') }}"
+                                   class="text-decoration-none text-dark">
+                                    <p class="mb-0 fs-13 text-muted">
+                                        Usuario del sistema
+                                    </p>
+                                </a>                                
+
                             </div>
                         </div>
 

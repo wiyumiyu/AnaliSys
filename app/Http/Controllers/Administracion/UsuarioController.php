@@ -115,7 +115,7 @@ class UsuarioController extends Controller {
             '1990-01-01',
             ''
         ]);
-
+        
         DB::statement('CALL sp_actualizar_estado_persona(?, ?)', [
             $id,
             $request->estado
@@ -213,7 +213,17 @@ class UsuarioController extends Controller {
                 'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
                 [$id]
         );
-
+        if ($esPerfilPropio) {
+            session([
+                'nombre' => $request->nombre,
+                'apellido1' => $request->apellido1
+            ]);
+        }
+        if ($esPerfilPropio && session('rol') !== 'ADMIN') {
+            return redirect()
+                            ->route('dashboard')
+                            ->with('success', 'Perfil actualizado correctamente');
+        }
         return redirect()
                         ->route('usuarios.index')
                         ->with('success', 'Usuario actualizado correctamente');
@@ -315,5 +325,17 @@ class UsuarioController extends Controller {
                                 'success',
                                 $nuevoEstado == 1 ? 'Usuario activado correctamente.' : 'Usuario inactivado correctamente.'
                         );
+    }
+
+    public function editPerfil(Request $request) {
+        $id = session('id_persona');
+
+        return $this->edit($request, $id);
+    }
+
+    public function updatePerfil(Request $request) {
+        $id = session('id_persona');
+
+        return $this->update($request, $id);
     }
 }

@@ -1,7 +1,7 @@
 <aside class="pe-app-sidebar d-flex flex-column" id="sidebar">
     <div class="pe-app-sidebar-logo px-3 d-flex align-items-center position-relative">
         <!--begin::Brand Image-->
-        <a href="/pages/dashboard.php" class="fs-18 fw-semibold">
+        <a href="{{ route('dashboard') }}" class="fs-18 fw-semibold">
             <img height="45" class="pe-app-sidebar-logo-default d-none" alt="Logo" src="/images/logo-light.svg">
             <img height="45" class="pe-app-sidebar-logo-light d-none" alt="Logo" src="/images/logo-dark.svg">
             <img height="45" class="pe-app-sidebar-logo-minimize d-none" alt="Logo" src="/images/logo-md-light.svg">
@@ -183,10 +183,12 @@
                     <span class="pe-nav-content">Reportes de Clientes</span>
                 </a>
             </li>
-            @php
-            $adminActive = request()->routeIs('usuarios.*')
-            || request()->routeIs('bitacora.*');
-            @endphp
+@if(esAdmin())
+
+    @php
+    $adminActive = request()->routeIs('usuarios.*')
+        || request()->routeIs('bitacora.*');
+    @endphp
 
             <li class="pe-slide pe-has-sub {{ $adminActive ? 'active' : '' }}">
                 <a href="#collapseAuth"
@@ -224,7 +226,7 @@
                 </ul>
             </li>
 
-
+@endif
 
 
 

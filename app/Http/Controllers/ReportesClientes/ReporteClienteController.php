@@ -41,6 +41,6 @@ class ReporteClienteController extends Controller {
 
         $solicitud = $resultado[0] ?? null;
 
-        return view('reportes_clientes.show', compact('solicitud'));
+        return view('reportes_clientes.vista', compact('solicitud'));
     }
 }

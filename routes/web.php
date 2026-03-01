@@ -20,6 +20,7 @@ use App\Http\Controllers\IngresoDatos\HumedadGravimetricaController;
 use App\Http\Controllers\IngresoDatos\DensidadParticulasController;
 use App\Http\Controllers\IngresoDatos\PermeabilidadAireController;
 use App\Http\Controllers\ReportesClientes\ReporteClienteController;
+use App\Http\Controllers\Auth\DashboardController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -38,8 +39,9 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/logout', [AuthController::class, 'logout']);
 
-Route::get('/dashboard', [AuthController::class, 'dashboard'])
-        ->name('dashboard');
+
+Route::get('/dashboard', [DashboardController::class, 'dashboard'])
+    ->name('dashboard');
 
 /*
   |--------------------------------------------------------------------------
@@ -107,6 +109,17 @@ Route::middleware(['rol:ADMIN'])->group(function () {
             '/bitacora/{id}',
             [\App\Http\Controllers\Administracion\BitacoraController::class, 'show']
     )->name('bitacora.show');
+});
+
+
+Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
+
+    Route::get('/mi-perfil', [UsuarioController::class, 'editPerfil'])
+        ->name('usuarios.mi_perfil');
+
+    Route::put('/mi-perfil', [UsuarioController::class, 'updatePerfil'])
+        ->name('usuarios.update_perfil');
+
 });
 
 //------------------------------------------------------------------------------
@@ -630,40 +643,38 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
     // Listado
     Route::get(
-        '/resultados',
-        [ResultadosController::class, 'index']
+            '/resultados',
+            [ResultadosController::class, 'index']
     )->name('resultados.index');
 
     // Guardar
     Route::post(
-        '/resultados',
-        [ResultadosController::class, 'guardarResultado']
+            '/resultados',
+            [ResultadosController::class, 'guardarResultado']
     )->name('resultados.store');
 
     // Eliminar
     Route::delete(
-        '/resultados/{id}',
-        [ResultadosController::class, 'destroy']
+            '/resultados/{id}',
+            [ResultadosController::class, 'destroy']
     )->name('resultados.destroy');
 
     // (Opcional) Ver detalle
     Route::get(
-        '/resultados/{id}',
-        [ResultadosController::class, 'show']
+            '/resultados/{id}',
+            [ResultadosController::class, 'show']
     )->name('resultados.show');
-
 });
-
 
 //------------------------------------------------------------------------------
 // REPORTES CLIENTES
 //------------------------------------------------------------------------------
 Route::prefix('reportes-clientes')->group(function () {
     Route::get('/', [ReporteClienteController::class, 'index'])
-        ->name('reportes_clientes.index');
+            ->name('reportes_clientes.index');
 
     Route::get('/{id}', [ReporteClienteController::class, 'show'])
-        ->name('reportes_clientes.show');
+            ->name('reportes_clientes.show');
 });
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA

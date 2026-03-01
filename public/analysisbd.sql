@@ -7294,7 +7294,7 @@ CREATE TABLE IF NOT EXISTS `tbm_cliente` (
   `validado` tinyint(1) NOT NULL DEFAULT '0',
   `exentodeimpuestos` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id_cliente`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=8025 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1 ;
 
 
 INSERT INTO tbm_cliente (
@@ -7394,5 +7394,5 @@ CREATE TABLE IF NOT EXISTS `tbm_solicitud_impresa` (
   `fecha_envio` datetime NOT NULL,
   `enviada_por` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`tbm_solicitud_impresa`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=8687 ;
-DROP PROCEDURE IF EXISTS sp_listar_reportes_clientes;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1 ;
+

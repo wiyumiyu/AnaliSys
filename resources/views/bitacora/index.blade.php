@@ -127,7 +127,7 @@
                     @forelse($bitacoras as $b)
                     <tr>
 
-                        <td>{{ $b->fecha }}</td>
+                        <td>{{ \Carbon\Carbon::parse($b->fecha)->translatedFormat('j M y') }}</td>
 
                         <td>
                             <strong>{{ $b->usuario }}</strong>

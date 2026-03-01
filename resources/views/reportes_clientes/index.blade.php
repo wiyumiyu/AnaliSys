@@ -81,12 +81,13 @@
                                     <a href="{{ route('reportes_clientes.show', $l->id_solicitud) }}"
                                        class="fw-semibold text-primary text-decoration-none">
                                         {{ $l->numero }}
+                                    </a>
                                 </h6>
                             </td>
 
                             <td>{{ $l->nombre }}</td>
 
-                            <td>{{ \Carbon\Carbon::parse($l->fecha)->format('d/m/Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($l->fecha)->translatedFormat('j M y H:i:s') }}</td>
 
                             <td>
                                 @if($l->estado_reporte == 'Generada')
@@ -141,15 +142,15 @@
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
 <script>
-    $(document).ready(function () {
+                                $(document).ready(function () {
 
-        var table = $('#default_datatable').DataTable();
+                                    var table = $('#default_datatable').DataTable();
 
-        $('#busquedaEnVivo').on('keyup', function () {
-            table.search($(this).val()).draw();
-        });
+                                    $('#busquedaEnVivo').on('keyup', function () {
+                                        table.search($(this).val()).draw();
+                                    });
 
-    });
+                                });
 </script>
 
 @endsection

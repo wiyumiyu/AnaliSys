@@ -96,7 +96,7 @@
                             </td>
 
                             {{-- FECHA --}}
-                            <td>{{ $l->fecha }}</td>
+                            <td>{{ \Carbon\Carbon::parse($l->fecha)->translatedFormat('j M y') }}</td>
 
                             {{-- ANALISTA --}}
                             <td>{{ $l->responsable }}</td>

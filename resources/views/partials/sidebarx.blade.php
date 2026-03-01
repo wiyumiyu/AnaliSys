@@ -31,7 +31,7 @@
             || (Route::has('coel.index') && request()->routeIs('coel.*'))
             || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'))
             || (Route::has('permeabilidad_aire.index') && request()->routeIs('permeabilidad_aire.*'));
-            
+
             $resultadosActive =
             Route::has('resultados.index') && request()->routeIs('resultados.*');
             @endphp
@@ -175,14 +175,14 @@
                 </a>
             </li>
 
-            <li class="pe-slide pe-has-sub">
-                <a href="#collapseClientes" class="pe-nav-link" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseClientes">
+
+
+            <li class="pe-slide">
+                <a href="{{ route('reportes_clientes.index') }}" class="pe-nav-link">
                     <i class="ri-file-text-line pe-nav-icon"></i>
                     <span class="pe-nav-content">Reportes de Clientes</span>
                 </a>
             </li>
-
-
             @php
             $adminActive = request()->routeIs('usuarios.*')
             || request()->routeIs('bitacora.*');

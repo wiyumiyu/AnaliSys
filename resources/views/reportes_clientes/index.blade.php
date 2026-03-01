@@ -1,6 +1,6 @@
 @extends('partials.layouts.master')
 
-@section('title', 'Textura - Archivos')
+@section('title', 'Reportes de Clientes')
 
 @section('css')
 <!-- Datatables CSS (FabKin style) -->
@@ -26,22 +26,35 @@
 
                     <div class="d-flex align-items-center gap-3">
 
-                        {{-- FILTRO IMPRESA --}}
-                        <select class="form-select w-auto"
-                                onchange="location = '?impresa=' + this.value + '&periodo={{ $periodo }}'">
-                            <option value="0" @selected($impresa == 0)>No Impresas</option>
-                            <option value="1" @selected($impresa == 1)>Impresas</option>
-                        </select>
+                        <form method="GET" class="d-flex align-items-center gap-3">
 
-                        {{-- FILTRO AÑO --}}
-                        <select class="form-select w-auto"
-                                onchange="location = '?periodo=' + this.value + '&impresa={{ $impresa }}'">
-                            @for($i = date('Y'); $i >= date('Y')-10; $i--)
+                            {{-- Pendientes / Generadas --}}
+                            <select name="estado" class="form-select w-auto" onchange="this.form.submit()">
+                                <option value="0" @selected($estadoRep == 0)>Pendientes</option>
+                                <option value="1" @selected($estadoRep == 1)>Generadas</option>
+                            </select>
+
+                            {{-- Año --}}
+                            <select name="periodo" class="form-select w-auto" onchange="this.form.submit()">
+                                @for($i = date('Y'); $i >= date('Y')-10; $i--)
                                 <option value="{{ $i }}" @selected($periodo==$i)>
                                     {{ $i }}
                                 </option>
-                            @endfor
-                        </select>
+                                @endfor
+                            </select>
+
+                            {{-- Buscar --}}
+                            <input type="text"
+                                   name="buscar"
+                                   value="{{ $buscar ?? '' }}"
+                                   class="form-control"
+                                   placeholder="Buscar solicitud o cliente">
+
+                            <button type="submit" class="btn btn-primary">
+                                Buscar
+                            </button>
+
+                        </form>
 
                     </div>
                 </div>
@@ -62,31 +75,41 @@
                     </thead>
 
                     <tbody>
-                        @foreach($solicitudes as $l)
-                        <tr>
+    @forelse($solicitudes as $l)
 
-                            <td>
-                                <a href="{{ route('reportes_clientes.show', $l->id_solicitud) }}"
-                                   class="fw-semibold text-primary text-decoration-none">
-                                    {{ $l->numero }}
-                                </a>
-                            </td>
+        <tr>
 
-                            <td>{{ $l->nombre }}</td>
+            <td>
+                <a href="{{ route('reportes_clientes.show', $l->id_solicitud) }}"
+                   class="fw-semibold text-primary text-decoration-none">
+                    {{ $l->numero }}
+                </a>
+            </td>
 
-                            <td>{{ \Carbon\Carbon::parse($l->fecha)->format('d/m/Y') }}</td>
+            <td>{{ $l->nombre }}</td>
 
-                            <td>
-                                @if($l->estado == 1)
-                                    <span class="badge bg-success">Activa</span>
-                                @else
-                                    <span class="badge bg-secondary">Inactiva</span>
-                                @endif
-                            </td>
+            <td>{{ \Carbon\Carbon::parse($l->fecha)->format('d/m/Y') }}</td>
 
-                        </tr>
-                        @endforeach
-                    </tbody>
+            <td>
+                @if($l->estado == 1)
+                    <span class="badge bg-success">Activa</span>
+                @else
+                    <span class="badge bg-secondary">Inactiva</span>
+                @endif
+            </td>
+
+        </tr>
+
+    @empty
+
+        <tr>
+            <td colspan="4" class="text-center text-muted">
+                No se encontraron solicitudes para los filtros seleccionados.
+            </td>
+        </tr>
+
+    @endforelse
+</tbody>
 
                 </table>
 

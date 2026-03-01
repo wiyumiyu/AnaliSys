@@ -438,6 +438,7 @@ CREATE TABLE trn_estabilidad_agregados (
     analista INT NOT NULL
 );
 
+
 CREATE TABLE trn_estabilidad_agregados_muestras (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_estabilidad_agregados INT NOT NULL,
@@ -486,6 +487,7 @@ CREATE TABLE trn_coeficiente_extensibilidad_resultado (
     resultado VARCHAR(25),
     estado BOOLEAN DEFAULT 1
 );
+
 
 -- Permeabilidad del Aire
 CREATE TABLE trn_permeabilidad_aire (
@@ -5184,11 +5186,11 @@ DELIMITER ;
 -- Resultados
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_estabilidad_agregados_resultado_au$$
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_resultados_au$$
 
-CREATE TRIGGER trg_estabilidad_agregados_resultado_au
+CREATE TRIGGER trg_estabilidad_agregados_resultados_au
 
-AFTER UPDATE ON trn_estabilidad_agregados_resultado
+AFTER UPDATE ON trn_estabilidad_agregados_resultados
 
 FOR EACH ROW
 
@@ -5234,11 +5236,11 @@ DELIMITER ;
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_estabilidad_agregados_resultado_ad$$
+DROP TRIGGER IF EXISTS trg_estabilidad_agregados_resultados_ad$$
 
-CREATE TRIGGER trg_estabilidad_agregados_resultado_ad
+CREATE TRIGGER trg_estabilidad_agregados_resultados_ad
 
-AFTER DELETE ON trn_estabilidad_agregados_resultado
+AFTER DELETE ON trn_estabilidad_agregados_resultados
 
 FOR EACH ROW
 
@@ -5586,10 +5588,359 @@ AFTER DELETE ON trn_coeficiente_extensibilidad_resultado
 FOR EACH ROW
 
 BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_coeficiente_extensibilidad_resultado',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'resultado', OLD.resultado
+        ),
+        NULL
+    );
+END$$
+
+DELIMITER ;
+
+-- Permeabilidad del Aire
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_ai$$
+CREATE TRIGGER trg_permeabilidad_aire_ai
+AFTER INSERT ON trn_permeabilidad_aire
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_permeabilidad_aire',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'fecha', NEW.fecha,
+            'analista', NEW.analista
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_au$$
+CREATE TRIGGER trg_permeabilidad_aire_au
+AFTER UPDATE ON trn_permeabilidad_aire
+FOR EACH ROW
+BEGIN
+    IF NOT (
+        OLD.fecha    <=> NEW.fecha AND
+        OLD.archivo  <=> NEW.archivo AND
+        OLD.analista <=> NEW.analista
+    ) THEN
+        CALL sp_bitacora_usuario(
+            'trn_permeabilidad_aire',
+            COALESCE(@bitacora_usuario, 0),
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+            'UPDATE',
+            JSON_OBJECT(
+                'fecha', OLD.fecha,
+                'archivo', OLD.archivo,
+                'analista', OLD.analista
+            ),
+            JSON_OBJECT(
+                'fecha', NEW.fecha,
+                'archivo', NEW.archivo,
+                'analista', NEW.analista
+            )
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_ad$$
+CREATE TRIGGER trg_permeabilidad_aire_ad
+AFTER DELETE ON trn_permeabilidad_aire
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_permeabilidad_aire',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+
+END$$
+DELIMITER $$
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_ad$$
+CREATE TRIGGER trg_permeabilidad_aire_ad
+AFTER DELETE ON trn_permeabilidad_aire
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_permeabilidad_aire',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'DELETE',
+        JSON_OBJECT(
+            'id', OLD.id,
+            'fecha', OLD.fecha,
+            'analista', OLD.analista
+        ),
+        NULL
+    );
+
+END$$
+
+-- Muestra
+DELIMITER $$
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_muestra_ai$$
+CREATE TRIGGER trg_permeabilidad_aire_muestra_ai
+AFTER INSERT ON trn_permeabilidad_aire_muestras
+FOR EACH ROW
+BEGIN
+    CALL sp_bitacora_usuario(
+        'trn_permeabilidad_aire_muestras',
+        COALESCE(@bitacora_usuario, 0),
+        COALESCE(@bitacora_ip, 'UNKNOWN'),
+        'CREATE',
+        NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'idlab', NEW.idlab,
+            'rep', NEW.rep,
+            'material', NEW.material,
+            'tipo', NEW.tipo,
+            'posicion', NEW.posicion
+        )
+    );
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_muestra_au$$
+
+CREATE TRIGGER trg_permeabilidad_aire_muestra_au
+
+AFTER UPDATE ON trn_permeabilidad_aire_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_permeabilidad_aire_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_muestra_au$$
+
+CREATE TRIGGER trg_permeabilidad_aire_muestra_au
+
+AFTER UPDATE ON trn_permeabilidad_aire_muestras
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (
+
+        OLD.rep      <=> NEW.rep AND
+
+        OLD.material <=> NEW.material AND
+
+        OLD.tipo     <=> NEW.tipo AND
+
+        OLD.posicion <=> NEW.posicion AND
+
+        OLD.estado   <=> NEW.estado
+
+    ) THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_permeabilidad_aire_muestras',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'rep', OLD.rep,
+
+                'material', OLD.material,
+
+                'tipo', OLD.tipo,
+
+                'posicion', OLD.posicion,
+
+                'estado', OLD.estado
+
+            ),
+
+            JSON_OBJECT(
+
+                'rep', NEW.rep,
+
+                'material', NEW.material,
+
+                'tipo', NEW.tipo,
+
+                'posicion', NEW.posicion,
+
+                'estado', NEW.estado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+-- Resultados
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_resultado_au$$
+
+CREATE TRIGGER trg_permeabilidad_aire_resultado_au
+
+AFTER UPDATE ON trn_permeabilidad_aire_resultado
+
+FOR EACH ROW
+
+BEGIN
+
+    IF NOT (OLD.resultado <=> NEW.resultado)
+
+    THEN
+
+        CALL sp_bitacora_usuario(
+
+            'trn_permeabilidad_aire_resultado',
+
+            COALESCE(@bitacora_usuario, 0),
+
+            COALESCE(@bitacora_ip, 'UNKNOWN'),
+
+            'UPDATE',
+
+            JSON_OBJECT(
+
+                'id', OLD.id,
+
+                'resultado', OLD.resultado
+
+            ),
+
+            JSON_OBJECT(
+
+                'id', NEW.id,
+
+                'resultado', NEW.resultado
+
+            )
+
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_resultado_ad$$
+
+CREATE TRIGGER trg_permeabilidad_aire_resultado_ad
+
+AFTER DELETE ON trn_permeabilidad_aire_resultado
+
+FOR EACH ROW
+
+BEGIN
 
     CALL sp_bitacora_usuario(
 
-        'trn_coeficiente_extensibilidad_resultado',
+        'trn_permeabilidad_aire_resultado',
 
         COALESCE(@bitacora_usuario, 0),
 
@@ -5613,7 +5964,7 @@ END$$
 
 DELIMITER ;
 
-
+DELIMITER $$
 
 CREATE PROCEDURE sp_obtener_bitacora_completa (
     IN p_id BIGINT
@@ -5638,10 +5989,9 @@ BEGIN
         ON c.id_persona = b.usuario
         AND c.descripcion = 'PRINCIPAL'
     WHERE b.id = p_id;
+  END$$
 
-END$$
-
-DELIMITER ;
+ DELIMITER ;
 
 /* PROCS DE CONTROLES DE TEXTURA */
 
@@ -6706,6 +7056,57 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.10', 1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '11:00', 1);
+
+
+-- Permeabilidad del Aire
+INSERT INTO trn_analisis (analisis, siglas, origen)
+VALUES
+
+('Longitud de la muestra',    'longitud_muestra',     'PERMEABILIDAD_AIRE'),
+('Diametro interno',          'diametro_interno',     'PERMEABILIDAD_AIRE'),
+('Area transversal',          'area_transversal',     'PERMEABILIDAD_AIRE'),
+('Volumen de muestra',        'volumen_muestra',      'PERMEABILIDAD_AIRE'),
+('Temperatura del aire',      'temperatura_aire',     'PERMEABILIDAD_AIRE');
+
+
+INSERT INTO trn_permeabilidad_aire
+(periodo, archivo, fecha, analista)
+
+VALUES
+(2026, 'PA-2026-001', '2024-02-16', 1);
+
+INSERT INTO trn_permeabilidad_aire_muestras
+
+(id_permeabilidad_aire, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(1, '3001', 1, 1, 1, 1, 1, 0),
+(1, '3002', 2, 1, 1, 2, 1, 0),
+(1, '3003', 1, 1, 1, 3, 1, 0);
+
+INSERT INTO trn_permeabilidad_aire_resultado
+(id_permeabilidad_aire_muestras, id_analisis, resultado, estado)
+VALUES
+-- Muestra 1
+(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_muestra' AND origen='PERMEABILIDAD_AIRE'),'10.00',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_interno' AND origen='PERMEABILIDAD_AIRE'),'5.00',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='area_transversal' AND origen='PERMEABILIDAD_AIRE'),'19.63',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='volumen_muestra' AND origen='PERMEABILIDAD_AIRE'),'196.35',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='temperatura_aire' AND origen='PERMEABILIDAD_AIRE'),'25.00',1),
+
+-- Muestra 2
+(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_muestra' AND origen='PERMEABILIDAD_AIRE'),'11.00',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_interno' AND origen='PERMEABILIDAD_AIRE'),'5.10',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='area_transversal' AND origen='PERMEABILIDAD_AIRE'),'20.43',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='volumen_muestra' AND origen='PERMEABILIDAD_AIRE'),'224.73',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='temperatura_aire' AND origen='PERMEABILIDAD_AIRE'),'24.50',1),
+
+-- Muestra 3
+(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_muestra' AND origen='PERMEABILIDAD_AIRE'),'9.50',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_interno' AND origen='PERMEABILIDAD_AIRE'),'4.90',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='area_transversal' AND origen='PERMEABILIDAD_AIRE'),'18.85',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='volumen_muestra' AND origen='PERMEABILIDAD_AIRE'),'179.07',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='temperatura_aire' AND origen='PERMEABILIDAD_AIRE'),'26.00',1);
+
 
 /* ============================================================
    CONTROLES

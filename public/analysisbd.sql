@@ -7289,4 +7289,13 @@ exentodeimpuestos
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=42567 ;
 
 
-
+CREATE TABLE IF NOT EXISTS `tbm_solicitud_impresa` (
+  `tbm_solicitud_impresa` int(11) NOT NULL AUTO_INCREMENT,
+  `id_solicitud` varchar(10) COLLATE latin1_general_ci NOT NULL,
+  `fecha` datetime NOT NULL,
+  `enviada` tinyint(1) NOT NULL DEFAULT '0',
+  `fecha_envio` datetime NOT NULL,
+  `enviada_por` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`tbm_solicitud_impresa`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=8687 ;
+DROP PROCEDURE IF EXISTS sp_listar_reportes_clientes;

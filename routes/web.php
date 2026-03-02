@@ -39,9 +39,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/logout', [AuthController::class, 'logout']);
 
-
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])
-    ->name('dashboard');
+        ->name('dashboard');
 
 /*
   |--------------------------------------------------------------------------
@@ -111,15 +110,13 @@ Route::middleware(['rol:ADMIN'])->group(function () {
     )->name('bitacora.show');
 });
 
-
 Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
 
     Route::get('/mi-perfil', [UsuarioController::class, 'editPerfil'])
-        ->name('usuarios.mi_perfil');
+            ->name('usuarios.mi_perfil');
 
     Route::put('/mi-perfil', [UsuarioController::class, 'updatePerfil'])
-        ->name('usuarios.update_perfil');
-
+            ->name('usuarios.update_perfil');
 });
 
 //------------------------------------------------------------------------------
@@ -164,6 +161,11 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             '/ingreso-datos/textura/importar',
             [IngresoTexturaController::class, 'importar']
     )->name('textura.importar');
+
+    Route::delete(
+            '/ingreso-datos/textura/{id}',
+            [IngresoTexturaController::class, 'destroyArchivo']
+    )->name('textura.destroy');
 });
 
 //------------------------------------------------------------------------------
@@ -665,9 +667,9 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             [ResultadosController::class, 'show']
     )->name('resultados.show');
     Route::get(
-    '/resultados/{id}',
-    [ResultadosController::class, 'show']
-)->name('resultados.show');
+            '/resultados/{id}',
+            [ResultadosController::class, 'show']
+    )->name('resultados.show');
 });
 
 //------------------------------------------------------------------------------

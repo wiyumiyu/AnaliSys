@@ -124,7 +124,9 @@
                                         <i class="ri-eye-line"></i>
                                     </a>
 
-                                    <button class="btn bg-danger-subtle text-danger btn-sm">
+                                    <button type="button"
+                                            class="btn bg-danger-subtle text-danger btn-sm"
+                                            onclick="confirmarEliminarArchivo({{ $l->id_archivo }}, '{{ $l->archivo }}')">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
 
@@ -146,6 +148,39 @@
 
 </div><!--End container-fluid-->
 </main><!--End app-wrapper-->
+
+{{-- ================= MODAL CONFIRMACIÓN ================= --}}
+<div class="modal fade" id="confirmArchivoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold" id="modalTitle"></h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="modalBody"></div>
+
+            <div class="modal-footer border-0">
+                <button class="btn btn-light"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <form method="POST" id="modalForm">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-danger">
+                        Eliminar
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('js')
@@ -166,5 +201,34 @@
 
 <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
+<script>
+let archivoModal;
 
+document.addEventListener('DOMContentLoaded', function () {
+    archivoModal = new bootstrap.Modal(
+        document.getElementById('confirmArchivoModal')
+    );
+});
+
+function confirmarEliminarArchivo(id, nombre) {
+
+    document.getElementById('modalTitle').textContent = 'Eliminar archivo';
+    document.getElementById('modalTitle').className =
+        'modal-title text-danger fw-semibold';
+
+    document.getElementById('modalBody').innerHTML = `
+        ¿Está seguro que desea eliminar el archivo
+        <strong>${nombre}</strong>?
+        <br>
+        <small class="text-muted">
+            Se eliminarán todas las muestras y resultados asociados.
+        </small>
+    `;
+
+    document.getElementById('modalForm').action =
+        `/ingreso-datos/textura/${id}`;
+
+    archivoModal.show();
+}
+</script>
 @endsection

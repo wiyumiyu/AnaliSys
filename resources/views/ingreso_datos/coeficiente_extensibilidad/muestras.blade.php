@@ -63,10 +63,13 @@
 
                                 {{-- ID LAB --}}
                                 <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('coeficiente_extensibilidad.muestra.edit', $m->id_muestra) }}"
-                                       class="fw-semibold text-reset text-decoration-none">
-                                        {{ $m->idlab }}
-                                    </a>
+                                    <h6 class="mb-0">
+                                        <a href="{{ route('coeficiente_extensibilidad.muestra.edit', $m->id_muestra) }}"
+                                           class="fw-semibold text-primary text-decoration-none fs-6">
+                                            {{ $m->idlab }}
+                                        </a>
+                                    </h6>
+
                                 </td>
 
                                 <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>

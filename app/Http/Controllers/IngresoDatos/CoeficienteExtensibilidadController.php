@@ -163,109 +163,102 @@ class CoeficienteExtensibilidadController extends Controller
             ->with('success', 'Archivo eliminado correctamente');
     }
 
-    public function importar(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|file|mimes:xlsx,xls'
+public function importar(Request $request)
+{
+    DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+    DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
+    $request->validate([
+        'archivo' => 'required|file|mimes:xlsx,xls'
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        /* ==== Crear archivo ==== */
+        $idCoeficiente = DB::table('trn_coeficiente_extensibilidad')->insertGetId([
+            'periodo' => date('Y'),
+            'archivo' => $request->file('archivo')->getClientOriginalName(),
+            'fecha' => now(),
+            'analista' => session('id_persona')
         ]);
 
-        DB::beginTransaction();
+        /* ==== Mapa de análisis ==== */
+        $analisisMap = DB::table('trn_analisis')
+            ->where('origen', 'COEFICIENTE_EXTENSIBILIDAD')
+            ->pluck('id', 'siglas')
+            ->toArray();
 
-        try {
+        /* ==== Leer Excel ==== */
+        $spreadsheet = IOFactory::load(
+            $request->file('archivo')->getPathname()
+        );
 
-            /* ==== Crear archivo de coeficiente extensibilidad ==== */
-            $idCoeficienteExtensibilidad = DB::table('trn_coeficiente_extensibilidad')->insertGetId([
-                'periodo'  => date('Y'),
-                'archivo'  => $request->file('archivo')->getClientOriginalName(),
-                'fecha'    => now(),
-                'analista' => session('id_persona')
+        $rows = $spreadsheet
+            ->getActiveSheet()
+            ->toArray(null, true, true, true);
 
+        $i = 1;
+
+        foreach ($rows as $fila => $row) {
+
+            if ($fila < 3 || empty($row['A'])) {
+                continue;
+            }
+
+            $tipo = is_numeric($row['A']) ? 1 : 2;
+
+            /* ==== Insert muestra ==== */
+            $idMuestra = DB::table('trn_coeficiente_extensibilidad_muestras')->insertGetId([
+                'id_coeficiente_extensibilidad' => $idCoeficiente,
+                'idlab' => $row['A'],
+                'rep' => $row['B'],
+                'material' => 1,
+                'tipo' => $tipo,
+                'posicion' => $i,
+                'estado' => 1,
+                'ri' => 0
             ]);
 
-            /* ==== Mapa de análisis COEFICIENTE DE EXTENSIBILIDAD ==== */
+            /* ==== Resultados ==== */
+            $valores = [
+                'longitud_inicial' => $row['C'],
+                'diametro_muestra' => $row['D'],
+                'fecha_medicion'   => $row['E'],
+                'hora_medicion'    => $row['F'],
+            ];
 
-            $analisisMap = DB::table('trn_analisis')
-                ->where('origen', 'COEFICIENTE DE EXTENSIBILIDAD')
-                ->pluck('id', 'siglas')
-                ->toArray();
+            foreach ($valores as $sigla => $resultado) {
 
-            /* ==== Leer Excel ===== */
-            $spreadsheet = IOFactory::load(
-                $request->file('archivo')->getPathname()
-            );
-
-            $rows = $spreadsheet
-                ->getActiveSheet()
-                ->toArray(null, true, true, true);
-
-            /* ==== Recorrer filas (desde fila 3) ===== */
-            $i = 1;
-            $tipo = 1;
-            foreach ($rows as $fila => $row) {
-
-                if ($fila < 3) {
-                    continue; // título y encabezados
+                if (!isset($analisisMap[$sigla])) {
+                    continue;
                 }
 
-                if (empty($row['A'])) {
-                    continue; // IDLab vacío
-                }
-                $tipo = 1;
-                if (!is_numeric($row['A'])) {
-                    $tipo = 2;
-                }
-
-                /* ===== Insert Muestra ===== */
-                $idMuestra = DB::table('trn_coeficiente_extensibilidad_muestras')->insertGetId([
-                    'id_coeficiente_extensibilidad' => $idCoeficienteExtensibilidad,
-                    'idlab'                => $row['A'],
-                    'rep'                  => $row['B'],
-                    'material'             => 1, // placeholder
-                    'tipo'                 => $tipo,
-                    'posicion'             => $i,
-                    'estado'               => 1,
-                    'ri'                   => 0
+                DB::table('trn_coeficiente_extensibilidad_resultados')->insert([
+                    'id_coeficiente_extensibilidad_muestras' => $idMuestra,
+                    'id_analisis' => $analisisMap[$sigla],
+                    'resultado' => $resultado,
+                    'estado' => 1
                 ]);
-
-                /* ===== Resultados ===== */
-                $valores = [
-                    'longitud_inicial'     => $row['C'],
-                    'diametro_muestra'     => $row['D'],
-                    'fecha_medicion'       => $row['E'],
-                    'hora_medicion'        => $row['F']
-
-                ];
-
-
-                foreach ($valores as $sigla => $resultado) {
-
-
-                    if (!isset($analisisMap[$sigla])) {
-                        continue;
-                    }
-
-                    DB::table('trn_coeficiente_extensibilidad_resultados')->insert([
-                        'id_coeficiente_extensibilidad_muestras' => $idMuestra,
-                        'id_analisis'         => $analisisMap[$sigla],
-                        'resultado'           => $resultado,
-                        'estado'              => 1
-                    ]);
-                }
-                $i += 1;
             }
-            /* ==== Commit FINAL ==== */
-            DB::commit();
 
-            return redirect()
-                ->route('coeficiente_extensibilidad.index')
-                ->with('success', 'Archivo importado correctamente');
-        } catch (\Throwable $e) {
-
-            DB::rollBack();
-
-            return back()->withErrors(
-                'Error al importar: ' . $e->getMessage()
-            );
+            $i++;
         }
+
+        DB::commit();
+
+        return redirect()
+            ->route('coeficiente_extensibilidad.index')
+            ->with('success', 'Archivo importado correctamente');
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        return back()->withErrors(
+            'Error al importar: ' . $e->getMessage()
+        );
     }
+}
 }

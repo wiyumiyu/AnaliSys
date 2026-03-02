@@ -147,12 +147,26 @@ class PermeabilidadAireController extends Controller {
                         ->with('success', 'Archivo eliminado correctamente');
     }
 
-    public function destroyArchivo($id) {
+public function destroyArchivo($id)
+{
+    try {
+
         DB::statement(
-                'CALL sp_eliminar_permeabilidad_aire(?)',
-                [$id]
+            'CALL sp_eliminar_permeabilidad_aire(?)',
+            [$id]
+        );
+
+        return redirect()
+            ->route('permeabilidad_aire.index')
+            ->with('success', 'Archivo eliminado correctamente');
+
+    } catch (\Throwable $e) {
+
+        return back()->withErrors(
+            'Error al eliminar: ' . $e->getMessage()
         );
     }
+}
 
     public function importar(Request $request) {
         $request->validate([
@@ -174,7 +188,7 @@ class PermeabilidadAireController extends Controller {
             /* ==== Mapa de análisis PERMEABILIDAD DEL AIRE ==== */
 
             $analisisMap = DB::table('trn_analisis')
-                    ->where('origen', 'PERMEABILIDAD AIRE')
+                    ->where('origen', 'PERMEABILIDAD_AIRE')
                     ->pluck('id', 'siglas')
                     ->toArray();
 

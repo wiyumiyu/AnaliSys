@@ -77,11 +77,7 @@
                         </a>
                     </li>
 
-                    <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/porosidad_total/listado.php" class="pe-nav-link">
-                            Porosidad Total
-                        </a>
-                    </li>
+    
 
                     {{-- HUMEDAD GRAVIMETRICA (LARAVEL) --}}
                     <li class="pe-slide-item">

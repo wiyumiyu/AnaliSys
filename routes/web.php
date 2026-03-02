@@ -664,6 +664,10 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             '/resultados/{id}',
             [ResultadosController::class, 'show']
     )->name('resultados.show');
+    Route::get(
+    '/resultados/{id}',
+    [ResultadosController::class, 'show']
+)->name('resultados.show');
 });
 
 //------------------------------------------------------------------------------

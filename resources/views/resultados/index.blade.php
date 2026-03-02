@@ -103,14 +103,12 @@
                         @forelse($resultados as $r)
                         <tr>
 
-                            <td>
-                                <h6 class="mb-0">
-                                    {{ $r->consecutivo }}
-                                </h6>
-                                <small class="text-muted">
-                                    ID {{ $r->id }}
-                                </small>
-                            </td>
+<td>
+    <a href="{{ route('resultados.show', $r->id) }}"
+       class="fw-semibold text-primary text-decoration-none">
+        {{ $r->consecutivo }}
+    </a>
+</td>
 
                             <td>{{ $r->fecha }}</td>
 <td>

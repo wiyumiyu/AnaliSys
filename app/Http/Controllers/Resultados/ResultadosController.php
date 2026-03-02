@@ -125,4 +125,17 @@ $resultados = collect($rows)
                 ->with('error', 'No se pudo eliminar el resultado.');
         }
     }
+    
+public function show($id)
+{
+    $detalle = DB::table('trn_resultados')
+        ->where('id', $id)
+        ->first();
+
+    if (!$detalle) {
+        abort(404);
+    }
+
+    return view('resultados.vista', compact('detalle'));
+}
 }

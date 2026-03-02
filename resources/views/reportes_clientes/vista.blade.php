@@ -15,193 +15,129 @@
 
 @section('content')
 
-<div class="row">
-    <div class="col-lg-12">
-        <br>
+<div class="table-responsive">
+<table class="table table-bordered table-sm align-middle mb-0 text-center">
 
-        {{-- ================= ENCABEZADO ================= --}}
-<div class="d-flex justify-content-between align-items-center mb-3">
+    {{-- HEADER NEGRO --}}
+    <thead style="background:#000;color:#fff" class="small">
+        <tr>
+            <th style="min-width:200px">INFORMACIÓN</th>
+            <th>IDLAB</th>
+            <th>TEXT</th>
+            <th>DA</th>
+            <th>DP</th>
+            <th>HG</th>
+            <th>Ret.H</th>
+            <th>C_RetH</th>
+            <th>Frac.A</th>
+            <th>Est.Agr</th>
+            <th>COEL</th>
+            <th>Con.Por</th>
+        </tr>
+    </thead>
 
-    <h4 class="fw-bold mb-0">
-        Solicitud 99999
-    </h4>
+    <tbody>
 
-    <div class="d-flex gap-2">
+        {{-- ================= BLOQUE IDLAB 13 ================= --}}
+        <tr>
+            {{-- COLUMNA IZQUIERDA FIJA --}}
+            <td rowspan="6" class="text-start align-top bg-light">
+                <strong class="text-success">SOL.97987</strong><br>
+                OSA<br>
+                PROYECTO VI-733-C5604<br>
+                06/01/2026
+            </td>
 
-        {{-- Botón Exportar --}}
-        <div class="btn-group">
-            <button type="button"
-                    class="btn btn-success dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                Exportar
-            </button>
+            <td><strong>13</strong></td>
+            <td>Fr.Ar</td>
+            <td>1.25</td>
+            <td>2.60</td>
+            <td>18%</td>
+            <td>30%</td>
+            <td>A</td>
+            <td>5%</td>
+            <td>80%</td>
+            <td>0.12</td>
+            <td>0.85</td>
+        </tr>
 
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item" href="#">
-                        Exportar PDF
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="#">
-                        Exportar Excel
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <tr>
+            <td><strong>13</strong></td>
+            <td>Fr.Ar</td>
+            <td>1.35</td>
+            <td>2.58</td>
+            <td>15%</td>
+            <td>25%</td>
+            <td>B</td>
+            <td>8%</td>
+            <td>75%</td>
+            <td>0.10</td>
+            <td>0.78</td>
+        </tr>
 
-        {{-- Botón volver --}}
-                <a href="{{ url()->previous() }}" class="btn btn-primary">
-                ← Volver
-            </a>
-    </div>
+        <tr>
+            <td><strong>13</strong></td>
+            <td>Fr.Ar</td>
+            <td>1.30</td>
+            <td>2.59</td>
+            <td>17%</td>
+            <td>28%</td>
+            <td>A</td>
+            <td>6%</td>
+            <td>78%</td>
+            <td>0.11</td>
+            <td>0.82</td>
+        </tr>
 
-</div>
+        {{-- PROMEDIO --}}
+        <tr style="background:#f2f2f2;font-weight:600">
+            <td>PROMEDIO</td>
+            <td>Fr.Ar</td>
+            <td>1.30</td>
+            <td>2.59</td>
+            <td>16.6%</td>
+            <td>27.6%</td>
+            <td>A</td>
+            <td>6.3%</td>
+            <td>77.6%</td>
+            <td>0.11</td>
+            <td>0.81</td>
+        </tr>
 
-        {{-- ================= DATOS SOLICITUD (COMPACTO ARRIBA) ================= --}}
-        <div class="card mb-3">
+        {{-- DESV EST --}}
+        <tr>
+            <td class="text-success">Desv.Est.</td>
+            <td>-</td>
+            <td>0.05</td>
+            <td>0.01</td>
+            <td>1.5%</td>
+            <td>2%</td>
+            <td>-</td>
+            <td>1%</td>
+            <td>2%</td>
+            <td>0.01</td>
+            <td>0.03</td>
+        </tr>
 
-            <div class="card-body py-3 small">
+        {{-- CV --}}
+        <tr>
+            <td class="text-success">CV</td>
+            <td>-</td>
+            <td>3.8%</td>
+            <td>0.3%</td>
+            <td>9%</td>
+            <td>7%</td>
+            <td>-</td>
+            <td>15%</td>
+            <td>2%</td>
+            <td>9%</td>
+            <td>3%</td>
+        </tr>
 
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3">
+        {{-- ================= FIN BLOQUE ================= --}}
 
-                    <div>
-                        <span class="text-muted">Cliente</span><br>
-                        <span class="fw-semibold">
-                            Inversiones Agropecuarias Los Guanacastes S.A.
-                        </span>
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Subcliente</span><br>
-                        <span class="fw-semibold">Finca La Virgen</span>
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Responsable</span><br>
-                        <span class="fw-semibold">Katherine Arias</span>
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Fecha recepción</span><br>
-                        <span class="fw-semibold">20/02/2026</span>
-                    </div>
-
-                    <div>
-                        <span class="text-muted">N° muestras</span><br>
-                        <span class="fw-semibold">2</span>
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Correos</span><br>
-                        correo1@cliente.com
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Teléfonos</span><br>
-                        2297-2242
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Ubicación</span><br>
-                        Guanacaste, Bagaces
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Cultivo</span><br>
-                        Caña de azúcar
-                    </div>
-
-                    <div>
-                        <span class="text-muted">Análisis</span><br>
-                        TEXT, DA, HG
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-
-        {{-- ================= TABLA ANALISIS (100% ANCHO) ================= --}}
-        <div class="card">
-
-            <div class="card-header bg-light">
-                <h6 class="mb-0 fw-semibold">
-                    Análisis Físico de Suelo
-                </h6>
-            </div>
-
-            <div class="card-body p-0">
-
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle mb-0">
-
-                        <thead class="table-light text-center small">
-                            <tr>
-                                <th style="width: 28%;">Etiqueta</th>
-                                <th style="width: 12%;">ID Lab</th>
-
-                                <th>TEXT</th>
-                                <th>DA</th>
-                                <th>DP</th>
-                                <th>HG</th>
-                                <th>Ret.H</th>
-                                <th>C_RetH</th>
-                                <th>Frac.A</th>
-                                <th>Est.Agr</th>
-                                <th>COEL</th>
-                                <th>Con.Por</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="text-center small">
-
-                            <tr>
-                                <td class="text-start">
-                                    Muestra de suelo sector norte finca experimental 1
-                                </td>
-                                <td>AO-26-00074</td>
-
-                                <td>Fr.Ar</td>
-                                <td>1.25</td>
-                                <td>2.60</td>
-                                <td>18%</td>
-                                <td>30%</td>
-                                <td>A</td>
-                                <td>5%</td>
-                                <td>80%</td>
-                                <td>0.12</td>
-                                <td>0.85</td>
-                            </tr>
-
-                            <tr>
-                                <td class="text-start">
-                                    Muestra profunda parcela oeste lote 4
-                                </td>
-                                <td>AO-26-00075</td>
-
-                                <td>Fr.Ar</td>
-                                <td>1.35</td>
-                                <td>2.58</td>
-                                <td>15%</td>
-                                <td>25%</td>
-                                <td>B</td>
-                                <td>8%</td>
-                                <td>75%</td>
-                                <td>0.10</td>
-                                <td>0.78</td>
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-                </div>
-
-            </div>
-        </div>
-
-    </div>
+    </tbody>
+</table>
 </div>
 
 

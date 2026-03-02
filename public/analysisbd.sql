@@ -480,7 +480,7 @@ CREATE TABLE trn_coeficiente_extensibilidad_muestras (
     ri BOOLEAN DEFAULT 0
 );
 
-CREATE TABLE trn_coeficiente_extensibilidad_resultado (
+CREATE TABLE trn_coeficiente_extensibilidad_resultados (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_coeficiente_extensibilidad_muestras INT NOT NULL,
     id_analisis INT NOT NULL,
@@ -510,7 +510,7 @@ CREATE TABLE trn_permeabilidad_aire_muestras (
     ri BOOLEAN DEFAULT 0
 );
 
-CREATE TABLE trn_permeabilidad_aire_resultado (
+CREATE TABLE trn_permeabilidad_aire_resultados (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_permeabilidad_aire_muestras INT NOT NULL,
     id_analisis INT NOT NULL,
@@ -782,13 +782,13 @@ FOREIGN KEY (id_coeficiente_extensibilidad)
 REFERENCES trn_coeficiente_extensibilidad(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_coeficiente_extensibilidad_resultado
+ALTER TABLE trn_coeficiente_extensibilidad_resultados
 ADD CONSTRAINT fk_ce_resultado_muestras
 FOREIGN KEY (id_coeficiente_extensibilidad_muestras)
 REFERENCES trn_coeficiente_extensibilidad_muestras(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_coeficiente_extensibilidad_resultado
+ALTER TABLE trn_coeficiente_extensibilidad_resultados
 ADD CONSTRAINT fk_ce_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
@@ -800,13 +800,13 @@ FOREIGN KEY (id_permeabilidad_aire)
 REFERENCES trn_permeabilidad_aire(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_permeabilidad_aire_resultado
+ALTER TABLE trn_permeabilidad_aire_resultados
 ADD CONSTRAINT fk_pa_resultado_muestras
 FOREIGN KEY (id_permeabilidad_aire_muestras)
 REFERENCES trn_permeabilidad_aire_muestras(id)
 ON DELETE CASCADE;
 
-ALTER TABLE trn_permeabilidad_aire_resultado
+ALTER TABLE trn_permeabilidad_aire_resultados
 ADD CONSTRAINT fk_pa_resultado_analisis
 FOREIGN KEY (id_analisis)
 REFERENCES trn_analisis(id);
@@ -1444,6 +1444,9 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+
 
 -- Procedimientos para Densidad Aparente
 
@@ -3162,7 +3165,7 @@ BEGIN
         MAX(CASE WHEN a.siglas = 'observaciones' THEN r.resultado END) AS observaciones
         
     FROM trn_coeficiente_extensibilidad_muestras m
-    LEFT JOIN trn_coeficiente_extensibilidad_resultado r
+    LEFT JOIN trn_coeficiente_extensibilidad_resultados r
         ON r.id_coeficiente_extensibilidad_muestras = m.id
        AND r.estado = 1
     LEFT JOIN trn_analisis a
@@ -3214,7 +3217,7 @@ SELECT
     r.resultado,
     r.estado
 
-FROM trn_coeficiente_extensibilidad_resultado r
+FROM trn_coeficiente_extensibilidad_resultados r
 INNER JOIN trn_analisis a
     ON a.id = r.id_analisis
    AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
@@ -3258,7 +3261,7 @@ IN p_resultado VARCHAR(50)
 
 )
 BEGIN
-UPDATE trn_coeficiente_extensibilidad_resultado
+UPDATE trn_coeficiente_extensibilidad_resultados
 SET resultado = p_resultado
 WHERE id = p_id_resultado;
 
@@ -3360,7 +3363,7 @@ BEGIN
         MAX(CASE WHEN a.siglas = 'temperatura_aire' THEN r.resultado END) AS temperatura_aire
         
     FROM trn_permeabilidad_aire_muestras m
-    LEFT JOIN trn_permeabilidad_aire_resultado r
+    LEFT JOIN trn_permeabilidad_aire_resultados r
         ON r.id_permeabilidad_aire_muestras = m.id
        AND r.estado = 1
     LEFT JOIN trn_analisis a
@@ -3410,7 +3413,7 @@ BEGIN
         a.siglas,
         r.resultado,
         r.estado
-    FROM trn_permeabilidad_aire_resultado r
+    FROM trn_permeabilidad_aire_resultados r
     INNER JOIN trn_analisis a
         ON a.id = r.id_analisis
        AND a.origen = 'PERMEABILIDAD_AIRE'
@@ -3453,7 +3456,7 @@ IN p_resultado VARCHAR(50)
 
 )
 BEGIN
-UPDATE trn_permeabilidad_aire_resultado
+UPDATE trn_permeabilidad_aire_resultados
 SET resultado = p_resultado
 WHERE id = p_id_resultado;
 
@@ -5533,11 +5536,11 @@ DELIMITER ;
 -- Resultados
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_resultado_au$$
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_resultados_au$$
 
-CREATE TRIGGER trg_coeficiente_extensibilidad_resultado_au
+CREATE TRIGGER trg_coeficiente_extensibilidad_resultados_au
 
-AFTER UPDATE ON trn_coeficiente_extensibilidad_resultado
+AFTER UPDATE ON trn_coeficiente_extensibilidad_resultados
 
 FOR EACH ROW
 
@@ -5549,7 +5552,7 @@ BEGIN
 
         CALL sp_bitacora_usuario(
 
-            'trn_coeficiente_extensibilidad_resultado',
+            'trn_coeficiente_extensibilidad_resultados',
 
             COALESCE(@bitacora_usuario, 0),
 
@@ -5583,17 +5586,17 @@ DELIMITER ;
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_resultado_ad$$
+DROP TRIGGER IF EXISTS trg_coeficiente_extensibilidad_resultados_ad$$
 
-CREATE TRIGGER trg_coeficiente_extensibilidad_resultado_ad
+CREATE TRIGGER trg_coeficiente_extensibilidad_resultados_ad
 
-AFTER DELETE ON trn_coeficiente_extensibilidad_resultado
+AFTER DELETE ON trn_coeficiente_extensibilidad_resultados
 
 FOR EACH ROW
 
 BEGIN
     CALL sp_bitacora_usuario(
-        'trn_coeficiente_extensibilidad_resultado',
+        'trn_coeficiente_extensibilidad_resultados',
         COALESCE(@bitacora_usuario, 0),
         COALESCE(@bitacora_ip, 'UNKNOWN'),
         'DELETE',
@@ -5882,11 +5885,11 @@ DELIMITER ;
 -- Resultados
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_permeabilidad_aire_resultado_au$$
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_resultados_au$$
 
-CREATE TRIGGER trg_permeabilidad_aire_resultado_au
+CREATE TRIGGER trg_permeabilidad_aire_resultados_au
 
-AFTER UPDATE ON trn_permeabilidad_aire_resultado
+AFTER UPDATE ON trn_permeabilidad_aire_resultados
 
 FOR EACH ROW
 
@@ -5898,7 +5901,7 @@ BEGIN
 
         CALL sp_bitacora_usuario(
 
-            'trn_permeabilidad_aire_resultado',
+            'trn_permeabilidad_aire_resultados',
 
             COALESCE(@bitacora_usuario, 0),
 
@@ -5932,11 +5935,11 @@ DELIMITER ;
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS trg_permeabilidad_aire_resultado_ad$$
+DROP TRIGGER IF EXISTS trg_permeabilidad_aire_resultados_ad$$
 
-CREATE TRIGGER trg_permeabilidad_aire_resultado_ad
+CREATE TRIGGER trg_permeabilidad_aire_resultados_ad
 
-AFTER DELETE ON trn_permeabilidad_aire_resultado
+AFTER DELETE ON trn_permeabilidad_aire_resultados
 
 FOR EACH ROW
 
@@ -5944,7 +5947,7 @@ BEGIN
 
     CALL sp_bitacora_usuario(
 
-        'trn_permeabilidad_aire_resultado',
+        'trn_permeabilidad_aire_resultados',
 
         COALESCE(@bitacora_usuario, 0),
 
@@ -7131,7 +7134,7 @@ VALUES
 (1, '2003', 1, 1, 1, 3, 1, 0);
 
 -- Muestra 1
-INSERT INTO trn_coeficiente_extensibilidad_resultado
+INSERT INTO trn_coeficiente_extensibilidad_resultados
 
 (id_coeficiente_extensibilidad_muestras, id_analisis, resultado, estado)
 
@@ -7180,7 +7183,7 @@ VALUES
 (1, '3002', 2, 1, 1, 2, 1, 0),
 (1, '3003', 1, 1, 1, 3, 1, 0);
 
-INSERT INTO trn_permeabilidad_aire_resultado
+INSERT INTO trn_permeabilidad_aire_resultados
 (id_permeabilidad_aire_muestras, id_analisis, resultado, estado)
 VALUES
 -- Muestra 1
@@ -7396,7 +7399,7 @@ CREATE TABLE IF NOT EXISTS `tbm_solicitud_impresa` (
   PRIMARY KEY (`tbm_solicitud_impresa`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1 ;
 
-use analisysbd
+
 
 INSERT INTO tbm_solicitud_impresa
 (id_solicitud, fecha, enviada, fecha_envio, enviada_por)

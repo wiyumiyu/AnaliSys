@@ -103,26 +103,26 @@
                         @forelse($resultados as $r)
                         <tr>
 
-<td>
-    <a href="{{ route('resultados.show', $r->id) }}"
-       class="fw-semibold text-primary text-decoration-none">
-        {{ $r->consecutivo }}
-    </a>
-</td>
+                            <td>
+                                <a href="{{ route('resultados.show', $r->id) }}"
+                                   class="fw-semibold text-primary text-decoration-none">
+                                    {{ $r->consecutivo }}
+                                </a>
+                            </td>
 
                             <td>{{ $r->fecha }}</td>
-<td>
-    <div class="d-flex flex-column gap-1">
-        @foreach($r->archivos as $archivo)
-            <div class="badge bg-light text-secondary d-flex justify-content-between">
-                {{ $archivo->archivo }}
-                <span class="text-muted small">
-                    {{ str_replace('_', ' ', $archivo->tipo) }}
-                </span>
-            </div>
-        @endforeach
-    </div>
-</td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    @foreach($r->archivos as $archivo)
+                                    <div class="badge bg-light text-secondary d-flex justify-content-between">
+                                        {{ $archivo->archivo }}
+                                        <span class="text-muted small">
+                                            {{ str_replace('_', ' ', $archivo->tipo) }}
+                                        </span>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </td>
                             <td>{{ $r->analista }}</td>
 
                             <td class="text-end">
@@ -161,7 +161,7 @@
      aria-labelledby="modalNuevoResultadoLabel"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
 
             <form method="POST" action="{{ route('resultados.store') }}">
@@ -226,58 +226,58 @@
                                 <i class="ri-folder-open-line text-primary me-1"></i>
                                 Archivos disponibles
                             </label>
-<div class="border rounded-3 p-3 h-100">
-                            <div class="dual-box d-flex flex-column gap-2"
-                                 id="listaDisponibles">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="dual-box d-flex flex-column gap-2"
+                                     id="listaDisponibles">
 
-                                @foreach($archivosDisponibles as $archivo)
+                                    @foreach($archivosDisponibles as $archivo)
 
-                                @php
-                                $colorMap = [
-                                'TEXTURA' => 0,
-                                'GRANULOMETRIA' => 1,
-                                'DENSIDAD_APARENTE' => 2,
-                                'DENSIDAD_PARTICULAS' => 3,
-                                'HUMEDAD_GRAVIMETRICA' => 4,
-                                'CONDUCTIVIDAD_HIDRAULICA' => 5,
-                                'RETENCION_HUMEDAD' => 6,
-                                'ESTABILIDAD_AGREGADOS' => 7,
-                                'COEFICIENTE_EXTENSIBILIDAD' => 8,
-                                ];
+                                    @php
+                                    $colorMap = [
+                                    'TEXTURA' => 0,
+                                    'GRANULOMETRIA' => 1,
+                                    'DENSIDAD_APARENTE' => 2,
+                                    'DENSIDAD_PARTICULAS' => 3,
+                                    'HUMEDAD_GRAVIMETRICA' => 4,
+                                    'CONDUCTIVIDAD_HIDRAULICA' => 5,
+                                    'RETENCION_HUMEDAD' => 6,
+                                    'ESTABILIDAD_AGREGADOS' => 7,
+                                    'COEFICIENTE_EXTENSIBILIDAD' => 8,
+                                    ];
 
-                                $index = $colorMap[$archivo->tipo] ?? 0;
-                                $hue = fmod(($index * 137.508), 360);
+                                    $index = $colorMap[$archivo->tipo] ?? 0;
+                                    $hue = fmod(($index * 137.508), 360);
 
-                                $textColor = "hsl($hue, 85%, 65%)";
-                                $bgColor   = "hsla($hue, 90%, 50%, 0.12)";
-                                $borderColor = "hsl($hue, 85%, 50%)";
-                                @endphp
+                                    $textColor = "hsl($hue, 85%, 65%)";
+                                    $bgColor   = "hsla($hue, 90%, 50%, 0.12)";
+                                    $borderColor = "hsl($hue, 85%, 50%)";
+                                    @endphp
 
-                                <span class="badge dual-item w-100 d-flex justify-content-between align-items-center"
-                                      data-id="{{ $archivo->id }}"
-                                      style="background-color: {{ $bgColor }};
-                                      color: {{ $textColor }};
-                                      border: 1px solid {{ $borderColor }};
-                                      cursor:pointer;">
+                                    <span class="badge dual-item w-100 d-flex justify-content-between align-items-center"
+                                          data-id="{{ $archivo->id }}"
+                                          style="background-color: {{ $bgColor }};
+                                          color: {{ $textColor }};
+                                          border: 1px solid {{ $borderColor }};
+                                          cursor:pointer;">
 
-                                    <span>{{ $archivo->archivo }}</span>
+                                        <span>{{ $archivo->archivo }}</span>
 
-                                    <span class="tipo-badge"
-                                          style="color: {{ $textColor }};">
-                                        {{ str_replace('_', ' ', $archivo->tipo) }}
+                                        <span class="tipo-badge"
+                                              style="color: {{ $textColor }};">
+                                            {{ str_replace('_', ' ', $archivo->tipo) }}
+                                        </span>
+
+                                        <input type="checkbox"
+                                               name="archivos[]"
+                                               value="{{ $archivo->tipo }}|{{ $archivo->id }}"
+                                               class="d-none">
+
                                     </span>
 
-                                    <input type="checkbox"
-                                           name="archivos[]"
-                                           value="{{ $archivo->tipo }}|{{ $archivo->id }}"
-                                           class="d-none">
+                                    @endforeach
 
-                                </span>
-
-                                @endforeach
-
+                                </div>
                             </div>
-    </div>
                         </div>
 
                         <!-- SELECCIONADOS -->
@@ -297,7 +297,7 @@
                     </div>
 
                 </div>
-                <br><br>
+<br>
 
                 <!-- FOOTER -->
                 <div class="modal-footer">

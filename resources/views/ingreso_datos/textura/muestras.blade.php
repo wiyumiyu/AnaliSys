@@ -81,12 +81,10 @@
 
                             {{-- ID LAB --}}
                             <td class="{{ $filaInactiva }}">
-                                <h6 class="mb-0">
-                                    <a href="{{ route('textura.muestra.edit', $m->id_muestra) }}"
-                                       class="fw-semibold text-primary text-decoration-none fs-6">
-                                        {{ $m->idlab }}
-                                    </a>
-                                </h6>                                  
+                                <a href="{{ route('textura.muestra.edit', $m->id_muestra) }}"
+                                   class="text-reset fw-semibold fs-6 text-decoration-none">
+                                    {{ $m->idlab }}
+                                </a>
                             </td>
 
                             <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
@@ -120,8 +118,8 @@
             ? 'bg-warning-subtle text-warning'
             : 'bg-success-subtle text-success' }} btn-sm"
                                             onclick="confirmarEstadoMuestra(
-                                                        {{ $m->id_muestra }},
-                                                                    {{ $m->estado }}
+                                            {{ $m->id_muestra }},
+                                            {{ $m->estado }}
         )">
                                         <i class="{{ $m->estado == 1
         ? 'ri-close-circle-line'
@@ -219,76 +217,89 @@
 
 @endsection
 <script>
-                                                let muestraModal;
-                                                let modalForm;
-                                                let modalTitle;
-                                                let modalBody;
-                                                let modalBtn;
-                                                let modalMethod;
-                                                document.addEventListener('DOMContentLoaded', function () {
-                                                muestraModal = new bootstrap.Modal(
-                                                        document.getElementById('confirmMuestraModal')
-                                                        );
-                                                modalForm = document.getElementById('modalForm');
-                                                modalTitle = document.getElementById('modalTitle');
-                                                modalBody = document.getElementById('modalBody');
-                                                modalBtn = document.getElementById('modalConfirmBtn');
-                                                modalMethod = document.getElementById('modalMethod');
-                                                });
-                                                /* ===============================
-                                                 * ANULAR / ACTIVAR
-                                                 * =============================== */
-                                                function confirmarEstadoMuestra(id, estado) {
+let muestraModal;
+let modalForm;
+let modalTitle;
+let modalBody;
+let modalBtn;
+let modalMethod;
 
-                                                modalForm.action = `/ingreso-datos/textura/muestra/${id}/estado`;
-                                                modalMethod.value = 'PATCH';
-                                                if (estado === 1) {
-                                                modalTitle.textContent = 'Anular muestra';
-                                                modalTitle.className = 'modal-title text-warning fw-semibold';
-                                                modalBody.innerHTML = `
+document.addEventListener('DOMContentLoaded', function () {
+    muestraModal = new bootstrap.Modal(
+        document.getElementById('confirmMuestraModal')
+    );
+
+    modalForm   = document.getElementById('modalForm');
+    modalTitle  = document.getElementById('modalTitle');
+    modalBody   = document.getElementById('modalBody');
+    modalBtn    = document.getElementById('modalConfirmBtn');
+    modalMethod = document.getElementById('modalMethod');
+});
+
+/* ===============================
+ * ANULAR / ACTIVAR
+ * =============================== */
+function confirmarEstadoMuestra(id, estado) {
+
+    modalForm.action = `/ingreso-datos/textura/muestra/${id}/estado`;
+    modalMethod.value = 'PATCH';
+
+    if (estado === 1) {
+        modalTitle.textContent = 'Anular muestra';
+        modalTitle.className = 'modal-title text-warning fw-semibold';
+
+        modalBody.innerHTML = `
             ¿Está seguro que desea <strong>anular</strong> esta muestra?
             <br>
             <small class="text-muted">
                 La muestra seguirá visible, pero no se considerará activa.
             </small>
         `;
-                                                modalBtn.textContent = 'Anular';
-                                                modalBtn.className = 'btn btn-warning';
-                                                } else {
-                                                modalTitle.textContent = 'Reactivar muestra';
-                                                modalTitle.className = 'modal-title text-success fw-semibold';
-                                                modalBody.innerHTML = `
+
+        modalBtn.textContent = 'Anular';
+        modalBtn.className = 'btn btn-warning';
+
+    } else {
+        modalTitle.textContent = 'Reactivar muestra';
+        modalTitle.className = 'modal-title text-success fw-semibold';
+
+        modalBody.innerHTML = `
             ¿Desea <strong>reactivar</strong> esta muestra?
             <br>
             <small class="text-muted">
                 La muestra volverá a estar activa en el sistema.
             </small>
         `;
-                                                modalBtn.textContent = 'Reactivar';
-                                                modalBtn.className = 'btn btn-success';
-                                                }
 
-                                                muestraModal.show();
-                                                }
+        modalBtn.textContent = 'Reactivar';
+        modalBtn.className = 'btn btn-success';
+    }
 
-                                                /* ===============================
-                                                 * ELIMINAR
-                                                 * =============================== */
-                                                function confirmarEliminarMuestra(id) {
+    muestraModal.show();
+}
 
-                                                modalForm.action = `/ingreso-datos/textura/muestra/${id}`;
-                                                modalMethod.value = 'DELETE';
-                                                modalTitle.textContent = 'Eliminar muestra';
-                                                modalTitle.className = 'modal-title text-danger fw-semibold';
-                                                modalBody.innerHTML = `
+/* ===============================
+ * ELIMINAR
+ * =============================== */
+function confirmarEliminarMuestra(id) {
+
+    modalForm.action = `/ingreso-datos/textura/muestra/${id}`;
+    modalMethod.value = 'DELETE';
+
+    modalTitle.textContent = 'Eliminar muestra';
+    modalTitle.className = 'modal-title text-danger fw-semibold';
+
+    modalBody.innerHTML = `
         Esta acción eliminará la muestra y <strong>todos sus resultados</strong>.
         <br>
         <small class="text-muted">
            Una vez eliminado no se puede deshacer.
         </small>
     `;
-                                                modalBtn.textContent = 'Eliminar';
-                                                modalBtn.className = 'btn btn-danger';
-                                                muestraModal.show();
-                                                }
+
+    modalBtn.textContent = 'Eliminar';
+    modalBtn.className = 'btn btn-danger';
+
+    muestraModal.show();
+}
 </script>

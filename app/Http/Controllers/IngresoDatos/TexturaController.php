@@ -18,46 +18,48 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  *   - Gestión de resultados
  * ============================================================
  */
-class TexturaController extends Controller {
-
+class TexturaController extends Controller
+{
     /**
      * ------------------------------------------------------------
      * Listado de archivos importados
      * ------------------------------------------------------------
      */
-    public function index(Request $request) {
+    
+    public function index(Request $request)
+    {
         $periodo = $request->get('periodo', date('Y'));
 
         $archivos = DB::select(
-                'CALL sp_listar_textura_por_periodo(?)',
-                [$periodo]
+            'CALL sp_listar_textura_por_periodo(?)',
+            [$periodo]
         );
 
         return view('ingreso_datos.textura.index', compact(
-                        'archivos',
-                        'periodo'
-                ));
+            'archivos',
+            'periodo'
+        ));
     }
-
-    /* ===============================
+  /* ===============================
      * LISTADO DE MUESTRAS POR LOTE
      * =============================== */
 
-    public function muestras($idArchivo) {
-        $archivo = DB::table('trn_textura')
-                ->where('id', $idArchivo)
-                ->value('archivo');
+public function muestras($idArchivo)
+{
+    $archivo = DB::table('trn_textura')
+        ->where('id', $idArchivo)
+        ->value('archivo');
 
-        $muestras = DB::select(
-                'CALL sp_listar_muestras_textura_detalle(?)',
-                [$idArchivo]
-        );
+    $muestras = DB::select(
+        'CALL sp_listar_muestras_textura_detalle(?)',
+        [$idArchivo]
+    );
 
-        return view(
-                'ingreso_datos.textura.muestras',
-                compact('muestras', 'archivo', 'idArchivo')
-        );
-    }
+    return view(
+        'ingreso_datos.textura.muestras',
+        compact('muestras', 'archivo', 'idArchivo')
+    );
+}
 
     /* ===============================
      * EDITAR MUESTRA
@@ -133,146 +135,131 @@ class TexturaController extends Controller {
                         ->with('success', 'Muestra eliminada correctamente');
     }
 
-    public function destroyArchivo($id) {
-        try {
 
-            DB::statement(
-                    'CALL sp_eliminar_textura(?)',
-                    [$id]
-            );
+public function importar(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|file|mimes:xlsx,xls'
+    ]);
 
-            return redirect()
-                            ->route('textura.index')
-                            ->with('success', 'Archivo eliminado correctamente');
-        } catch (\Throwable $e) {
+    DB::beginTransaction();
 
-            return back()->withErrors(
-                            'Error al eliminar: ' . $e->getMessage()
-                    );
-        }
-    }
+    try {
 
-    public function importar(Request $request) {
-        $request->validate([
-            'archivo' => 'required|file|mimes:xlsx,xls'
+        /* ===============================
+         * 1. Crear archivo de textura
+         * =============================== */
+        $idTextura = DB::table('trn_textura')->insertGetId([
+            'periodo'  => date('Y'),
+            'archivo'  => $request->file('archivo')->getClientOriginalName(),
+            'fecha'    => now(),
+            'analista' => session('id_persona')
+
         ]);
 
-        DB::beginTransaction();
-
-        try {
-
-            /* ===============================
-             * 1. Crear archivo de textura
-             * =============================== */
-            $idTextura = DB::table('trn_textura')->insertGetId([
-                'periodo' => date('Y'),
-                'archivo' => $request->file('archivo')->getClientOriginalName(),
-                'fecha' => now(),
-                'analista' => session('id_persona')
-            ]);
-
-            /* ===============================
-             * 2. Mapa de análisis TEXTURA
-             * =============================== */
+        /* ===============================
+         * 2. Mapa de análisis TEXTURA
+         * =============================== */
             //aqui se relacionan el nombre de la tabla, y el origen de la tabla trn_analisis
-            $analisisMap = DB::table('trn_analisis')
-                    ->where('origen', 'TEXTURA')
-                    ->pluck('id', 'siglas')
-                    ->toArray();
+        $analisisMap = DB::table('trn_analisis')
+            ->where('origen', 'TEXTURA')
+            ->pluck('id', 'siglas')
+            ->toArray();
 
-            /* ===============================
-             * 3. Leer Excel
-             * =============================== */
-            $spreadsheet = IOFactory::load(
-                    $request->file('archivo')->getPathname()
-            );
+        /* ===============================
+         * 3. Leer Excel
+         * =============================== */
+        $spreadsheet = IOFactory::load(
+            $request->file('archivo')->getPathname()
+        );
 
-            $rows = $spreadsheet
-                    ->getActiveSheet()
-                    ->toArray(null, true, true, true);
+        $rows = $spreadsheet
+            ->getActiveSheet()
+            ->toArray(null, true, true, true);
 
-            /* ===============================
-             * 4. Recorrer filas (desde fila 3)
-             * =============================== */
-            $i = 1;
-            $tipo = 1;
-            foreach ($rows as $fila => $row) {
+        /* ===============================
+         * 4. Recorrer filas (desde fila 3)
+         * =============================== */
+        $i = 1;
+        $tipo = 1;
+        foreach ($rows as $fila => $row) {
 
-                if ($fila < 3) {
-                    continue; // título y encabezados
-                }
-
-                if (empty($row['A'])) {
-                    continue; // IDLab vacío
-                }
-                $tipo = 1;
-                if (!is_numeric($row['A'])) {
-                    $tipo = 2;
-                }
-                /* ===== INSERT MUESTRA ===== */
-                $idMuestra = DB::table('trn_textura_muestras')->insertGetId([
-                    'id_textura' => $idTextura,
-                    'idlab' => $row['A'],
-                    'rep' => $row['B'],
-                    'material' => 1, // placeholder
-                    'tipo' => $tipo,
-                    'posicion' => $i,
-                    'estado' => 1,
-                    'ri' => 0
-                ]);
-
-                /* ===== RESULTADOS ===== */
-                $valores = [
-                    'PESO_SECO' => $row['C'],
-                    'R1' => $row['D'],
-                    'R2' => $row['E'],
-                    'R3' => $row['F'],
-                    'R4' => $row['G'],
-                    'TEMP1' => $row['H'],
-                    'TEMP2' => $row['I'],
-                    'TEMP3' => $row['J'],
-                    'TEMP4' => $row['K'],
-                    'TIEMPO1' => $row['L'],
-                    'TIEMPO2' => $row['M'],
-                    'TIEMPO3' => $row['N'],
-                    'TIEMPO4' => $row['O'],
-                ];
-
-                foreach ($valores as $sigla => $resultado) {
-
-                    // evita undefined index si falta un análisis
-                    if (!isset($analisisMap[$sigla])) {
-                        continue;
-                    }
-
-                    DB::table('trn_textura_resultados')->insert([
-                        'id_textura_muestras' => $idMuestra,
-                        'id_analisis' => $analisisMap[$sigla],
-                        'resultado' => $resultado,
-                        'estado' => 1
-                    ]);
-                }
-                $i += 1;
+            if ($fila < 3) {
+                continue; // título y encabezados
             }
 
-            /* ===============================
-             * 5. Commit FINAL
-             * =============================== */
-            DB::commit();
+            if (empty($row['A'])) {
+                continue; // IDLab vacío
+            }
+            $tipo = 1;
+            if(!is_numeric($row['A'])){
+                $tipo = 2;
+            }
+            /* ===== INSERT MUESTRA ===== */
+            $idMuestra = DB::table('trn_textura_muestras')->insertGetId([
+                'id_textura' => $idTextura,
+                'idlab'      => $row['A'],
+                'rep'        => $row['B'],
+                'material'   => 1, // placeholder
+                'tipo'       => $tipo,
+                'posicion'   => $i,
+                'estado'     => 1,
+                'ri'         => 0
+            ]);
 
-            return redirect()
-                            ->route('textura.index')
-                            ->with('success', 'Archivo importado correctamente');
-        } catch (\Throwable $e) {
+            /* ===== RESULTADOS ===== */
+            $valores = [
+                'PESO_SECO' => $row['C'],
+                'R1'        => $row['D'],
+                'R2'        => $row['E'],
+                'R3'        => $row['F'],
+                'R4'        => $row['G'],
+                'TEMP1'     => $row['H'],
+                'TEMP2'     => $row['I'],
+                'TEMP3'     => $row['J'],
+                'TEMP4'     => $row['K'],
+                'TIEMPO1'   => $row['L'],
+                'TIEMPO2'   => $row['M'],
+                'TIEMPO3'   => $row['N'],
+                'TIEMPO4'   => $row['O'],
+            ];
 
-            DB::rollBack();
+            foreach ($valores as $sigla => $resultado) {
 
-            return back()->withErrors(
-                            'Error al importar: ' . $e->getMessage()
-                    );
+                // evita undefined index si falta un análisis
+                if (!isset($analisisMap[$sigla])) {
+                    continue;
+                }
+
+                DB::table('trn_textura_resultados')->insert([
+                    'id_textura_muestras' => $idMuestra,
+                    'id_analisis'         => $analisisMap[$sigla],
+                    'resultado'           => $resultado,
+                    'estado'              => 1
+                ]);
+            }
+            $i +=1;
         }
-    }
 
+        /* ===============================
+         * 5. Commit FINAL
+         * =============================== */
+        DB::commit();
+
+        return redirect()
+            ->route('textura.index')
+            ->with('success', 'Archivo importado correctamente');
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        return back()->withErrors(
+            'Error al importar: ' . $e->getMessage()
+        );
+    }
+}
+    
     public function archivos(Request $request) {
         $periodo = $request->get('periodo', date('Y'));
 

@@ -3947,7 +3947,17 @@ BEGIN
 END$$
 
 DELIMITER ;
+DELIMITER $$
 
+CREATE PROCEDURE sp_eliminar_textura (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM trn_textura
+    WHERE id = p_id;
+END$$
+
+DELIMITER ;
 DELIMITER $$
 
 DROP TRIGGER IF EXISTS trg_densidad_aparente_ad$$

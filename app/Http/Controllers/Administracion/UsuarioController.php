@@ -115,7 +115,7 @@ class UsuarioController extends Controller {
             '1990-01-01',
             ''
         ]);
-        
+
         DB::statement('CALL sp_actualizar_estado_persona(?, ?)', [
             $id,
             $request->estado
@@ -258,9 +258,9 @@ class UsuarioController extends Controller {
                 'required',
                 'confirmed',
                 'min:8',
-                'regex:/[A-Z]/', // Mayúscula
-                'regex:/[0-9]/', // Número
-                'regex:/[\W_]/'       // Símbolo
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[\W_]/'
             ],
                 ], [
             'password_nueva.regex' => 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.'
@@ -268,6 +268,9 @@ class UsuarioController extends Controller {
 
         $hash = password_hash($request->password_nueva, PASSWORD_DEFAULT);
 
+        /* ===============================
+         * CREAR PERSONA
+         * =============================== */
         $result = DB::select('CALL sp_crear_persona(?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->nombre,
             $request->apellido1,
@@ -281,13 +284,59 @@ class UsuarioController extends Controller {
 
         $id_persona = $result[0]->id_persona;
 
+        /* ===============================
+         * ASIGNAR ROL
+         * =============================== */
         DB::statement('CALL sp_asignar_rol_persona(?, ?)', [
             $id_persona,
             $request->rol_id
         ]);
 
+        /* ===============================
+         * NUEVOS CORREOS
+         * =============================== */
+        if ($request->filled('nuevo_correo')) {
+
+            foreach ($request->nuevo_correo as $i => $correo) {
+
+                if (empty($correo)) {
+                    continue;
+                }
+
+                DB::statement('CALL sp_agregar_persona_correo(?, ?, ?)', [
+                    $id_persona,
+                    $correo,
+                    $request->correo_desc[$i] ?? 'SECUNDARIO'
+                ]);
+            }
+        }
+
+        /* ===============================
+         * NUEVOS TELÉFONOS
+         * =============================== */
+        if ($request->filled('nuevo_telefono')) {
+
+            foreach ($request->nuevo_telefono as $i => $telefono) {
+
+                if (empty($telefono)) {
+                    continue;
+                }
+
+                DB::statement('CALL sp_agregar_persona_telefono(?, ?, ?)', [
+                    $id_persona,
+                    $request->telefono_tipo[$i] ?? 1,
+                    $telefono
+                ]);
+            }
+        }
+
+        /* ===============================
+         * COMMIT LÓGICO (BITÁCORA)
+         * =============================== */
         DB::statement(
-                'UPDATE tbl_persona SET actualizado_en = CURRENT_TIMESTAMP WHERE id_persona = ?',
+                'UPDATE tbl_persona 
+         SET actualizado_en = CURRENT_TIMESTAMP 
+         WHERE id_persona = ?',
                 [$id_persona]
         );
 

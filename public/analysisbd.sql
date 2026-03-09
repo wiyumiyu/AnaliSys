@@ -1059,6 +1059,20 @@ CREATE PROCEDURE sp_agregar_persona_correo (
     IN p_descripcion ENUM('PRINCIPAL','SECUNDARIO')
 )
 BEGIN
+    DECLARE v_existe_principal INT;
+
+    -- verificar si ya existe un correo principal
+    SELECT COUNT(*) INTO v_existe_principal
+    FROM trn_persona_correo
+    WHERE id_persona = p_id_persona
+      AND descripcion = 'PRINCIPAL';
+
+    -- si mandan SECUNDARIO pero no existe principal, lo convertimos en PRINCIPAL
+    IF p_descripcion = 'SECUNDARIO' AND v_existe_principal = 0 THEN
+        SET p_descripcion = 'PRINCIPAL';
+    END IF;
+
+    -- si mandan PRINCIPAL, los demás pasan a SECUNDARIO
     IF p_descripcion = 'PRINCIPAL' THEN
         UPDATE trn_persona_correo
         SET descripcion = 'SECUNDARIO'
@@ -1066,9 +1080,11 @@ BEGIN
           AND descripcion = 'PRINCIPAL';
     END IF;
 
+    -- insertar el correo
     INSERT INTO trn_persona_correo (id_persona, correo, descripcion)
     VALUES (p_id_persona, p_correo, p_descripcion);
-END $$
+
+END$$
 
 CREATE PROCEDURE sp_eliminar_persona_correo (
     IN p_id INT UNSIGNED

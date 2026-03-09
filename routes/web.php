@@ -166,6 +166,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             '/ingreso-datos/textura/{id}',
             [IngresoTexturaController::class, 'destroyArchivo']
     )->name('textura.destroy');
+    
 });
 
 //------------------------------------------------------------------------------
@@ -193,6 +194,7 @@ Route::middleware(['rol:ANALISTA,ADMIN'])->group(function () {
             '/control-textura/{id}',
             [ControlTexturaController::class, 'destroy']
     )->name('controlTextura.destroy');
+    
 
     Route::get('/controles/textura/{id}/graficos',
             [ControlTexturaController::class, 'graficos']

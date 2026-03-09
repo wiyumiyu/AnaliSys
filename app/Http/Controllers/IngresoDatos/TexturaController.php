@@ -135,7 +135,17 @@ public function muestras($idArchivo)
                         ->with('success', 'Muestra eliminada correctamente');
     }
 
+    public function destroyArchivo($id) {
+        DB::statement(
+                'CALL sp_eliminar_textura(?)',
+                [$id]
+        );
 
+        return redirect()
+                        ->route('textura.index')
+                        ->with('success', 'Archivo eliminado correctamente');
+    }
+    
 public function importar(Request $request)
 {
     $request->validate([
@@ -260,6 +270,7 @@ public function importar(Request $request)
     }
 }
     
+
     public function archivos(Request $request) {
         $periodo = $request->get('periodo', date('Y'));
 

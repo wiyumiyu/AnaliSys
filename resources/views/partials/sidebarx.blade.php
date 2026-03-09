@@ -135,13 +135,13 @@
                         </a>
                     </li>
                     {{-- PERMEABILIDAD (LARAVEL) --}}
-                    <li class="pe-slide-item">
+<!--                    <li class="pe-slide-item">
 
                         <a href="{{ route('permeabilidad_aire.index') }}"
                            class="pe-nav-link {{ request()->routeIs('permeabilidad_aire.*') ? 'active' : '' }}">
                             Permeabilidad del aire
                         </a>
-                    </li>
+                    </li>-->
 
                 </ul>
             </li>

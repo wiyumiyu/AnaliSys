@@ -160,3 +160,17 @@ VALUES
 (23,149,6000,1),
 (24,149,6000,1),
 (25,149,6000,1);
+
+
+
+
+
+
+
+
+CREATE TABLE IF NOT EXISTS `tbm_dircanton` (
+  `id_canton` int(11) NOT NULL AUTO_INCREMENT,
+  `canton` varchar(30) COLLATE latin1_general_ci NOT NULL,
+  `id_provincia` int(11) NOT NULL,
+  PRIMARY KEY (`id_canton`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=89 ;

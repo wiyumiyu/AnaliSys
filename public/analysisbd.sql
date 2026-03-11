@@ -561,6 +561,15 @@ CREATE TABLE trn_resultados_lista (
     tipo VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE trn_resultados_comentarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_resultado INT NOT NULL,
+    id_persona INT UNSIGNED NOT NULL,
+    comentario TEXT NULL,
+    aprobado BOOLEAN DEFAULT 0,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 /* ============================================================
    BITÁCORA (TABLAS)
    ============================================================ */
@@ -822,6 +831,15 @@ ALTER TABLE trn_resultados_lista
 ADD CONSTRAINT uk_resultado_archivo_tipo
 UNIQUE (id_resultado, id_archivo, tipo);
 
+ALTER TABLE trn_resultados_comentarios
+ADD CONSTRAINT fk_resultado_comentario
+FOREIGN KEY (id_resultado)
+REFERENCES trn_resultados(id);
+
+ALTER TABLE trn_resultados_comentarios
+ADD CONSTRAINT fk_resultado_persona
+FOREIGN KEY (id_persona)
+REFERENCES tbl_persona(id_persona);
 
 /* ============================================================
    5. PROCEDIMIENTOS ALMACENADOS
@@ -6521,7 +6539,85 @@ END $$
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS sp_traer_archivos_por_resultado;
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_traer_archivos_por_resultado(
+    IN p_id_resultado INT
+)
+BEGIN
+
+SELECT 
+    v.tipo,
+    v.id,
+    v.archivo
+FROM trn_resultados_lista rl
+
+LEFT JOIN (
+    SELECT 'TEXTURA' AS tipo, id, archivo FROM trn_textura
+    UNION ALL
+    SELECT 'GRANULOMETRIA', id, archivo FROM trn_granulometria
+    UNION ALL
+    SELECT 'DENSIDAD_APARENTE', id, archivo FROM trn_densidad_aparente
+    UNION ALL
+    SELECT 'DENSIDAD_PARTICULAS', id, archivo FROM trn_densidad_particulas
+    UNION ALL
+    SELECT 'HUMEDAD_GRAVIMETRICA', id, archivo FROM trn_humedad_gravimetrica
+    UNION ALL
+    SELECT 'CONDUCTIVIDAD_HIDRAULICA', id, archivo FROM trn_conductividad_hidraulica
+    UNION ALL
+    SELECT 'RETENCION_HUMEDAD', id, archivo FROM trn_retencion_humedad
+    UNION ALL
+    SELECT 'ESTABILIDAD_AGREGADOS', id, archivo FROM trn_estabilidad_agregados
+    UNION ALL
+    SELECT 'COEFICIENTE_EXTENSIBILIDAD', id, archivo FROM trn_coeficiente_extensibilidad
+) v
+    ON v.id = rl.id_archivo
+   AND v.tipo = rl.tipo
+
+WHERE rl.id_resultado = p_id_resultado
+ORDER BY v.tipo;
+
+END $$
+
+DELIMITER ;
+DELIMITER $$
+CREATE PROCEDURE sp_traer_comentarios_resultado(
+    IN p_id_resultado INT
+)
+BEGIN
+
+SELECT 
+    c.id,
+    c.comentario,
+    c.aprobado,
+    c.fecha,
+    CONCAT(p.nombre,' ',p.apellido1) AS nombre_usuario
+FROM trn_resultados_comentarios c
+INNER JOIN tbl_persona p
+    ON p.id_persona = c.id_persona
+WHERE c.id_resultado = p_id_resultado
+ORDER BY c.fecha DESC;
+
+END$$
+DELIMITER ;
+DELIMITER $$
+CREATE PROCEDURE sp_agregar_comentario_resultado(
+    IN p_id_resultado INT,
+    IN p_id_persona INT,
+    IN p_comentario TEXT,
+    IN p_aprobado BOOLEAN
+)
+BEGIN
+
+INSERT INTO trn_resultados_comentarios
+(id_resultado,id_persona,comentario,aprobado,fecha)
+VALUES
+(p_id_resultado,p_id_persona,p_comentario,p_aprobado,NOW());
+
+END$$
+DELIMITER ;
 -- ESTO ES DE REPORTES DE CLIENTES
 
 DROP PROCEDURE IF EXISTS sp_listar_reportes_clientes; 

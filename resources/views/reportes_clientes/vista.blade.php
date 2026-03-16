@@ -15,130 +15,200 @@
 
 @section('content')
 
-<div class="table-responsive">
-<table class="table table-bordered table-sm align-middle mb-0 text-center">
 
-    {{-- HEADER NEGRO --}}
-    <thead style="background:#000;color:#fff" class="small">
+
+<div class="container-fluid mb-4">
+
+    <div class="row align-items-center mb-3">
+
+        <div class="col-md-3">
+            <!--<img src="{{ asset('images/ucr_logo.png') }}" style="height:80px">-->
+        </div>
+
+        <div class="col-md-6 text-center">
+
+
+            <h3 class="fw-bold mt-2">
+                REPORTE DE ENSAYO
+            </h3>
+
+
+        </div>
+
+        <div class="col-md-3 text-end">
+            <!--<img src="{{ asset('images/cia_logo.png') }}" style="height:80px">-->
+        </div>
+
+    </div>
+
+    <table class="table table-bordered table-sm">
+
         <tr>
-            <th style="min-width:200px">INFORMACIÓN</th>
-            <th>IDLAB</th>
-            <th>TEXT</th>
-            <th>DA</th>
-            <th>DP</th>
-            <th>HG</th>
-            <th>Ret.H</th>
-            <th>C_RetH</th>
-            <th>Frac.A</th>
-            <th>Est.Agr</th>
-            <th>COEL</th>
-            <th>Con.Por</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        {{-- ================= BLOQUE IDLAB 13 ================= --}}
-        <tr>
-            {{-- COLUMNA IZQUIERDA FIJA --}}
-            <td rowspan="6" class="text-start align-top bg-light">
-                <strong class="text-success">SOL.97987</strong><br>
-                OSA<br>
-                PROYECTO VI-733-C5604<br>
-                06/01/2026
-            </td>
-
-            <td><strong>13</strong></td>
-            <td>Fr.Ar</td>
-            <td>1.25</td>
-            <td>2.60</td>
-            <td>18%</td>
-            <td>30%</td>
-            <td>A</td>
-            <td>5%</td>
-            <td>80%</td>
-            <td>0.12</td>
-            <td>0.85</td>
+            <td width="200"><strong>N° DE REPORTE</strong></td>
+            <td><strong>{{ $encabezado->numero }}</strong></td>
         </tr>
 
         <tr>
-            <td><strong>13</strong></td>
-            <td>Fr.Ar</td>
-            <td>1.35</td>
-            <td>2.58</td>
-            <td>15%</td>
-            <td>25%</td>
-            <td>B</td>
-            <td>8%</td>
-            <td>75%</td>
-            <td>0.10</td>
-            <td>0.78</td>
+            <td>USUARIO</td>
+            <td>{{ $encabezado->cliente }}</td>
+        </tr>
+
+
+
+
+        <td>CORREO</td>
+        <td>{{ $encabezado->correo }}</td>
+
+    </table>
+
+    <table class="table table-bordered table-sm">
+        <tr>
+            <td>UBICACIÓN</td>
+            <td>{{ $encabezado->provincia }}, {{ $encabezado->canton }}</td>
+
+            <td>TELÉFONO</td>
+            <td>{{ $encabezado->telefono }}</td>
+
+        </tr>
+
+
+        <tr>
+            <td><strong>CULTIVO</strong></td>
+            <td>{{ $encabezado->cultivo }}</td>
+
+            <td><strong>FECHA DE RECEPCIÓN</strong></td>
+            <td>{{ \Carbon\Carbon::parse($encabezado->fecha)->format('d/m/Y') }}</td>
         </tr>
 
         <tr>
-            <td><strong>13</strong></td>
-            <td>Fr.Ar</td>
-            <td>1.30</td>
-            <td>2.59</td>
-            <td>17%</td>
-            <td>28%</td>
-            <td>A</td>
-            <td>6%</td>
-            <td>78%</td>
-            <td>0.11</td>
-            <td>0.82</td>
+            <td><strong>ANÁLISIS</strong></td>
+            <td>ANÁLISIS FÍSICO DE SUELOS</td>
+
+            <td><strong>EMISIÓN DE REPORTE</strong></td>
+            <td>{{ now()->format('d/m/Y') }}</td>
         </tr>
 
-        {{-- PROMEDIO --}}
-        <tr style="background:#f2f2f2;font-weight:600">
-            <td>PROMEDIO</td>
-            <td>Fr.Ar</td>
-            <td>1.30</td>
-            <td>2.59</td>
-            <td>16.6%</td>
-            <td>27.6%</td>
-            <td>A</td>
-            <td>6.3%</td>
-            <td>77.6%</td>
-            <td>0.11</td>
-            <td>0.81</td>
-        </tr>
-
-        {{-- DESV EST --}}
         <tr>
-            <td class="text-success">Desv.Est.</td>
-            <td>-</td>
-            <td>0.05</td>
-            <td>0.01</td>
-            <td>1.5%</td>
-            <td>2%</td>
-            <td>-</td>
-            <td>1%</td>
-            <td>2%</td>
-            <td>0.01</td>
-            <td>0.03</td>
+            <td><strong>N° DE MUESTRAS</strong></td>
+            <td>{{ $encabezado->numero_muestras }}</td>
+
+
+            <td>RESPONSABLE</td>
+            <td>{{ $encabezado->responsable }}</td>
+
         </tr>
 
-        {{-- CV --}}
-        <tr>
-            <td class="text-success">CV</td>
-            <td>-</td>
-            <td>3.8%</td>
-            <td>0.3%</td>
-            <td>9%</td>
-            <td>7%</td>
-            <td>-</td>
-            <td>15%</td>
-            <td>2%</td>
-            <td>9%</td>
-            <td>3%</td>
-        </tr>
+    </table>
 
-        {{-- ================= FIN BLOQUE ================= --}}
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle mb-0 text-center">
 
-    </tbody>
-</table>
-</div>
+            {{-- HEADER NEGRO --}}
+            <thead style="background:#000;color:#fff" class="small">
+
+                <tr>
+                    <th colspan="14">ANÁLISIS FÍSICO DE SUELOS</th>
+                </tr>
+
+                <tr>
+                    <th rowspan="2" style="width:23%">ID USUARIO</th>
+                    <th rowspan="2" style="width:7%">IDLAB</th>
+
+                    <th colspan="3">TEXTURA</th>
+
+                    <th rowspan="2">DA</th>
+                    <th rowspan="2">DP</th>
+                    <th rowspan="2">HG</th>
+                    <th rowspan="2">Ret.H</th>
+                    <th rowspan="2">C_RetH</th>
+                    <th rowspan="2">Frac.A</th>
+                    <th rowspan="2">Est.Agr</th>
+                    <th rowspan="2">COEL</th>
+                    <th rowspan="2">Con.Por</th>
+                </tr>
+
+                <tr>
+                    <th>Arena</th>
+                    <th>Limo</th>
+                    <th>Arcilla</th>
+                </tr>
+
+                <tr style="background:#222;color:#fff;font-size:11px">
+                    <th></th>
+                    <th></th>
+
+                    <th colspan="3">%</th>
+
+                    <th>%</th>
+                    <th>%</th>
+                    <th>%</th>
+                    <th>%</th>
+                    <th>%</th>
+                    <th>%</th>
+                    <th>%</th>
+                    <th>%</th>
+                    <th>%</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach($datos as $row)
+
+                <tr>
+
+                    <td class="text-start align-top bg-light">
+                        {{ $row->etiqueta }}<br>
+                    </td>
+
+                    <td>{{ $row->idlab }}</td>
+
+                    @php
+                    $t = $texturas[$row->idlab] ?? null;
+                    @endphp
+
+                    <td>
+                        @if($t)
+                        {{ number_format($t['arena'],1) }}
+                        @else
+                        -
+                        @endif
+                    </td>
+
+                    <td>
+                        @if($t)
+                        {{ number_format($t['limo'],1) }}
+                        @else
+                        -
+                        @endif
+                    </td>
+
+                    <td>
+                        @if($t)
+                        {{ number_format($t['arcilla'],1) }}
+                        @else
+                        -
+                        @endif
+                    </td>
+
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+
+                </tr>
+
+                @endforeach
+
+            </tbody>
+        </table>
+    </div>
 
 
 </div><!--End container-fluid-->

@@ -6618,7 +6618,14 @@ VALUES
 
 END$$
 DELIMITER ;
+
+
+-- ----------------------
+-- ----------------------
 -- ESTO ES DE REPORTES DE CLIENTES
+-- ----------------------
+-- ----------------------
+
 
 DROP PROCEDURE IF EXISTS sp_listar_reportes_clientes; 
 DELIMITER $$ 
@@ -6671,7 +6678,222 @@ ORDER BY s.fecha DESC;
 END$$ 
 DELIMITER ;
 
+/*
+DELIMITER $$
 
+CREATE PROCEDURE sp_listar_reportes_clientes(
+    IN p_periodo INT,
+    IN p_estado INT,
+    IN p_buscar VARCHAR(100)
+)
+BEGIN
+
+SELECT 
+    s.id_solicitud,
+    s.numero,
+    s.fecha,
+    sm.idlab,
+    sm.etiqueta,
+    sm.analisis
+FROM tbm_solicitud s
+JOIN tbm_solicitud_muestras sm 
+    ON sm.id_solicitud = s.id_solicitud
+WHERE YEAR(s.fecha) = p_periodo
+AND (p_estado = 0 OR sm.estado = p_estado)
+AND (
+    p_buscar = '' OR 
+    sm.etiqueta LIKE CONCAT('%',p_buscar,'%')
+)
+ORDER BY s.fecha DESC;
+
+END$$
+
+DELIMITER ;
+*/
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_obtener_reporte_cliente(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+    s.numero,
+    s.fecha,
+    sm.idlab,
+    sm.etiqueta,
+    p.siglas AS analisis,
+    sm.id_muestras
+FROM tbm_solicitud s
+
+JOIN tbm_solicitud_muestras sm
+    ON sm.id_solicitud = s.id_solicitud
+
+JOIN tbm_solicitud_muestras_analisis sma
+    ON sma.id_muestras = sm.id_muestras
+
+JOIN tbm_producto_precio pp
+    ON pp.id_producto_precio = sma.id_producto_precio
+
+JOIN tbm_producto p
+    ON p.id_producto = pp.id_producto
+
+WHERE s.id_solicitud = p_id_solicitud
+ORDER BY sm.idlab;
+
+END$$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_encabezado;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_encabezado(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+s.id_solicitud,
+s.numero,
+s.fecha,
+
+cs.nombre AS cliente,
+
+cc.nombre AS responsable,
+
+sc.cultivo,
+
+prov.provincia,
+can.canton,
+
+correo.correo,
+telefono.telefono,
+
+(
+    SELECT COUNT(*)
+    FROM tbm_solicitud_muestras sm
+    WHERE sm.id_solicitud = s.id_solicitud
+) AS numero_muestras
+
+FROM tbm_solicitud s
+
+LEFT JOIN tbm_cliente_subcliente cs
+    ON cs.id_cliente_subcliente = s.id_cliente_subcliente
+
+LEFT JOIN tbm_solicitud_cultivo sc
+    ON sc.id_solicitud_cultivo = s.id_cultivo
+
+LEFT JOIN tbm_dirprovincia prov
+    ON prov.id_provincia = s.id_dirprovincia
+
+LEFT JOIN tbm_dircanton can
+    ON can.id_canton = s.id_dircanton
+
+/* RESPONSABLE */
+LEFT JOIN tbm_cliente_contacto cc
+    ON cc.id_cliente = s.id_cliente
+    AND cc.responsable = 1
+    AND cc.estado = 1
+
+/* CORREO DEL CONTACTO DE LA SOLICITUD */
+LEFT JOIN tbm_solicitud_contacto_correo scc
+    ON scc.id_solicitud = s.id_solicitud
+
+LEFT JOIN tbm_cliente_contacto_correo correo
+    ON correo.id_contacto_correo = scc.id_contacto_correo
+
+/* TELÉFONO DEL CONTACTO DE LA SOLICITUD */
+LEFT JOIN tbm_solicitud_contacto_telefono sct
+    ON sct.id_solicitud = s.id_solicitud
+
+LEFT JOIN tbm_cliente_contacto_telefono telefono
+    ON telefono.id_contacto_telefono = sct.id_contacto_telefono
+
+WHERE s.id_solicitud = p_id_solicitud
+
+LIMIT 1;
+
+END$$
+
+DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_textura;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_textura(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+tm.id_textura,
+tm.idlab,
+
+AVG(CASE WHEN a.siglas = 'PESO_SECO' THEN tr.resultado END) AS peso_seco,
+
+AVG(CASE WHEN a.siglas = 'R1' THEN tr.resultado END) AS R1,
+AVG(CASE WHEN a.siglas = 'R2' THEN tr.resultado END) AS R2,
+AVG(CASE WHEN a.siglas = 'R3' THEN tr.resultado END) AS R3,
+AVG(CASE WHEN a.siglas = 'R4' THEN tr.resultado END) AS R4,
+
+AVG(CASE WHEN a.siglas = 'TEMP1' THEN tr.resultado END) AS TEMP1,
+AVG(CASE WHEN a.siglas = 'TEMP2' THEN tr.resultado END) AS TEMP2,
+AVG(CASE WHEN a.siglas = 'TEMP3' THEN tr.resultado END) AS TEMP3,
+AVG(CASE WHEN a.siglas = 'TEMP4' THEN tr.resultado END) AS TEMP4,
+
+AVG(CASE WHEN a.siglas = 'TIEMPO1' THEN tr.resultado END) AS TIEMPO1,
+AVG(CASE WHEN a.siglas = 'TIEMPO2' THEN tr.resultado END) AS TIEMPO2,
+AVG(CASE WHEN a.siglas = 'TIEMPO3' THEN tr.resultado END) AS TIEMPO3,
+AVG(CASE WHEN a.siglas = 'TIEMPO4' THEN tr.resultado END) AS TIEMPO4
+
+FROM trn_textura_muestras tm
+
+JOIN trn_textura t
+    ON t.id = tm.id_textura
+
+LEFT JOIN trn_textura_resultados tr
+    ON tr.id_textura_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'TEXTURA'
+
+WHERE tm.id_textura IN (
+
+    SELECT DISTINCT tm2.id_textura
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_textura_muestras tm2
+        ON tm2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND tm.estado = 1
+
+GROUP BY
+tm.id_textura,
+tm.idlab
+
+ORDER BY
+tm.id_textura,
+tm.idlab;
+
+END$$
+
+DELIMITER ;
+CREATE INDEX idx_textura_idlab
+ON trn_textura_muestras(idlab);
+
+CREATE INDEX idx_textura_periodo
+ON trn_textura(periodo);
+
+CREATE INDEX idx_solicitud_muestras
+ON tbm_solicitud_muestras(idlab, agno);
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */
@@ -7472,75 +7694,6 @@ exentodeimpuestos
  'Cliente ficticio para pruebas internas del sistema.',
  0, 0, 1, 1, 0);
  
- CREATE TABLE IF NOT EXISTS `tbm_solicitud` (
-  `id_solicitud` int(11) NOT NULL AUTO_INCREMENT,
-  `numero` varchar(10) COLLATE latin1_general_ci NOT NULL,
-  `fecha` datetime NOT NULL,
-  `id_cliente` int(11) NOT NULL,
-  `id_persona` int(11) NOT NULL COMMENT 'USUARIO',
-  `id_cultivo` int(11) NOT NULL,
-  `id_dirpais` int(11) NOT NULL,
-  `id_dirprovincia` int(11) NOT NULL,
-  `id_dircanton` int(11) NOT NULL,
-  `id_dirdistrito` int(11) NOT NULL,
-  `id_dirbarrio` int(11) NOT NULL,
-  `otras_senas` text COLLATE latin1_general_ci NOT NULL,
-  `id_laboratorio` int(11) NOT NULL,
-  `entrega` int(11) NOT NULL DEFAULT '0',
-  `area_muestreada` varchar(50) COLLATE latin1_general_ci NOT NULL,
-  `edadcultivo` varchar(50) COLLATE latin1_general_ci NOT NULL,
-  `coordenadax` varchar(50) COLLATE latin1_general_ci NOT NULL,
-  `coordenaday` varchar(50) COLLATE latin1_general_ci NOT NULL,
-  `observaciones` text COLLATE latin1_general_ci NOT NULL,
-  `estado` tinyint(1) NOT NULL,
-  `id_moneda` int(11) NOT NULL,
-  `exento` tinyint(1) NOT NULL,
-  `id_access` int(11) NOT NULL DEFAULT '0',
-  `id_categoria` int(11) NOT NULL DEFAULT '1',
-  `responsable` int(11) NOT NULL DEFAULT '0',
-  `id_cliente_subcliente` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id_solicitud`),
-  KEY `idx_s_exento` (`exento`),
-  KEY `idx_solicitud_id_persona` (`id_persona`),
-  KEY `idx_solicitud_id_laboratorio` (`id_laboratorio`),
-  KEY `idx_solicitud_id_cliente` (`id_cliente`),
-  KEY `idx_solicitud_id_cliente_subcliente` (`id_cliente_subcliente`),
-  KEY `idx_solicitud_responsable` (`responsable`),
-  KEY `idx_solicitud_fecha` (`fecha`),
-  KEY `idx_solicitud_cliente` (`id_cliente`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=42567 ;
-
-
-CREATE TABLE IF NOT EXISTS `tbm_solicitud_impresa` (
-  `tbm_solicitud_impresa` int(11) NOT NULL AUTO_INCREMENT,
-  `id_solicitud` varchar(10) COLLATE latin1_general_ci NOT NULL,
-  `fecha` datetime NOT NULL,
-  `enviada` tinyint(1) NOT NULL DEFAULT '0',
-  `fecha_envio` datetime NOT NULL,
-  `enviada_por` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`tbm_solicitud_impresa`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1 ;
-
-
-
-INSERT INTO tbm_solicitud_impresa
-(id_solicitud, fecha, enviada, fecha_envio, enviada_por)
-VALUES
-('SOL001', '2025-01-15 10:15:00', 1, '2025-01-15 11:00:00', 2),
-('SOL002', '2025-01-20 14:30:00', 1, '2025-01-20 15:00:00', 3),
-('SOL003', '2025-02-05 09:10:00', 1, '2025-02-05 10:00:00', 2),
-('SOL004', '2025-02-18 16:45:00', 1, '2025-02-18 17:10:00', 4),
-('SOL005', '2025-03-02 08:25:00', 1, '2025-03-02 09:00:00', 2),
-('SOL006', '2025-03-10 13:40:00', 1, '2025-03-10 14:10:00', 3),
-('SOL007', '2025-04-12 11:05:00', 1, '2025-04-12 11:45:00', 2),
-('SOL008', '2025-05-03 15:20:00', 1, '2025-05-03 16:00:00', 5),
-('SOL009', '2025-06-17 09:00:00', 1, '2025-06-17 09:45:00', 3),
-('SOL010', '2025-07-08 10:30:00', 1, '2025-07-08 11:00:00', 4),
-('SOL011', '2025-08-19 14:00:00', 1, '2025-08-19 14:40:00', 2),
-('SOL012', '2025-09-01 08:00:00', 1, '2025-09-01 08:30:00', 3),
-('SOL013', '2025-10-05 12:10:00', 1, '2025-10-05 12:50:00', 5),
-('SOL014', '2025-11-11 16:15:00', 1, '2025-11-11 17:00:00', 4),
-('SOL015', '2025-12-03 09:45:00', 1, '2025-12-03 10:15:00', 2);
 
 INSERT INTO tbm_solicitud_impresa
 (id_solicitud, fecha, enviada, fecha_envio, enviada_por)

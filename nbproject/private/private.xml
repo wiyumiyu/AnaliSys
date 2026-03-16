@@ -3,8 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/xampp/htdocs/analisys/routes/web.php</file>
-            <file>file:/C:/xampp/htdocs/analisys/resources/views/partials/sidebarx.blade.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/resources/views/reportes_clientes/vista.blade.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/resources/views/resultados/vista.blade.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/app/Http/Controllers/ReportesClientes/ReporteClienteController.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/app/Http/Controllers/Resultados/ResultadosController.php</file>
+            <file>file:/C:/xampp/htdocs/AnaliSys/resources/funciones/calculos.php</file>
         </group>
     </open-files>
 </project-private>

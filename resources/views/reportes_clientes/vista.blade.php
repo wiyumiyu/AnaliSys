@@ -15,7 +15,22 @@
 
 @section('content')
 
+<div class="row">
+<div class="col-lg-12">
 
+<br>
+
+<div class="card">
+
+<div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-semibold">
+            Reporte de ensayo
+        </h5>
+    </div>
+</div>
+
+<div class="card-body">
 
 <div class="container-fluid mb-4">
 
@@ -27,11 +42,9 @@
 
         <div class="col-md-6 text-center">
 
-
             <h3 class="fw-bold mt-2">
                 REPORTE DE ENSAYO
             </h3>
-
 
         </div>
 
@@ -53,24 +66,22 @@
             <td>{{ $encabezado->cliente }}</td>
         </tr>
 
-
-
-
-        <td>CORREO</td>
-        <td>{{ $encabezado->correo }}</td>
+        <tr>
+            <td>CORREO</td>
+            <td>{{ $encabezado->correo }}</td>
+        </tr>
 
     </table>
 
     <table class="table table-bordered table-sm">
+
         <tr>
             <td>UBICACIÓN</td>
             <td>{{ $encabezado->provincia }}, {{ $encabezado->canton }}</td>
 
             <td>TELÉFONO</td>
             <td>{{ $encabezado->telefono }}</td>
-
         </tr>
-
 
         <tr>
             <td><strong>CULTIVO</strong></td>
@@ -92,10 +103,8 @@
             <td><strong>N° DE MUESTRAS</strong></td>
             <td>{{ $encabezado->numero_muestras }}</td>
 
-
             <td>RESPONSABLE</td>
             <td>{{ $encabezado->responsable }}</td>
-
         </tr>
 
     </table>
@@ -103,8 +112,7 @@
     <div class="table-responsive">
         <table class="table table-bordered table-sm align-middle mb-0 text-center">
 
-            {{-- HEADER NEGRO --}}
-            <thead  class="small">
+            <thead class="small">
 
                 <tr>
                     <th colspan="14">ANÁLISIS FÍSICO DE SUELOS</th>
@@ -154,65 +162,50 @@
 
             <tbody>
 
-                @foreach($datos as $row)
+            @foreach($datos as $row)
 
-                <tr>
+            <tr>
 
-                    <td class="text-start align-top bg-light">
-                        {{ $row->etiqueta }}<br>
-                    </td>
+                <td class="text-start align-top bg-light">
+                    {{ $row->etiqueta }}
+                </td>
 
-                    <td>{{ $row->idlab }}</td>
+                <td>{{ $row->idlab }}</td>
 
-                    @php
-                    $t = $texturas[$row->idlab] ?? null;
-                    @endphp
+                @php
+                $t = $texturas[$row->idlab] ?? null;
+                @endphp
 
-                    <td>
-                        @if($t)
-                        {{ number_format($t['arena'],1) }}
-                        @else
-                        -
-                        @endif
-                    </td>
+                <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
+                <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
+                <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
 
-                    <td>
-                        @if($t)
-                        {{ number_format($t['limo'],1) }}
-                        @else
-                        -
-                        @endif
-                    </td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
 
-                    <td>
-                        @if($t)
-                        {{ number_format($t['arcilla'],1) }}
-                        @else
-                        -
-                        @endif
-                    </td>
+            </tr>
 
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-
-                </tr>
-
-                @endforeach
+            @endforeach
 
             </tbody>
+
         </table>
     </div>
 
+</div>
 
-</div><!--End container-fluid-->
-</main><!--End app-wrapper-->
+</div> {{-- card-body --}}
+</div> {{-- card --}}
+</div>
+</div>
+
 @endsection
 
 

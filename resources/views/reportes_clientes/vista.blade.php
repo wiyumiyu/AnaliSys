@@ -104,7 +104,7 @@
         <table class="table table-bordered table-sm align-middle mb-0 text-center">
 
             {{-- HEADER NEGRO --}}
-            <thead style="background:#000;color:#fff" class="small">
+            <thead  class="small">
 
                 <tr>
                     <th colspan="14">ANÁLISIS FÍSICO DE SUELOS</th>
@@ -133,7 +133,7 @@
                     <th>Arcilla</th>
                 </tr>
 
-                <tr style="background:#222;color:#fff;font-size:11px">
+                <tr style="font-size:11px">
                     <th></th>
                     <th></th>
 

@@ -6886,14 +6886,7 @@ tm.idlab;
 END$$
 
 DELIMITER ;
-CREATE INDEX idx_textura_idlab
-ON trn_textura_muestras(idlab);
 
-CREATE INDEX idx_textura_periodo
-ON trn_textura(periodo);
-
-CREATE INDEX idx_solicitud_muestras
-ON tbm_solicitud_muestras(idlab, agno);
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */
@@ -7695,14 +7688,6 @@ exentodeimpuestos
  0, 0, 1, 1, 0);
  
 
-INSERT INTO tbm_solicitud_impresa
-(id_solicitud, fecha, enviada, fecha_envio, enviada_por)
-VALUES
-('SOL016', '2025-04-15 10:00:00', 1, '2025-04-15 10:30:00', 2),
-('SOL017', '2025-04-18 11:00:00', 1, '2025-04-18 11:40:00', 3),
-('SOL018', '2025-04-22 12:00:00', 1, '2025-04-22 12:50:00', 4),
-('SOL019', '2025-05-10 13:00:00', 1, '2025-05-10 13:30:00', 2),
-('SOL020', '2025-05-15 14:00:00', 1, '2025-05-15 14:45:00', 3);
 
 
 

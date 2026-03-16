@@ -6710,7 +6710,6 @@ END$$
 
 DELIMITER ;
 */
-
 DELIMITER $$
 
 CREATE PROCEDURE sp_obtener_reporte_cliente(
@@ -6740,7 +6739,13 @@ JOIN tbm_producto p
     ON p.id_producto = pp.id_producto
 
 WHERE s.id_solicitud = p_id_solicitud
-ORDER BY sm.idlab;
+
+GROUP BY 
+    sm.id_muestras,
+    p.siglas
+
+ORDER BY 
+    sm.idlab;
 
 END$$
 

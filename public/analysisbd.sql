@@ -7646,7 +7646,7 @@ CREATE TABLE trn_factor_sedimentacion (
     factor_n DECIMAL(6,4) NOT NULL
 );
 
-INSERT INTO factor_sedimentacion (temperatura_c, viscosidad_cp, factor_n) VALUES
+INSERT INTO trn_factor_sedimentacion (temperatura_c, viscosidad_cp, factor_n) VALUES
 (0,1.781,0.0110),
 (1,1.731,0.0111),
 (2,1.683,0.0112),

@@ -221,153 +221,157 @@
 
 <div class="row">
     <div class="col-lg-12">
+        @foreach($cards as $card)
 
-@foreach($cards as $solicitud => $rows)
+        @php
+        $rows = $card->rows;
+        $first = $card->first;
+        $count = $card->count;
+        @endphp
 
-<div class="card shadow-sm rounded-3 mb-4">
+        <div class="card shadow-sm rounded-3 mb-4">
 
-    <div class="card-body p-0">
+            <div class="card-body p-0">
 
-        <div class="table-responsive rounded-3 overflow-hidden">
+                <div class="table-responsive rounded-3 overflow-hidden">
 
-            <table class="table table-bordered align-middle text-center mb-0">
+                    <table class="table table-bordered align-middle text-center mb-0">
 
-                <thead>
-                    <tr class="border-bottom">
+                        <thead>
+                            <tr class="border-bottom">
+                                <td rowspan="6" style="background:#F97316; width:300px;"></td>
+                                <th rowspan="2">IDLAB</th>
 
-                        <td rowspan="6" style="background:#F97316; width:300px;"></td>
+                                <th colspan="4">Textura (%)</th>
+                                <th colspan="8">(%)</th>
+                            </tr>
 
-                        <th rowspan="2">IDLAB</th>
-                        <th rowspan="2">Cultivo</th>
+                            <tr>
+                                <th>Arena</th>
+                                <th>Limo</th>
+                                <th>Arcilla</th>
+                                <th>Total</th>
 
-                        <th colspan="4">Textura (%)</th>
-                        <th colspan="8">(%)</th>
+                                <th>DA</th>
+                                <th>DP</th>
+                                <th>Por</th>
+                                <th>HG</th>
+                                <th>CH</th>
+                                <th>Ret H</th>
+                                <th>Est Agr</th>
+                                <th>COEL</th>
+                            </tr>
+                        </thead>
 
-                    </tr>
+                        <tbody>
 
-                    <tr>
-                        <th>Arena</th>
-                        <th>Limo</th>
-                        <th>Arcilla</th>
-                        <th>Total</th>
+                            {{--  FILA 1 --}}
+                            <tr>
 
-                        <th>DA</th>
-                        <th>DP</th>
-                        <th>Por</th>
-                        <th>HG</th>
-                        <th>CH</th>
-                        <th>Ret H</th>
-                        <th>Est Agr</th>
-                        <th>COEL</th>
-                    </tr>
-                </thead>
+                                {{-- PANEL IZQUIERDO --}}
+                                <td rowspan="{{ $count > 1 ? $count + 3 : $count }}" 
+                                    class="text-start align-top p-4 border-end">
 
-                <tbody>
+                                    <div class="fw-bold text-primary mb-3 fs-5">
+                                        SOL. {{ $first->solicitud }}
+                                    </div>
 
-                @php 
-                    $first = $rows->first(); 
-                    $count = count($rows);
-                @endphp
+                                    <div class="small text-muted">Cultivo</div>
+                                    <div class="fw-semibold text-primary">
+                                        {{ $first->cultivo ?? '-' }}
+                                    </div>
 
-                {{-- ================= FILA 1 ================= --}}
-                <tr>
+                                    <div class="small text-muted mt-2">Cliente</div>
+                                    <div class="fw-semibold">
+                                        {{ $first->cliente ?? '-' }}
+                                    </div>
 
-                    {{-- PANEL IZQUIERDO --}}
-                    <td rowspan="{{ $count + 3 }}" class="text-start align-top p-4 border-end">
+                                    <div class="small text-muted mt-2">Cantón</div>
+                                    <div class="fw-semibold">
+                                        {{ $first->canton ?? '-' }}
+                                    </div>
 
-                        <div class="fw-bold text-primary mb-3 fs-5">
-                            SOL. {{ $first->solicitud }}
-                        </div>
+                                    <div class="small text-muted mt-2">Fecha</div>
+                                    <div class="fw-semibold">
+                                        {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
+                                    </div>
 
-                        <div class="small text-muted">Cliente</div>
-                        <div class="fw-semibold">
-                            {{ $first->cliente ?? '-' }}
-                        </div>
+                                </td>
 
-                        <div class="small text-muted mt-2">Cantón</div>
-                        <div class="fw-semibold">
-                            {{ $first->canton ?? '-' }}
-                        </div>
+                                {{--  IDLAB + REP --}}
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        {{ $first->idlab }}
+                                    </span>
 
-                        <div class="small text-muted mt-2">Fecha</div>
-                        <div class="fw-semibold">
-                            {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
-                        </div>
+                                    <div class="small text-muted">
+                                        Rep {{ $first->rep }}
+                                    </div>
+                                </td>
 
-                    </td>
+                                @for($i=0;$i<12;$i++)
+                                <td>-</td>
+                                @endfor
 
-                    {{-- DATOS --}}
-                    <td>
-                        <span class="badge bg-primary-subtle text-primary">
-                            {{ $first->idlab }}
-                        </span>
-                    </td>
+                            </tr>
 
-                    <td class="fw-semibold text-primary">
-                        {{ $first->cultivo ?? '-' }}
-                    </td>
+                            {{--  RESTO DE REPS --}}
+                            @foreach($rows->skip(1) as $row)
+                            <tr>
 
-                    {{-- TODO VACÍO POR AHORA --}}
-                    @for($i=0;$i<12;$i++)
-                        <td>-</td>
-                    @endfor
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        {{ $row->idlab }}
+                                    </span>
 
-                </tr>
+                                    <div class="small text-muted">
+                                        Rep {{ $row->rep }}
+                                    </div>
+                                </td>
 
-                {{-- ================= RESTO ================= --}}
-                @foreach($rows->skip(1) as $row)
-                <tr>
+                                @for($i=0;$i<12;$i++)
+                                <td>-</td>
+                                @endfor
 
-                    <td>
-                        <span class="badge bg-primary-subtle text-primary">
-                            {{ $row->idlab }}
-                        </span>
-                    </td>
+                            </tr>
+                            @endforeach
 
-                    <td class="fw-semibold text-primary">
-                        {{ $row->cultivo ?? '-' }}
-                    </td>
 
-                    @for($i=0;$i<12;$i++)
-                        <td>-</td>
-                    @endfor
+                            {{--  SOLO SI HAY MÁS DE 1 REP --}}
+                            @if($count > 1)
 
-                </tr>
-                @endforeach
+                            <tr class="table-light">
+                                <td class="fw-semibold">PROMEDIO</td>
+                                @for($i=0;$i<12;$i++)
+                                <td>-</td>
+                                @endfor
+                            </tr>
 
-                {{-- ================= PROMEDIO ================= --}}
-                <tr class="table-light">
-                    <td colspan="2" class="fw-semibold">PROMEDIO</td>
-                    @for($i=0;$i<12;$i++)
-                        <td>-</td>
-                    @endfor
-                </tr>
+                            <tr class="table-light">
+                                <td class="fw-semibold">Desv.Est.</td>
+                                @for($i=0;$i<12;$i++)
+                                <td>-</td>
+                                @endfor
+                            </tr>
 
-                {{-- ================= DESV ================= --}}
-                <tr class="table-light">
-                    <td colspan="2" class="fw-semibold">Desv.Est.</td>
-                    @for($i=0;$i<12;$i++)
-                        <td>-</td>
-                    @endfor
-                </tr>
+                            <tr class="table-light">
+                                <td class="fw-semibold">CV</td>
+                                @for($i=0;$i<12;$i++)
+                                <td>-</td>
+                                @endfor
+                            </tr>
 
-                {{-- ================= CV ================= --}}
-                <tr class="table-light">
-                    <td colspan="2" class="fw-semibold">CV</td>
-                    @for($i=0;$i<12;$i++)
-                        <td>-</td>
-                    @endfor
-                </tr>
+                            @endif
 
-                </tbody>
+                        </tbody>
 
-            </table>
+                    </table>
 
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
-@endforeach
+        @endforeach
 
     </div>
 </div>

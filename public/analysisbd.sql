@@ -6639,11 +6639,14 @@ SELECT
     DATE(s.fecha) AS fecha,
 
     tm.idlab,
+    tm.rep,
+
     sm.etiqueta,
 
     sc.cultivo,
 
-    cs.nombre AS cliente,
+    c.nombre AS cliente,
+
     can.canton
 
 FROM trn_resultados r
@@ -6651,7 +6654,6 @@ FROM trn_resultados r
 INNER JOIN trn_resultados_lista rl
     ON rl.id_resultado = r.id
 
--- AQUÍ ESTÁ LA CLAVE
 INNER JOIN trn_textura t
     ON t.id = rl.id_archivo
 
@@ -6664,18 +6666,19 @@ INNER JOIN tbm_solicitud_muestras sm
 INNER JOIN tbm_solicitud s
     ON s.id_solicitud = sm.id_solicitud
 
+
+LEFT JOIN tbm_cliente c
+    ON c.id_cliente = s.id_cliente
+
 LEFT JOIN tbm_solicitud_cultivo sc
     ON sc.id_solicitud_cultivo = sm.id_cultivo
-
-LEFT JOIN tbm_cliente_subcliente cs
-    ON cs.id_cliente_subcliente = s.id_cliente_subcliente
 
 LEFT JOIN tbm_dircanton can
     ON can.id_canton = s.id_dircanton
 
 WHERE r.id = p_id_resultado
 
-ORDER BY s.id_solicitud, tm.idlab;
+ORDER BY tm.idlab, tm.rep;
 
 END$$
 

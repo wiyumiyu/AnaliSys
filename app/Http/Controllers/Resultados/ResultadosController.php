@@ -127,32 +127,40 @@ class ResultadosController extends Controller {
      * Vista detalle resultado
      * ------------------------------------------------------------
      */
-public function show($id)
-{
-    $archivos = collect(DB::select(
-        'CALL sp_traer_archivos_por_resultado(?)',
-        [$id]
-    ));
+    public function show($id) {
+        $archivos = collect(DB::select(
+                        'CALL sp_traer_archivos_por_resultado(?)',
+                        [$id]
+                ));
 
-    $comentarios = collect(DB::select(
-        'CALL sp_traer_comentarios_resultado(?)',
-        [$id]
-    ));
+        $comentarios = collect(DB::select(
+                        'CALL sp_traer_comentarios_resultado(?)',
+                        [$id]
+                ));
 
-    $datos = collect(DB::select(
-        'CALL sp_resultado_vista(?)',
-        [$id]
-    ));
+        $datos = collect(DB::select(
+                        'CALL sp_resultado_vista(?)',
+                        [$id]
+                ));
 
-    // 🔥 CLAVE: agrupar por solicitud = cards
-    $cards = $datos->groupBy('id_solicitud');
+        //  AGRUPAR POR IDLAB + PROCESAR
+        $cards = $datos->groupBy('idlab')->map(function ($rows) {
 
-    return view('resultados.vista', compact(
-        'archivos',
-        'comentarios',
-        'cards'
-    ));
-}
+            $rows = collect($rows);
+
+            return (object) [
+                        'rows' => $rows,
+                        'first' => $rows->first(),
+                        'count' => $rows->count()
+            ];
+        });
+
+        return view('resultados.vista', compact(
+                        'archivos',
+                        'comentarios',
+                        'cards'
+                ));
+    }
 
     /**
      * ------------------------------------------------------------

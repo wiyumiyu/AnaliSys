@@ -222,313 +222,152 @@
 <div class="row">
     <div class="col-lg-12">
 
+@foreach($cards as $solicitud => $rows)
 
-        {{-- TARJETA 1 --}}
-        <div class="card shadow-sm rounded-3 mb-4">
+<div class="card shadow-sm rounded-3 mb-4">
 
-            <div class="card-body p-0">
+    <div class="card-body p-0">
 
-                <div class="table-responsive rounded-3 overflow-hidden">
+        <div class="table-responsive rounded-3 overflow-hidden">
 
-                    <table class="table table-bordered align-middle text-center mb-0">
+            <table class="table table-bordered align-middle text-center mb-0">
 
-                        <thead>
-                            <tr class="border-bottom">
+                <thead>
+                    <tr class="border-bottom">
 
-                                <td rowspan="6" style="background:#F97316; width:300px;"></td>
+                        <td rowspan="6" style="background:#F97316; width:300px;"></td>
 
-                                <th rowspan="2">IDLAB</th>
-                                <th rowspan="2">Cultivo</th>
+                        <th rowspan="2">IDLAB</th>
+                        <th rowspan="2">Cultivo</th>
 
-                                <th colspan="4">Textura (%)</th>
-                                <th colspan="8">(%)</th>
+                        <th colspan="4">Textura (%)</th>
+                        <th colspan="8">(%)</th>
 
-                            </tr>
+                    </tr>
 
-                            <tr>
-                                <th>Arena</th>
-                                <th>Limo</th>
-                                <th>Arcilla</th>
-                                <th>Total</th>
+                    <tr>
+                        <th>Arena</th>
+                        <th>Limo</th>
+                        <th>Arcilla</th>
+                        <th>Total</th>
 
-                                <th>DA</th>
-                                <th>DP</th>
-                                <th>Por</th>
-                                <th>HG</th>
-                                <th>CH</th>
-                                <th>Ret H</th>
-                                <th>Est Agr</th>
-                                <th>COEL</th>
-                            </tr>
-                        </thead>
+                        <th>DA</th>
+                        <th>DP</th>
+                        <th>Por</th>
+                        <th>HG</th>
+                        <th>CH</th>
+                        <th>Ret H</th>
+                        <th>Est Agr</th>
+                        <th>COEL</th>
+                    </tr>
+                </thead>
 
-                        <tbody>
+                <tbody>
 
-                            {{-- DATOS --}}
-                            <tr>
-                                <td rowspan="8" class="text-start align-top p-4 border-end">
+                @php 
+                    $first = $rows->first(); 
+                    $count = count($rows);
+                @endphp
 
-                                    <div class="fw-bold text-primary mb-3 fs-5">
-                                        SOL. 97987
-                                    </div>
+                {{-- ================= FILA 1 ================= --}}
+                <tr>
 
-                                    <div class="small text-muted">Cliente</div>
-                                    <div class="fw-semibold">FLORES Y VERDES DEL IRAZU</div>
+                    {{-- PANEL IZQUIERDO --}}
+                    <td rowspan="{{ $count + 3 }}" class="text-start align-top p-4 border-end">
 
-                                    <div class="small text-muted mt-2">Cantón</div>
-                                    <div class="fw-semibold">CARTAGO</div>
+                        <div class="fw-bold text-primary mb-3 fs-5">
+                            SOL. {{ $first->solicitud }}
+                        </div>
 
-                                    <div class="small text-muted mt-2">Fecha</div>
-                                    <div class="fw-semibold">06/01/2026</div>
+                        <div class="small text-muted">Cliente</div>
+                        <div class="fw-semibold">
+                            {{ $first->cliente ?? '-' }}
+                        </div>
 
-                                </td>
+                        <div class="small text-muted mt-2">Cantón</div>
+                        <div class="fw-semibold">
+                            {{ $first->canton ?? '-' }}
+                        </div>
 
-                                <td><span class="badge bg-primary-subtle text-primary">13</span></td>
-                                <td class="fw-semibold text-primary">CAFE</td>
+                        <div class="small text-muted mt-2">Fecha</div>
+                        <div class="fw-semibold">
+                            {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
+                        </div>
 
-                                <td>38</td>
-                                <td>42</td>
-                                <td>20</td>
-                                <td>100</td>
+                    </td>
 
-                                <td>1.25</td>
-                                <td>2.60</td>
-                                <td>18%</td>
-                                <td>30%</td>
-                                <td>5%</td>
-                                <td>80%</td>
-                                <td>0.12</td>
-                                <td>0.85</td>
-                            </tr>
+                    {{-- DATOS --}}
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary">
+                            {{ $first->idlab }}
+                        </span>
+                    </td>
 
-                            <tr>
-                                <td><span class="badge bg-primary-subtle text-primary">13</span></td>
-                                <td class="fw-semibold text-primary">CAFE</td>
+                    <td class="fw-semibold text-primary">
+                        {{ $first->cultivo ?? '-' }}
+                    </td>
 
-                                <td>39</td>
-                                <td>41</td>
-                                <td>20</td>
-                                <td>100</td>
+                    {{-- TODO VACÍO POR AHORA --}}
+                    @for($i=0;$i<12;$i++)
+                        <td>-</td>
+                    @endfor
 
-                                <td>1.35</td>
-                                <td>2.58</td>
-                                <td>15%</td>
-                                <td>25%</td>
-                                <td>8%</td>
-                                <td>75%</td>
-                                <td>0.10</td>
-                                <td>0.78</td>
-                            </tr>
+                </tr>
 
-                            <tr>
-                                <td><span class="badge bg-primary-subtle text-primary">13</span></td>
-                                <td class="fw-semibold text-primary">CAFE</td>
+                {{-- ================= RESTO ================= --}}
+                @foreach($rows->skip(1) as $row)
+                <tr>
 
-                                <td>37</td>
-                                <td>43</td>
-                                <td>20</td>
-                                <td>100</td>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary">
+                            {{ $row->idlab }}
+                        </span>
+                    </td>
 
-                                <td>1.30</td>
-                                <td>2.59</td>
-                                <td>17%</td>
-                                <td>28%</td>
-                                <td>6%</td>
-                                <td>78%</td>
-                                <td>0.11</td>
-                                <td>0.82</td>
-                            </tr>
+                    <td class="fw-semibold text-primary">
+                        {{ $row->cultivo ?? '-' }}
+                    </td>
 
+                    @for($i=0;$i<12;$i++)
+                        <td>-</td>
+                    @endfor
 
-                            {{-- PROMEDIO --}}
-                            <tr class="table-light">
+                </tr>
+                @endforeach
 
-                                <td colspan="2" class="fw-semibold">
-                                    PROMEDIO
-                                </td>
+                {{-- ================= PROMEDIO ================= --}}
+                <tr class="table-light">
+                    <td colspan="2" class="fw-semibold">PROMEDIO</td>
+                    @for($i=0;$i<12;$i++)
+                        <td>-</td>
+                    @endfor
+                </tr>
 
-                                <td>38</td>
-                                <td>42</td>
-                                <td>20</td>
-                                <td>100</td>
+                {{-- ================= DESV ================= --}}
+                <tr class="table-light">
+                    <td colspan="2" class="fw-semibold">Desv.Est.</td>
+                    @for($i=0;$i<12;$i++)
+                        <td>-</td>
+                    @endfor
+                </tr>
 
-                                <td>1.30</td>
-                                <td>2.59</td>
-                                <td>16.6%</td>
-                                <td>27.6%</td>
-                                <td>6.3%</td>
-                                <td>77.6%</td>
-                                <td>0.11</td>
-                                <td>0.81</td>
+                {{-- ================= CV ================= --}}
+                <tr class="table-light">
+                    <td colspan="2" class="fw-semibold">CV</td>
+                    @for($i=0;$i<12;$i++)
+                        <td>-</td>
+                    @endfor
+                </tr>
 
-                            </tr>
+                </tbody>
 
+            </table>
 
-                            {{-- DESV EST --}}
-                            <tr class="table-light">
-
-                                <td colspan="2" class="fw-semibold">
-                                    Desv.Est.
-                                </td>
-
-                                <td>1</td>
-                                <td>1</td>
-                                <td>0</td>
-                                <td>-</td>
-
-                                <td>0.05</td>
-                                <td>0.01</td>
-                                <td>1.5%</td>
-                                <td>2%</td>
-                                <td>1%</td>
-                                <td>2%</td>
-                                <td>0.01</td>
-                                <td>0.03</td>
-
-                            </tr>
-
-
-                            {{-- CV --}}
-                            <tr class="table-light">
-
-                                <td colspan="2" class="fw-semibold">
-                                    CV
-                                </td>
-
-                                <td>3%</td>
-                                <td>2%</td>
-                                <td>0%</td>
-                                <td>-</td>
-
-                                <td>3.8%</td>
-                                <td>0.3%</td>
-                                <td>9%</td>
-                                <td>7%</td>
-                                <td>15%</td>
-                                <td>2%</td>
-                                <td>9%</td>
-                                <td>3%</td>
-
-                            </tr>
-
-                        </tbody>
-                    </table>
-
-                </div>
-            </div>
         </div>
+    </div>
+</div>
 
-
-
-        {{-- TARJETA 2 --}}
-        <div class="card shadow-sm rounded-3 mb-4">
-
-            <div class="card-body p-0">
-
-                <div class="table-responsive rounded-3 overflow-hidden">
-
-                    <table class="table table-bordered align-middle text-center mb-0">
-
-                        <thead>
-
-                            <tr class="border-bottom">
-
-                                <td rowspan="6" style="background:#F97316; width:300px;"></td>
-
-                                <th rowspan="2">IDLAB</th>
-                                <th rowspan="2">Cultivo</th>
-
-                                <th colspan="4">Textura (%)</th>
-                                <th colspan="8">(%)</th>
-
-                            </tr>
-
-                            <tr>
-
-                                <th>Arena</th>
-                                <th>Limo</th>
-                                <th>Arcilla</th>
-                                <th>Total</th>
-
-                                <th>DA</th>
-                                <th>DP</th>
-                                <th>Por</th>
-                                <th>HG</th>
-                                <th>CH</th>
-                                <th>Ret H</th>
-                                <th>Est Agr</th>
-                                <th>COEL</th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            <tr>
-
-                                <td rowspan="8" class="text-start align-top p-4 border-end">
-
-                                    <div class="fw-bold text-primary mb-3 fs-5">
-                                        SOL. 97988
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <div class="small text-muted">Cliente</div>
-                                        <div class="fw-semibold">
-                                            COOPEAGRI
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <div class="small text-muted">Cantón</div>
-                                        <div class="fw-semibold">
-                                            SAN ISIDRO
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <div class="small text-muted">Fecha</div>
-                                        <div class="fw-semibold">
-                                            10/01/2026
-                                        </div>
-                                    </div>
-
-                                </td>
-
-                                <td>
-                                    <span class="badge bg-primary-subtle text-primary">
-                                        14
-                                    </span>
-                                </td>
-
-                                <td class="fw-semibold text-primary">CAFE</td>
-
-                                <td>36</td>
-                                <td>44</td>
-                                <td>20</td>
-                                <td>100</td>
-
-                                <td>1.22</td>
-                                <td>2.55</td>
-                                <td>19%</td>
-                                <td>31%</td>
-                                <td>6%</td>
-                                <td>79%</td>
-                                <td>0.11</td>
-                                <td>0.84</td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-            </div>
-        </div>
-
+@endforeach
 
     </div>
 </div>

@@ -6582,6 +6582,7 @@ ORDER BY v.tipo;
 END $$
 
 DELIMITER ;
+
 DELIMITER $$
 CREATE PROCEDURE sp_traer_comentarios_resultado(
     IN p_id_resultado INT
@@ -6619,6 +6620,66 @@ VALUES
 END$$
 DELIMITER ;
 
+
+-- NUEVO RESULTADO Y MODIFICABLE 
+DROP PROCEDURE IF EXISTS sp_resultado_vista;
+DELIMITER $$
+
+CREATE PROCEDURE sp_resultado_vista(
+    IN p_id_resultado INT
+)
+BEGIN
+
+SELECT
+    r.id AS id_resultado,
+    r.consecutivo,
+
+    s.id_solicitud,
+    s.numero AS solicitud,
+    DATE(s.fecha) AS fecha,
+
+    tm.idlab,
+    sm.etiqueta,
+
+    sc.cultivo,
+
+    cs.nombre AS cliente,
+    can.canton
+
+FROM trn_resultados r
+
+INNER JOIN trn_resultados_lista rl
+    ON rl.id_resultado = r.id
+
+-- AQUÍ ESTÁ LA CLAVE
+INNER JOIN trn_textura t
+    ON t.id = rl.id_archivo
+
+INNER JOIN trn_textura_muestras tm
+    ON tm.id_textura = t.id
+
+INNER JOIN tbm_solicitud_muestras sm
+    ON sm.idlab = tm.idlab
+
+INNER JOIN tbm_solicitud s
+    ON s.id_solicitud = sm.id_solicitud
+
+LEFT JOIN tbm_solicitud_cultivo sc
+    ON sc.id_solicitud_cultivo = sm.id_cultivo
+
+LEFT JOIN tbm_cliente_subcliente cs
+    ON cs.id_cliente_subcliente = s.id_cliente_subcliente
+
+LEFT JOIN tbm_dircanton can
+    ON can.id_canton = s.id_dircanton
+
+WHERE r.id = p_id_resultado
+
+ORDER BY s.id_solicitud, tm.idlab;
+
+END$$
+
+DELIMITER ;
 
 -- ----------------------
 -- ----------------------

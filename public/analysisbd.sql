@@ -6970,12 +6970,12 @@ SELECT
 
     tm.id_densidad_aparente,
     tm.idlab,
-
-    AVG(CASE WHEN a.siglas = 'altura' THEN tr.resultado END) AS altura,
-    AVG(CASE WHEN a.siglas = 'diametro' THEN tr.resultado END) AS diametro,
-    AVG(CASE WHEN a.siglas = 'peso_cilindro_suelo' THEN tr.resultado END) AS peso_suelo,
-    AVG(CASE WHEN a.siglas = 'peso_cilindro' THEN tr.resultado END) AS peso_cilindro,
-    AVG(CASE WHEN a.siglas = 'temperatura' THEN tr.resultado END) AS temperatura,
+    
+    AVG(CASE WHEN a.siglas = 'altura' THEN tr.resultado END) AS altura_cilindro,
+	AVG(CASE WHEN a.siglas = 'diametro' THEN tr.resultado END) AS diametro_cilindro,
+	AVG(CASE WHEN a.siglas = 'peso_cilindro_suelo' THEN tr.resultado END) AS peso_seco,
+	AVG(CASE WHEN a.siglas = 'peso_cilindro' THEN tr.resultado END) AS peso_cilindro,
+	AVG(CASE WHEN a.siglas = 'temperatura' THEN tr.resultado END) AS temperatura,
     AVG(CASE WHEN a.siglas = 'secado' THEN tr.resultado END) AS tiempo_secado
 
 FROM trn_densidad_aparente_muestras tm
@@ -7014,7 +7014,6 @@ ORDER BY
 END $$
 
 DELIMITER ;
-
 
 /* ============================================================
    6. DATOS INICIALES

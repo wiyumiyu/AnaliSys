@@ -50,12 +50,13 @@ class ReporteClienteController extends Controller {
         $textura = DB::select(
                 'CALL sp_reporte_cliente_textura(?)',
                 [$id]
-        );
+        );      
 
-        $densidad = DB::select(
+        $densidadAparente = DB::select(
             'CALL sp_reporte_cliente_densidad_aparente(?)',
             [$id]
         );
+       // dd($densidadAparente);
 
         $texturas = [];
         $blancos = [];

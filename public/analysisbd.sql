@@ -6956,6 +6956,73 @@ END$$
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS sp_obtener_viscosidad_cp;
+DELIMITER $$
+CREATE PROCEDURE sp_obtener_viscosidad_cp(IN p_temperatura DECIMAL(5,2))
+BEGIN
+    SELECT 
+        IFNULL(viscosidad_cp, 1.0) AS viscosidad_cp
+    FROM trn_textura_viscosidad_temperatura
+    ORDER BY ABS(temperatura_c - p_temperatura)
+    LIMIT 1;
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_obtener_factor_n;
+DELIMITER $$
+CREATE PROCEDURE sp_obtener_factor_n(IN p_viscosidad_cp DECIMAL(10,4))
+BEGIN
+    DECLARE v_result DECIMAL(10,4) DEFAULT 0;
+
+    SELECT factor_n
+    INTO v_result
+    FROM trn_textura_factor_sedimentacion
+    ORDER BY ABS(viscosidad_cp - p_viscosidad_cp)
+    LIMIT 1;
+
+    SELECT IFNULL(v_result, 0) AS factor_n;
+END $$
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_obtener_densidad;
+DELIMITER $$
+CREATE PROCEDURE sp_obtener_densidad(
+    IN p_temperatura DECIMAL(5,2)
+)
+BEGIN
+    DECLARE v_densidad_agua DECIMAL(10,7) DEFAULT 0;
+    DECLARE v_densidad_hmp DECIMAL(10,7) DEFAULT 0;
+
+    SELECT 
+        densidad_agua,
+        densidad_agua_hmp
+    INTO 
+        v_densidad_agua,
+        v_densidad_hmp
+    FROM trn_textura_densidad_temperatura
+    ORDER BY ABS(temperatura_c - p_temperatura)
+    LIMIT 1;
+
+    SELECT 
+        IFNULL(v_densidad_agua, 0) AS densidad_agua,
+        IFNULL(v_densidad_hmp, 0) AS densidad_agua_hmp;
+END $$
+
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
 -- Traer datos de densidad aparente
 DELIMITER $$
 
@@ -7817,47 +7884,6 @@ exentodeimpuestos
  
 
 
-
-
--- Crear tabla CALCULO DE densidad en textura (T_Promedio)
-CREATE TABLE trn_densidad_agua (
-    id INT PRIMARY KEY,
-    temperatura_c DECIMAL(5,2),
-    density_water_g_ml DECIMAL(10,7),
-    density_water_hmp_g_ml DECIMAL(10,3)
-);
-
--- Insertar datos 
-INSERT INTO trn_densidad_agua VALUES
-(1,0,0.9998425,1.003),
-(2,4,0.9999750,1.003),
-(3,5,0.9999668,1.003),
-(4,10,0.9997026,1.003),
-(5,11,0.9996084,1.003),
-(6,12,0.9995004,1.003),
-(7,13,0.9993801,1.003),
-(8,14,0.9992474,1.002),
-(9,15,0.9991026,1.002),
-(10,16,0.9989460,1.002),
-(11,17,0.9987779,1.002),
-(12,18,0.9985986,1.002),
-(13,19,0.9984082,1.002),
-(14,20,0.9982071,1.001),
-(15,21,0.9979955,1.001),
-(16,22,0.9977735,1.001),
-(17,23,0.9975415,1.001),
-(18,24,0.9972995,1.000),
-(19,25,0.9970479,1.000),
-(20,26,0.9967867,1.000),
-(21,27,0.9965162,1.000),
-(22,28,0.9962365,0.999),
-(23,29,0.9959478,0.999),
-(24,30,0.9956502,0.999),
-(25,35,0.9940349,0.997),
-(26,37,0.9933316,0.996),
-(27,40,0.9922187,0.995),
-(28,100,0.9583665,0.961);
-
 --  para viscosidad 
 CREATE TABLE trn_textura_viscosidad_temperatura (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -7950,6 +7976,8 @@ INSERT INTO trn_textura_factor_sedimentacion (temperatura_c, viscosidad_cp, fact
 (34,0.733,0.0147),
 (35,0.719,0.0148);
 
+
+-- para densidad
 CREATE TABLE trn_textura_densidad_temperatura (
     temperatura_c INT PRIMARY KEY,
     densidad_agua DECIMAL(10,7),
@@ -7985,3 +8013,7 @@ INSERT INTO trn_textura_densidad_temperatura (temperatura_c, densidad_agua, dens
 (37, 0.9933316, 0.996),
 (40, 0.9922187, 0.995),
 (100, 0.9583665, 0.961);
+
+CREATE INDEX idx_temp ON trn_densidad_temperatura(temperatura_c);
+
+

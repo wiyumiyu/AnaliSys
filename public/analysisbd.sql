@@ -6956,6 +6956,66 @@ END$$
 
 DELIMITER ;
 
+-- Traer datos de densidad aparente
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_densidad_aparente $$
+
+CREATE PROCEDURE sp_reporte_cliente_densidad_aparente(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+    tm.id_densidad_aparente,
+    tm.idlab,
+
+    AVG(CASE WHEN a.siglas = 'altura' THEN tr.resultado END) AS altura,
+    AVG(CASE WHEN a.siglas = 'diametro' THEN tr.resultado END) AS diametro,
+    AVG(CASE WHEN a.siglas = 'peso_cilindro_suelo' THEN tr.resultado END) AS peso_suelo,
+    AVG(CASE WHEN a.siglas = 'peso_cilindro' THEN tr.resultado END) AS peso_cilindro,
+    AVG(CASE WHEN a.siglas = 'temperatura' THEN tr.resultado END) AS temperatura,
+    AVG(CASE WHEN a.siglas = 'secado' THEN tr.resultado END) AS tiempo_secado
+
+FROM trn_densidad_aparente_muestras tm
+
+JOIN trn_densidad_aparente t
+    ON t.id = tm.id_densidad_aparente
+
+LEFT JOIN trn_densidad_aparente_resultados tr
+    ON tr.id_densidad_aparente_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'DENSIDAD_APARENTE'
+
+WHERE tm.id_densidad_aparente IN (
+
+    SELECT DISTINCT tm2.id_densidad_aparente
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_densidad_aparente_muestras tm2
+        ON tm2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND tm.estado = 1
+
+GROUP BY
+    tm.id_densidad_aparente,
+    tm.idlab
+
+ORDER BY
+    tm.id_densidad_aparente,
+    tm.idlab;
+
+END $$
+
+DELIMITER ;
+
+
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */

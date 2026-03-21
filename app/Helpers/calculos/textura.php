@@ -18,14 +18,13 @@ class Textura {
     }
 
     /* Porcentaje en suspensión */
-
+public static function porcentaje_suspension($Cn, $Ms) {
+    return ($Cn / $Ms) * 100;
+}
 //    public static function porcentaje_suspension($Cn, $C0) {
 //        return ($Cn / $C0) * 100;
 //    }
-public static function porcentaje_suspension($Cn, $Ms)
-{
-    return ($Cn / $Ms) * 100;
-}
+
     /* Profundidad efectiva */
 
     public static function profundidad_efectiva($R) {
@@ -34,178 +33,262 @@ public static function porcentaje_suspension($Cn, $Ms)
 
     /* Obtener viscosidad desde tabla */
 
-    public static function obtener_viscosidad($temperatura) {
-        $row = DB::table('trn_viscosidad_temperatura')
-                ->select('viscosidad_h2o_hmp_poise')
-                ->orderByRaw('ABS(temperatura_c - ?)', [$temperatura])
-                ->first();
-
-        return $row->viscosidad_h2o_hmp_poise ?? 0;
-    }
-
     public static function obtener_viscosidad_cp($temperatura) {
-        $row = DB::table('trn_viscosidad_temperatura')
-                ->select('viscosidad_cp')
-                ->orderByRaw('ABS(temperatura_c - ?)', [$temperatura])
-                ->first();
+        $result = DB::select('CALL sp_obtener_viscosidad_cp(?)', [$temperatura]);
 
-        return $row->viscosidad_cp ?? 1.0;
+        return $result[0]->viscosidad_cp ?? 1.0;
     }
 
     /* Obtener factor N */
 
     public static function obtener_factor_n($viscosidad_cp) {
-        $row = DB::table('trn_factor_sedimentacion')
-                ->select('factor_n')
-                ->orderByRaw('ABS(viscosidad_cp - ?)', [$viscosidad_cp])
-                ->first();
+        $result = DB::select('CALL sp_obtener_factor_n(?)', [$viscosidad_cp]);
 
-        return $row->factor_n ?? 0;
+        return $result[0]->factor_n ?? 0;
     }
 
-    /* Diámetro equivalente de partícula */
+    public static function obtener_densidad($temperatura) {
+        $result = DB::select('CALL sp_obtener_densidad(?)', [$temperatura]);
 
-//    public static function diametro_particula($N, $h, $t) {
-//        return sqrt((30 * $N * $h) / $t);
-//    }
-    public static function diametro_particula($N,$h,$t)
-{
-    return 0.0136 * sqrt(($N * $h) / $t);
-}
-
-    /* Interpolación logarítmica */
-//
-//    public static function interpolacion_log($P1, $P2, $X1, $X2, $valor) {
-//
-//        $deltaX = $X2 - $X1;
-//
-//        if (abs($deltaX) < 1e-9) {
-//            return 0; // o un valor seguro
-//        }
-//        $m = (log10($P2) - log10($P1)) / ($X2 - $X1);
-//        $b = log10($P2) - ($m * $X2);
-//
-//        return pow(10, ($m * $valor) + $b);
-//    }
-//public static function interpolacion_log($P1,$P2,$X1,$X2,$valor)
-//{
-//    $P1 = max($P1,0.0001);
-//    $P2 = max($P2,0.0001);
-//
-//    $logX1 = log10($X1);
-//    $logX2 = log10($X2);
-//
-//    $m = (log10($P2) - log10($P1)) / ($logX2 - $logX1);
-//    $b = log10($P2) - $m * $logX2;
-//
-//    return pow(10, $m * log10($valor) + $b);
-//}
-
-public static function interpolacion_log($P1,$P2,$X1,$X2,$X)
-{
-    $P1 = max($P1,0.0001);
-    $P2 = max($P2,0.0001);
-
-    $X1 = max($X1,0.0000001);
-    $X2 = max($X2,0.0000001);
-
-    $logX1 = log10($X1);
-    $logX2 = log10($X2);
-
-    if(abs($logX2 - $logX1) < 1e-9){
-        return ($P1 + $P2)/2;
+        return [
+            'agua' => $result[0]->densidad_agua ?? 0,
+            'agua_hmp' => $result[0]->densidad_agua_hmp ?? 0
+        ];
     }
 
-    $m = ($P2 - $P1) / ($logX2 - $logX1);
+    public static function diametro_particula($N, $h, $t, $Ps, $g, $PI) {
+        //Xn =  1000(  (30*N*h) / (g(Ps-Pl)) )^0.5 * T^ (-0.5)
+        $den = max($Ps - $PI, 0.0001);
+        return 1000 * sqrt((30 * $N * $h) / ($g * ($den))) * pow($t, -0.5);
+    }
 
-    return $P1 + $m * (log10($X) - $logX1);
-}
     /* FUNCIÓN PRINCIPAL */
 
     public static function calcular_textura_suelo(
-            $conn,
-            $Ms,
-            $R,
-            $RL,
-            $Temp,
-            $Tiempo
+            $Ms, $R, $RL, $Temp, $Tiempo
     ) {
+        $R1 = $R[0] ?? 0;
+        $R2 = $R[1] ?? 0;
+        $R3 = $R[2] ?? 0;
+        $R4 = $R[3] ?? 0;
+        $Temp1 = $Temp[0] ?? 0;
+        $Temp2 = $Temp[1] ?? 0;
+        $Temp3 = $Temp[2] ?? 0;
+        $Temp4 = $Temp[3] ?? 0;
+        $Tiempo1 = $Tiempo[0] ?? 0;
+        $Tiempo2 = $Tiempo[1] ?? 0;
+        $Tiempo3 = $Tiempo[2] ?? 0;
+        $Tiempo4 = $Tiempo[3] ?? 0;
+        $Tiempo1 = max($Tiempo1, 0.0001);
+        $Tiempo2 = max($Tiempo2, 0.0001);
+        $Tiempo3 = max($Tiempo3, 0.0001);
+        $Tiempo4 = max($Tiempo4, 0.0001);
+        $RL1 = $RL[0] ?? 0;
+        $RL2 = $RL[1] ?? 0;
+        $RL3 = $RL[2] ?? 0;
+        $RL4 = $RL[3] ?? 0;
 
-        $result = [];
+        $C1 = 0;
+        $C2 = 0;
+        $C3 = 0;
+        $C4 = 0;
+        $C0 = 0;
+        $P1 = 0;
+        $P2 = 0;
+        $P3 = 0;
+        $P4 = 0;
+        $h1 = 0;
+        $h2 = 0;
+        $h3 = 0;
+        $h4 = 0;
+        $v1 = 0;
+        $v2 = 0;
+        $v3 = 0;
+        $v4 = 0;
+        $N1 = 0;
+        $N2 = 0;
+        $N3 = 0;
+        $N4 = 0;
+        $X1 = 0;
+        $X2 = 0;
+        $X3 = 0;
+        $X4 = 0;
+        $PS = 0;
+        $g = 0;
+        $PI1;
+        $PI2;
+        $PI3;
+        $PI4;
+        $m1 = 0;
+        $m2 = 0;
+        $b1 = 0;
+        $b2 = 0;
+        $P50 = 0;
+        $PP2 = 0;
+        $arcilla = 0;
+        $limo = 0;
+        $arena = 0;
 
-       // $C0 = self::concentracion_inicial($Ms);
+        /* Corrección por blanco */
+        $C1 = self::correccion_blanco($R1, $RL1);
+        $C2 = self::correccion_blanco($R2, $RL2);
+        $C3 = self::correccion_blanco($R3, $RL3);
+        $C4 = self::correccion_blanco($R4, $RL4);
 
-        for ($i = 0; $i < 4; $i++) {
+        /* Concentración inicial */
+        $C0 = self::concentracion_inicial($Ms);
 
-            $Cn = self::correccion_blanco($R[$i], $RL[$i]);
+        /* Porcentaje en suspensión */
+//        $P1 = self::porcentaje_suspension($C1, $C0);
+//        $P2 = self::porcentaje_suspension($C2, $C0);
+//        $P3 = self::porcentaje_suspension($C3, $C0);
+//        $P4 = self::porcentaje_suspension($C4, $C0);
+        $P1 = self::porcentaje_suspension($C1, $Ms);
+        $P2 = self::porcentaje_suspension($C2, $Ms);
+        $P3 = self::porcentaje_suspension($C3, $Ms);
+        $P4 = self::porcentaje_suspension($C4, $Ms);
+        /* Profundidad efectiva */
+        $h1 = self::profundidad_efectiva($R1);
+        $h2 = self::profundidad_efectiva($R2);
+        $h3 = self::profundidad_efectiva($R3);
+        $h4 = self::profundidad_efectiva($R4);
 
-            //$Pn = self::porcentaje_suspension($Cn, $C0);
-            $Pn = self::porcentaje_suspension($Cn, $Ms);
-           // $Pn = max($Pn, 0.0001);
-            $Pn = min(max($Pn,0.0001),100);
-//            $deltaX = $X2 - $X1;
-//
-//            if (abs($deltaX) < 1e-9) {
-//                return 0; // o un valor seguro
-//            }
-            $h = self::profundidad_efectiva($R[$i]);
+        /* Obtener viscosidad desde tabla */
+        $v1 = self::obtener_viscosidad_cp($Temp1);
+        $v2 = self::obtener_viscosidad_cp($Temp2);
+        $v3 = self::obtener_viscosidad_cp($Temp3);
+        $v4 = self::obtener_viscosidad_cp($Temp4);
 
-            $mu = self::obtener_viscosidad_cp($Temp[$i]);
+        /* Obtener factor N */
+        $N1 = self::obtener_factor_n($v1);
+        $N2 = self::obtener_factor_n($v2);
+        $N3 = self::obtener_factor_n($v3);
+        $N4 = self::obtener_factor_n($v4);
 
-            $mu_cp = $mu * 1;
+        /* Diámetro equivalente de partícula */
+        $Ps = 2.65;                         //Ps= densidad particulas = 2, 65 g/cm3        
+        $g = 9.8;                           //g = 9.8 m/s2 gravedad
+        //Pl= densidad del liquido tabulado a partir de la depuratura
+        $densidad = self::obtener_densidad($Temp1);
+        $PI1 = $densidad['agua_hmp'];
+        $densidad = self::obtener_densidad($Temp2);
+        $PI2 = $densidad['agua_hmp'];
+        $densidad = self::obtener_densidad($Temp3);
+        $PI3 = $densidad['agua_hmp'];
+        $densidad = self::obtener_densidad($Temp4);
+        $PI4 = $densidad['agua_hmp'];
 
-            $N = self::obtener_factor_n($mu_cp);
+        $X1 = self::diametro_particula($N1, $h1, $Tiempo1, $Ps, $g, $PI1);
+        $X2 = self::diametro_particula($N2, $h2, $Tiempo2, $Ps, $g, $PI2);
+        $X3 = self::diametro_particula($N3, $h3, $Tiempo3, $Ps, $g, $PI3);
+        $X4 = self::diametro_particula($N4, $h4, $Tiempo4, $Ps, $g, $PI4);
 
-            $X = self::diametro_particula($N, $h, $Tiempo[$i]);
-
-//            dd([
-//    'Cn'=>$Cn,
-//    'Pn'=>$Pn,
-//    'h'=>$h,
-//    'mu_cp'=>$mu_cp,
-//    'N'=>$N,
-//    
-//    'X'=>$X
-//]);
-            
-            $result[] = [
-                'C' => $Cn,
-                'P' => $Pn,
-                'h' => $h,
-                'mu' => $mu,
-                'N' => $N,
-                'X' => $X
-            ];
+        if (($X2 - $X1) == 0 || ($X4 - $X3) == 0) {
+            return ["arcilla" => 0, "limo" => 0, "arena" => 0];
         }
 
-        $P1 = $result[0]['P'];
-        $P2 = $result[1]['P'];
-        $P3 = $result[2]['P'];
-        $P4 = $result[3]['P'];
+        //if ($P1 <= 0) {     $P1 = 0.0001; }
+        $P1 = max($P1, 0.0001);
+        $P2 = max($P2, 0.0001);
+        $P3 = max($P3, 0.0001);
+        $P4 = max($P4, 0.0001);
 
-        $X1 = $result[0]['X'];
-        $X2 = $result[1]['X'];
-        $X3 = $result[2]['X'];
-        $X4 = $result[3]['X'];
+        $m1 = (log10($P2) - log10($P1)) / ($X2 - $X1);
+        $m2 = (log10($P4) - log10($P3)) / ($X4 - $X3);
 
-//        $P50 = self::interpolacion_log($P1, $P2, $X1, $X2, 50);
-//        $P2 = self::interpolacion_log($P3, $P4, $X3, $X4, 2);
+        $b1 = log10($P2) - ($m1 * $X2);
+        $b2 = log10($P4) - ($m2 * $X4);
+        $P50 = pow(10, ($m1 * 50) + $b1);   //P50 = 10^(m1*50 + b1)
+        $PP2 = pow(10, ($m2 * 2) + $b2);     //P2 = 10^(m2*2 + b2) 
 
-$P_limo_arcilla = self::interpolacion_log($P1,$P2,$X1,$X2,0.05);
-$P_arcilla      = self::interpolacion_log($P3,$P4,$X3,$X4,0.002);
-        
-//        $arcilla = $P2;
-//        $arena = 100 - $P50;
-//        $limo = 100 - $arcilla - $arena;
-$arcilla = $P_arcilla;
-$limo    = $P_limo_arcilla - $arcilla;
-$arena   = 100 - $P_limo_arcilla;
-
+        $arcilla = $PP2;
+        $limo = 100 - $PP2 - $P50;
+        $arena = 100 - $P50;
 
         return [
             "arcilla" => $arcilla,
             "limo" => $limo,
             "arena" => $arena
         ];
+    }
+
+    //--------------------------------------------------------------------------------
+
+    public static function calcularTexturas($textura) {
+        $texturas = [];
+        $blancos = [];
+
+        /* detectar blancos */
+        foreach ($textura as $t) {
+
+            if (self::esBlanco($t->idlab)) {
+
+                if (!isset($blancos[$t->id_textura])) {
+                    $blancos[$t->id_textura] = $t;
+                }
+            }
+        }
+
+        /* calcular muestras */
+        foreach ($textura as $m) {
+
+            // evitar procesar blancos
+            if (self::esBlanco($m->idlab)) {
+                continue;
+            }
+
+            $blanco = $blancos[$m->id_textura] ?? null;
+
+            if (!$blanco) {
+                continue;
+            }
+
+            if (!$m->peso_seco) {
+                continue;
+            }
+
+            $R = [
+                $m->R1 ?? 0,
+                $m->R2 ?? 0,
+                $m->R3 ?? 0,
+                $m->R4 ?? 0
+            ];
+
+            $RL = [
+                $blanco->R1,
+                $blanco->R2,
+                $blanco->R3,
+                $blanco->R4
+            ];
+
+            $Temp = [$m->TEMP1, $m->TEMP2, $m->TEMP3, $m->TEMP4];
+
+            $Tiempo = [
+                $m->TIEMPO1,
+                $m->TIEMPO2,
+                $m->TIEMPO3,
+                $m->TIEMPO4
+            ];
+
+            $resultado = self::calcular_textura_suelo(
+                    $m->peso_seco,
+                    $R,
+                    $RL,
+                    $Temp,
+                    $Tiempo
+            );
+
+            $texturas[$m->idlab] = $resultado;
+        }
+
+        return $texturas;
+    }
+
+    private static function esBlanco($idlab) {
+        $idlab = strtoupper($idlab);
+
+        return in_array($idlab, [
+            'BLANCO', 'BLK', 'BLANK', 'CBL', 'C-BL', 'BL'
+        ]);
     }
 }

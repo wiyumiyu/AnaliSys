@@ -7859,7 +7859,7 @@ INSERT INTO trn_densidad_agua VALUES
 (28,100,0.9583665,0.961);
 
 --  para viscosidad 
-CREATE TABLE trn_viscosidad_temperatura (
+CREATE TABLE trn_textura_viscosidad_temperatura (
     id INT AUTO_INCREMENT PRIMARY KEY,
     temperatura_c INT NOT NULL,
     viscosidad_pa_s DECIMAL(6,3),
@@ -7869,7 +7869,7 @@ CREATE TABLE trn_viscosidad_temperatura (
     INDEX idx_temperatura (temperatura_c)
 );
 
-INSERT INTO trn_viscosidad_temperatura 
+INSERT INTO trn_textura_viscosidad_temperatura 
 (temperatura_c, viscosidad_pa_s, viscosidad_cp, viscosidad_h2o_poise, viscosidad_h2o_hmp_poise)
 VALUES
 (0,1.781,1781,0.01781,0.01819),
@@ -7905,14 +7905,14 @@ VALUES
 
 
 -- factor N
-CREATE TABLE trn_factor_sedimentacion (
+CREATE TABLE trn_textura_factor_sedimentacion (
     id INT AUTO_INCREMENT PRIMARY KEY,
     temperatura_c INT NOT NULL,
     viscosidad_cp DECIMAL(6,3) NOT NULL,
     factor_n DECIMAL(6,4) NOT NULL
 );
 
-INSERT INTO trn_factor_sedimentacion (temperatura_c, viscosidad_cp, factor_n) VALUES
+INSERT INTO trn_textura_factor_sedimentacion (temperatura_c, viscosidad_cp, factor_n) VALUES
 (0,1.781,0.0110),
 (1,1.731,0.0111),
 (2,1.683,0.0112),
@@ -7950,4 +7950,38 @@ INSERT INTO trn_factor_sedimentacion (temperatura_c, viscosidad_cp, factor_n) VA
 (34,0.733,0.0147),
 (35,0.719,0.0148);
 
+CREATE TABLE trn_textura_densidad_temperatura (
+    temperatura_c INT PRIMARY KEY,
+    densidad_agua DECIMAL(10,7),
+    densidad_agua_hmp DECIMAL(10,7)
+);
 
+INSERT INTO trn_textura_densidad_temperatura (temperatura_c, densidad_agua, densidad_agua_hmp) VALUES
+(0, 0.9998425, 1.003),
+(4, 0.9999750, 1.003),
+(5, 0.9999668, 1.003),
+(10, 0.9997026, 1.003),
+(11, 0.9996084, 1.003),
+(12, 0.9995004, 1.003),
+(13, 0.9993801, 1.003),
+(14, 0.9992474, 1.002),
+(15, 0.9991026, 1.002),
+(16, 0.9989460, 1.002),
+(17, 0.9987779, 1.002),
+(18, 0.9985986, 1.002),
+(19, 0.9984082, 1.002),
+(20, 0.9982071, 1.001),
+(21, 0.9979955, 1.001),
+(22, 0.9977735, 1.001),
+(23, 0.9975415, 1.001),
+(24, 0.9972995, 1.000),
+(25, 0.9970479, 1.000),
+(26, 0.9967867, 1.000),
+(27, 0.9965162, 1.000),
+(28, 0.9962365, 0.999),
+(29, 0.9959478, 0.999),
+(30, 0.9956502, 0.999),
+(35, 0.9940349, 0.997),
+(37, 0.9933316, 0.996),
+(40, 0.9922187, 0.995),
+(100, 0.9583665, 0.961);

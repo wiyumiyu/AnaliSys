@@ -51,6 +51,11 @@ class ReporteClienteController extends Controller {
                 [$id]
         );
 
+        $densidad = DB::select(
+            'CALL sp_reporte_cliente_densidad_aparente(?)',
+            [$id]
+        );
+
         $texturas = [];
         $blancos = [];
 

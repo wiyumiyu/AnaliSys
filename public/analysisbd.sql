@@ -7013,16 +7013,6 @@ END $$
 
 DELIMITER ;
 
-
-
-
-
-
-
-
-
-
-
 -- Traer datos de densidad aparente
 DELIMITER $$
 
@@ -7076,6 +7066,65 @@ GROUP BY
 
 ORDER BY
     tm.id_densidad_aparente,
+    tm.idlab;
+
+END $$
+
+DELIMITER ;
+
+-- Traer datos densidad de particulas
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_densidad_particulas $$
+
+CREATE PROCEDURE sp_reporte_cliente_densidad_particulas(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+    tm.id_densidad_particulas,
+    tm.idlab,
+
+    AVG(CASE WHEN a.siglas = 'numero_balon_vol' THEN tr.resultado END) AS numero_balon,
+    AVG(CASE WHEN a.siglas = 'peso_balon_vol_vacio_p1' THEN tr.resultado END) AS p1,
+    AVG(CASE WHEN a.siglas = 'peso_balon_vol_suelo_seco_p2' THEN tr.resultado END) AS p2,
+    AVG(CASE WHEN a.siglas = 'peso_balon_vol_suelo_agua_p3' THEN tr.resultado END) AS p3,
+    AVG(CASE WHEN a.siglas = 'temperatura_agua' THEN tr.resultado END) AS temperatura
+
+FROM trn_densidad_particulas_muestras tm
+
+JOIN trn_densidad_particulas t
+    ON t.id = tm.id_densidad_particulas
+
+LEFT JOIN trn_densidad_particulas_resultados tr
+    ON tr.id_densidad_particulas_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'DENSIDAD_PARTICULAS'
+
+WHERE tm.id_densidad_particulas IN (
+
+    SELECT DISTINCT tm2.id_densidad_particulas
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_densidad_particulas_muestras tm2
+        ON tm2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND tm.estado = 1
+
+GROUP BY
+    tm.id_densidad_particulas,
+    tm.idlab
+
+ORDER BY
+    tm.id_densidad_particulas,
     tm.idlab;
 
 END $$
@@ -8039,6 +8088,78 @@ VALUES
 (28,14,10,1),(28,15,5,1),(28,16,140,1),(28,17,25,1),(28,18,108,1),(28,19,26,1),
 (29,14,10,1),(29,15,5,1),(29,16,138,1),(29,17,24,1),(29,18,107,1),(29,19,25,1),
 (30,14,10,1),(30,15,5,1),(30,16,142,1),(30,17,26,1),(30,18,109,1),(30,19,26,1);
+
+INSERT INTO trn_densidad_particulas_muestras
+(id_densidad_particulas, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(2,1020,1,1,1,1,1,0),
+(2,1021,1,1,1,2,1,0),
+(2,1022,1,1,1,3,1,0),
+(2,1023,1,1,1,4,1,0),
+(2,1024,1,1,1,5,1,0),
+(2,1025,1,1,1,6,1,0),
+(2,1026,1,1,1,7,1,0),
+(2,1027,1,1,1,8,1,0),
+(2,1028,1,1,1,9,1,0);
+
+INSERT INTO trn_densidad_particulas_resultados
+(id_densidad_particulas_muestras, id_analisis, resultado, estado)
+VALUES
+-- 1020
+(10,20,100,1),  -- numero balon
+(10,21,50,1),   -- p1
+(10,22,150,1),  -- p2
+(10,23,180,1),  -- p3
+(10,24,1,1),    -- temperatura
+-- 1021
+(11,20,100,1),
+(11,21,52,1),
+(11,22,152,1),
+(11,23,182,1),
+(11,24,1,1),
+-- 1022
+(12,20,100,1),
+(12,21,51,1),
+(12,22,155,1),
+(12,23,185,1),
+(12,24,1,1),
+-- 1023
+(13,20,100,1),
+(13,21,50,1),
+(13,22,153,1),
+(13,23,181,1),
+(13,24,1,1),
+-- 1024
+(14,20,100,1),
+(14,21,53,1),
+(14,22,158,1),
+(14,23,188,1),
+(14,24,1,1),
+-- 1025
+(15,20,100,1),
+(15,21,52,1),
+(15,22,156,1),
+(15,23,186,1),
+(15,24,1,1),
+-- 1026
+(16,20,100,1),
+(16,21,55,1),
+(16,22,160,1),
+(16,23,190,1),
+(16,24,1,1),
+-- 1027
+(17,20,100,1),
+(17,21,54,1),
+(17,22,159,1),
+(17,23,189,1),
+(17,24,1,1),
+-- 1028
+(18,20,100,1),
+(18,21,56,1),
+(18,22,162,1),
+(18,23,192,1),
+(18,24,1,1);
+
 
 CREATE INDEX idx_temp ON trn_textura_densidad_temperatura(temperatura_c);
 

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\Calculos\Textura;
 use App\Helpers\Calculos\DensidadAparente;
+use App\Helpers\Calculos\DensidadParticulas;
 
 class ReporteClienteController extends Controller {
 
@@ -94,7 +95,30 @@ class ReporteClienteController extends Controller {
         // DENSIDAD PARTICULAS //
         /*------------------------------------------------*/
         
-        
+        $densidadParticulas = DB::select(
+                'CALL sp_reporte_cliente_densidad_particulas(?)',
+                [$id]
+        );
+
+        //dd($densidadParticulas);
+
+        $densidadesParticulas = [];
+
+        foreach ($densidadParticulas as $m) {
+
+                $dp = DensidadParticulas::calcular(
+                        $m->numero_balon,
+                        $m->p1,
+                        $m->p2,
+                        $m->p3,
+                        $m->temperatura
+                );
+
+                if ($dp !== null) {
+                        $densidadesParticulas[(string)$m->idlab] = $dp;
+                }
+        }
+
         /*------------------------------------------------*/
         // POROSIDAD //
         /*------------------------------------------------*/
@@ -105,7 +129,8 @@ class ReporteClienteController extends Controller {
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
             'texturas' => $texturas,
-            'densidades' => $densidades
+            'densidades' => $densidades,
+            'densidadesParticulas' => $densidadesParticulas
         ]);
     }
 }

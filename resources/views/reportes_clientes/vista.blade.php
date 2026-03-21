@@ -183,13 +183,21 @@
                                     
                                     <td>-</td>
                                     
+                                    <!-- Densidad Aparente -->
                                     @php
-                                    $d = $densidades[$row->idlab] ?? null;
+                                        $d = $densidades[$row->idlab] ?? null;
                                     @endphp
 
                                     <td>{{ $d ? number_format($d, 3) : '-' }}</td>                                    
                                     
-                                    <td>-</td>
+                                    <!-- Densidad de Particulas -->
+                                    @php
+                                        $dp = $densidadesParticulas[(string)$row->idlab] ?? null;
+                                    @endphp
+
+                                    <td>{{ $dp ? number_format($dp, 3) : '-' }}</td>
+
+                                    
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>

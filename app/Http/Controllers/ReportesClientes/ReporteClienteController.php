@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\Calculos\Textura;
+use App\Helpers\Calculos\DensidadAparente;
 
 class ReporteClienteController extends Controller {
 
@@ -66,6 +67,28 @@ class ReporteClienteController extends Controller {
         // DENSIDAD APARENTE //
         /*------------------------------------------------*/
         
+        $densidadAparente = DB::select(
+            'CALL sp_reporte_cliente_densidad_aparente(?)',
+            [$id]
+        );
+        
+        //dd($densidadAparente);
+        $densidades = [];
+
+        foreach ($densidadAparente as $m) {
+
+        $da = DensidadAparente::calcular_densidad(
+                $m->altura_cilindro,
+                $m->diametro_cilindro,
+                $m->peso_seco,
+                $m->peso_cilindro
+        );
+
+        if ($da !== null) {
+               // $densidades[$m->idlab] = $da;
+                $densidades[(string)$m->idlab] = $da;
+        }
+        }
         
         /*------------------------------------------------*/
         // DENSIDAD PARTICULAS //
@@ -81,7 +104,8 @@ class ReporteClienteController extends Controller {
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
-            'texturas' => $texturas
+            'texturas' => $texturas,
+            'densidades' => $densidades
         ]);
     }
 }

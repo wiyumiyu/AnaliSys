@@ -180,14 +180,15 @@
                                     <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
                                     <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
                                     <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-
+                                    
+                                    <td>-</td>
+                                    
                                     @php
                                     $d = $densidades[$row->idlab] ?? null;
                                     @endphp
 
-                                    <td>{{ $d ? number_format($d, 3) : '-' }}</td>
+                                    <td>{{ $d ? number_format($d, 3) : '-' }}</td>                                    
                                     
-                                    <td>-</td>
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>

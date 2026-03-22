@@ -6955,7 +6955,79 @@ tm.idlab;
 END$$
 
 DELIMITER ;
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_textura_resultados;
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_textura_resultados(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+    tm.id_textura,
+    tm.idlab,
+    tm.rep, 
+
+    AVG(CASE WHEN a.siglas = 'PESO_SECO' THEN tr.resultado END) AS peso_seco,
+
+    AVG(CASE WHEN a.siglas = 'R1' THEN tr.resultado END) AS R1,
+    AVG(CASE WHEN a.siglas = 'R2' THEN tr.resultado END) AS R2,
+    AVG(CASE WHEN a.siglas = 'R3' THEN tr.resultado END) AS R3,
+    AVG(CASE WHEN a.siglas = 'R4' THEN tr.resultado END) AS R4,
+
+    AVG(CASE WHEN a.siglas = 'TEMP1' THEN tr.resultado END) AS TEMP1,
+    AVG(CASE WHEN a.siglas = 'TEMP2' THEN tr.resultado END) AS TEMP2,
+    AVG(CASE WHEN a.siglas = 'TEMP3' THEN tr.resultado END) AS TEMP3,
+    AVG(CASE WHEN a.siglas = 'TEMP4' THEN tr.resultado END) AS TEMP4,
+
+    AVG(CASE WHEN a.siglas = 'TIEMPO1' THEN tr.resultado END) AS TIEMPO1,
+    AVG(CASE WHEN a.siglas = 'TIEMPO2' THEN tr.resultado END) AS TIEMPO2,
+    AVG(CASE WHEN a.siglas = 'TIEMPO3' THEN tr.resultado END) AS TIEMPO3,
+    AVG(CASE WHEN a.siglas = 'TIEMPO4' THEN tr.resultado END) AS TIEMPO4
+
+FROM trn_textura_muestras tm
+
+JOIN trn_textura t
+    ON t.id = tm.id_textura
+
+LEFT JOIN trn_textura_resultados tr
+    ON tr.id_textura_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'TEXTURA'
+
+WHERE tm.id_textura IN (
+
+    SELECT DISTINCT tm2.id_textura
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_textura_muestras tm2
+        ON tm2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND tm.estado = 1
+
+GROUP BY
+    tm.id_textura,
+    tm.idlab,
+    tm.rep  
+
+ORDER BY
+    tm.id_textura,
+    tm.idlab,
+    tm.rep;
+
+END$$
+
+DELIMITER ;
+
+-- -------------------------------------------------------------------------
 DROP PROCEDURE IF EXISTS sp_obtener_viscosidad_cp;
 DELIMITER $$
 CREATE PROCEDURE sp_obtener_viscosidad_cp(IN p_temperatura DECIMAL(5,2))

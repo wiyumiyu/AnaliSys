@@ -263,107 +263,142 @@
                             </tr>
                         </thead>
 
-                        <tbody>
+<tbody>
 
-                            {{--  FILA 1 --}}
-                            <tr>
+    {{-- ================= FILA 1 ================= --}}
+    <tr>
 
-                                {{-- PANEL IZQUIERDO --}}
-                                <td rowspan="{{ $count > 1 ? $count + 3 : $count }}" 
-                                    class="text-start align-top p-4 border-end">
+        {{-- PANEL IZQUIERDO --}}
+        <td rowspan="{{ $count > 1 ? $count + 3 : $count }}" 
+            class="text-start align-top p-4 border-end">
 
-                                    <div class="fw-bold text-primary mb-3 fs-5">
-                                        SOL. {{ $first->solicitud }}
-                                    </div>
+            <div class="fw-bold text-primary mb-3 fs-5">
+                SOL. {{ $first->solicitud }}
+            </div>
 
-                                    <div class="small text-muted">Cultivo</div>
-                                    <div class="fw-semibold text-primary">
-                                        {{ $first->cultivo ?? '-' }}
-                                    </div>
+            <div class="small text-muted">Cultivo</div>
+            <div class="fw-semibold text-primary">
+                {{ $first->cultivo ?? '-' }}
+            </div>
 
-                                    <div class="small text-muted mt-2">Cliente</div>
-                                    <div class="fw-semibold">
-                                        {{ $first->cliente ?? '-' }}
-                                    </div>
+            <div class="small text-muted mt-2">Cliente</div>
+            <div class="fw-semibold">
+                {{ $first->cliente ?? '-' }}
+            </div>
 
-                                    <div class="small text-muted mt-2">Cantón</div>
-                                    <div class="fw-semibold">
-                                        {{ $first->canton ?? '-' }}
-                                    </div>
+            <div class="small text-muted mt-2">Cantón</div>
+            <div class="fw-semibold">
+                {{ $first->canton ?? '-' }}
+            </div>
 
-                                    <div class="small text-muted mt-2">Fecha</div>
-                                    <div class="fw-semibold">
-                                        {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
-                                    </div>
+            <div class="small text-muted mt-2">Fecha</div>
+            <div class="fw-semibold">
+                {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
+            </div>
 
-                                </td>
+        </td>
 
-                                {{--  IDLAB + REP --}}
-                                <td>
-                                    <span class="badge bg-primary-subtle text-primary">
-                                        {{ $first->idlab }}
-                                    </span>
+        {{-- IDLAB + REP --}}
+        <td>
+            <span class="badge bg-primary-subtle text-primary">
+                {{ $first->idlab }}
+            </span>
 
-                                    <div class="small text-muted">
-                                        Rep {{ $first->rep }}
-                                    </div>
-                                </td>
+            <div class="small text-muted">
+                Rep {{ $first->rep }}
+            </div>
+        </td>
 
-                                @for($i=0;$i<12;$i++)
-                                <td>-</td>
-                                @endfor
+        {{-- 🔥 TEXTURA --}}
+        @php
+            $t = $texturas[$first->idlab] ?? null;
+        @endphp
 
-                            </tr>
+        <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
+        <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
+        <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
+        <td>{{ $t ? number_format(($t['arena'] + $t['limo'] + $t['arcilla']),1) : '-' }}</td>
 
-                            {{--  RESTO DE REPS --}}
-                            @foreach($rows->skip(1) as $row)
-                            <tr>
+        @for($i=0;$i<8;$i++)
+            <td>-</td>
+        @endfor
 
-                                <td>
-                                    <span class="badge bg-primary-subtle text-primary">
-                                        {{ $row->idlab }}
-                                    </span>
-
-                                    <div class="small text-muted">
-                                        Rep {{ $row->rep }}
-                                    </div>
-                                </td>
-
-                                @for($i=0;$i<12;$i++)
-                                <td>-</td>
-                                @endfor
-
-                            </tr>
-                            @endforeach
+    </tr>
 
 
-                            {{--  SOLO SI HAY MÁS DE 1 REP --}}
-                            @if($count > 1)
+    {{-- ================= RESTO DE REPS ================= --}}
+    @foreach($rows->skip(1) as $row)
+    <tr>
 
-                            <tr class="table-light">
-                                <td class="fw-semibold">PROMEDIO</td>
-                                @for($i=0;$i<12;$i++)
-                                <td>-</td>
-                                @endfor
-                            </tr>
+        <td>
+            <span class="badge bg-primary-subtle text-primary">
+                {{ $row->idlab }}
+            </span>
 
-                            <tr class="table-light">
-                                <td class="fw-semibold">Desv.Est.</td>
-                                @for($i=0;$i<12;$i++)
-                                <td>-</td>
-                                @endfor
-                            </tr>
+            <div class="small text-muted">
+                Rep {{ $row->rep }}
+            </div>
+        </td>
 
-                            <tr class="table-light">
-                                <td class="fw-semibold">CV</td>
-                                @for($i=0;$i<12;$i++)
-                                <td>-</td>
-                                @endfor
-                            </tr>
+        {{-- 🔥 TEXTURA --}}
+        @php
+            $t = $texturas[$row->idlab] ?? null;
+        @endphp
 
-                            @endif
+        <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
+        <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
+        <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
+        <td>{{ $t ? number_format(($t['arena'] + $t['limo'] + $t['arcilla']),1) : '-' }}</td>
 
-                        </tbody>
+        @for($i=0;$i<8;$i++)
+            <td>-</td>
+        @endfor
+
+    </tr>
+    @endforeach
+
+
+    {{-- ================= PROMEDIO ================= --}}
+    @if($count > 1)
+
+    @php
+        $arena = [];
+        $limo = [];
+        $arcilla = [];
+
+        foreach ($rows as $r) {
+            $t = $texturas[$r->idlab] ?? null;
+
+            if ($t) {
+                $arena[] = $t['arena'];
+                $limo[] = $t['limo'];
+                $arcilla[] = $t['arcilla'];
+            }
+        }
+
+        $promArena = count($arena) ? array_sum($arena)/count($arena) : null;
+        $promLimo = count($limo) ? array_sum($limo)/count($limo) : null;
+        $promArcilla = count($arcilla) ? array_sum($arcilla)/count($arcilla) : null;
+    @endphp
+
+    <tr class="table-light">
+        <td class="fw-semibold">PROMEDIO</td>
+
+        <td>{{ $promArena !== null ? number_format($promArena,1) : '-' }}</td>
+        <td>{{ $promLimo !== null ? number_format($promLimo,1) : '-' }}</td>
+        <td>{{ $promArcilla !== null ? number_format($promArcilla,1) : '-' }}</td>
+        <td>
+            {{ $promArena !== null ? number_format(($promArena + $promLimo + $promArcilla),1) : '-' }}
+        </td>
+
+        @for($i=0;$i<8;$i++)
+            <td>-</td>
+        @endfor
+    </tr>
+
+    @endif
+
+</tbody>
 
                     </table>
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Resultados;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\Calculos\Textura;
 
 class ResultadosController extends Controller {
 
@@ -127,40 +128,58 @@ class ResultadosController extends Controller {
      * Vista detalle resultado
      * ------------------------------------------------------------
      */
-    public function show($id) {
-        $archivos = collect(DB::select(
-                        'CALL sp_traer_archivos_por_resultado(?)',
-                        [$id]
-                ));
+   public function show($id) {
 
-        $comentarios = collect(DB::select(
-                        'CALL sp_traer_comentarios_resultado(?)',
-                        [$id]
-                ));
+    $archivos = collect(DB::select(
+        'CALL sp_traer_archivos_por_resultado(?)',
+        [$id]
+    ));
 
-        $datos = collect(DB::select(
-                        'CALL sp_resultado_vista(?)',
-                        [$id]
-                ));
+    $comentarios = collect(DB::select(
+        'CALL sp_traer_comentarios_resultado(?)',
+        [$id]
+    ));
 
-        //  AGRUPAR POR IDLAB + PROCESAR
-        $cards = $datos->groupBy('idlab')->map(function ($rows) {
+    $datos = collect(DB::select(
+        'CALL sp_resultado_vista(?)',
+        [$id]
+    ));
 
-            $rows = collect($rows);
+    // NUEVO: sacar id_solicitud
+    $idSolicitud = $datos->first()->id_solicitud ?? null;
 
-            return (object) [
-                        'rows' => $rows,
-                        'first' => $rows->first(),
-                        'count' => $rows->count()
-            ];
-        });
+    // NUEVO: calcular textura usando SP de reportes
+    $texturas = [];
 
-        return view('resultados.vista', compact(
-                        'archivos',
-                        'comentarios',
-                        'cards'
-                ));
+    if ($idSolicitud) {
+
+        $textura = DB::select(
+            'CALL sp_reporte_cliente_textura(?)',
+            [$idSolicitud]
+        );
+
+        $texturas = Textura::calcularTexturas($textura);
     }
+
+    //  AGRUPAR POR IDLAB + PROCESAR
+    $cards = $datos->groupBy('idlab')->map(function ($rows) {
+
+        $rows = collect($rows);
+
+        return (object) [
+            'rows' => $rows,
+            'first' => $rows->first(),
+            'count' => $rows->count()
+        ];
+    });
+
+    return view('resultados.vista', compact(
+        'archivos',
+        'comentarios',
+        'cards',
+        'texturas' //  IMPORTANTE
+    ));
+}
 
     /**
      * ------------------------------------------------------------

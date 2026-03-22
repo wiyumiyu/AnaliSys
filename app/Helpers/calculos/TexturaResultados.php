@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Helpers\Calculos;
+
+class TexturaResultados
+{
+    public static function calcularPorRep($textura)
+    {
+        $texturas = [];
+        $blancos = [];
+
+        /* ===========================
+         * 1. DETECTAR BLANCOS
+         * =========================== */
+        foreach ($textura as $t) {
+
+            if (self::esBlanco($t->idlab)) {
+
+                if (!isset($blancos[$t->id_textura])) {
+                    $blancos[$t->id_textura] = $t;
+                }
+            }
+        }
+
+        /* ===========================
+         * 2. CALCULAR POR REP
+         * =========================== */
+        foreach ($textura as $m) {
+
+            if (self::esBlanco($m->idlab)) {
+                continue;
+            }
+
+            $blanco = $blancos[$m->id_textura] ?? null;
+
+            if (!$blanco) continue;
+            if (!$m->peso_seco) continue;
+
+            $R = [
+                $m->R1 ?? 0,
+                $m->R2 ?? 0,
+                $m->R3 ?? 0,
+                $m->R4 ?? 0
+            ];
+
+            $RL = [
+                $blanco->R1,
+                $blanco->R2,
+                $blanco->R3,
+                $blanco->R4
+            ];
+
+            $Temp = [
+                $m->TEMP1,
+                $m->TEMP2,
+                $m->TEMP3,
+                $m->TEMP4
+            ];
+
+            $Tiempo = [
+                $m->TIEMPO1,
+                $m->TIEMPO2,
+                $m->TIEMPO3,
+                $m->TIEMPO4
+            ];
+
+            $resultado = Textura::calcular_textura_suelo(
+                $m->peso_seco,
+                $R,
+                $RL,
+                $Temp,
+                $Tiempo
+            );
+
+            // CLAVE: guardar por idlab + rep
+            $texturas[$m->idlab][$m->rep] = $resultado;
+        }
+        return $texturas;
+    }
+
+    /* ===========================
+     * PROMEDIO POR GRUPO
+     * =========================== */
+    public static function promedio($rows, $texturas)
+    {
+        $arena = [];
+        $limo = [];
+        $arcilla = [];
+
+        foreach ($rows as $r) {
+
+            $t = $texturas[$r->idlab][$r->rep] ?? null;
+
+            if ($t) {
+                $arena[] = $t['arena'];
+                $limo[] = $t['limo'];
+                $arcilla[] = $t['arcilla'];
+            }
+        }
+
+        return [
+            'arena' => count($arena) ? array_sum($arena)/count($arena) : null,
+            'limo' => count($limo) ? array_sum($limo)/count($limo) : null,
+            'arcilla' => count($arcilla) ? array_sum($arcilla)/count($arcilla) : null,
+        ];
+    }
+
+    /* ===========================
+     * DESVIACIÓN ESTÁNDAR
+     * =========================== */
+    public static function desviacion($rows, $texturas, $prom)
+    {
+        $calc = function($values, $mean) {
+            if (!$values || $mean === null) return null;
+
+            $sum = 0;
+            foreach ($values as $v) {
+                $sum += pow($v - $mean, 2);
+            }
+
+            return sqrt($sum / count($values));
+        };
+
+        $arena = [];
+        $limo = [];
+        $arcilla = [];
+
+        foreach ($rows as $r) {
+
+            $t = $texturas[$r->idlab][$r->rep] ?? null;
+
+            if ($t) {
+                $arena[] = $t['arena'];
+                $limo[] = $t['limo'];
+                $arcilla[] = $t['arcilla'];
+            }
+        }
+
+        return [
+            'arena' => $calc($arena, $prom['arena']),
+            'limo' => $calc($limo, $prom['limo']),
+            'arcilla' => $calc($arcilla, $prom['arcilla']),
+        ];
+    }
+
+    /* ===========================
+     * CV
+     * =========================== */
+    public static function cv($desv, $prom)
+    {
+        $calc = function($d, $p) {
+            if ($d === null || $p == 0) return null;
+            return ($d / $p) * 100;
+        };
+
+        return [
+            'arena' => $calc($desv['arena'], $prom['arena']),
+            'limo' => $calc($desv['limo'], $prom['limo']),
+            'arcilla' => $calc($desv['arcilla'], $prom['arcilla']),
+        ];
+    }
+
+    private static function esBlanco($idlab)
+    {
+        $idlab = strtoupper($idlab);
+
+        return in_array($idlab, [
+            'BLANCO', 'BLK', 'BLANK', 'CBL', 'C-BL', 'BL'
+        ]);
+    }
+}

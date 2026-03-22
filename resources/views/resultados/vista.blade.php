@@ -250,7 +250,7 @@
                                 <th>Arena</th>
                                 <th>Limo</th>
                                 <th>Arcilla</th>
-                                <th>Total</th>
+                                <th>Clase Textural</th>
 
                                 <th>DA</th>
                                 <th>DP</th>
@@ -309,15 +309,15 @@
             </div>
         </td>
 
-        {{-- 🔥 TEXTURA --}}
-        @php
-            $t = $texturas[$first->idlab] ?? null;
-        @endphp
+        {{--  TEXTURA --}}
+@php
+$t = $texturas[$first->idlab][$first->rep] ?? null;
+@endphp
 
         <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
         <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
         <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-        <td>{{ $t ? number_format(($t['arena'] + $t['limo'] + $t['arcilla']),1) : '-' }}</td>
+        <td>{{ $t['clase'] ?? '-' }}</td>
 
         @for($i=0;$i<8;$i++)
             <td>-</td>
@@ -340,15 +340,15 @@
             </div>
         </td>
 
-        {{-- 🔥 TEXTURA --}}
-        @php
-            $t = $texturas[$row->idlab] ?? null;
-        @endphp
+        {{--  TEXTURA --}}
+@php
+$t = $texturas[$row->idlab][$row->rep] ?? null;
+@endphp
 
         <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
         <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
         <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-        <td>{{ $t ? number_format(($t['arena'] + $t['limo'] + $t['arcilla']),1) : '-' }}</td>
+        <td>{{ $t['clase'] ?? '-' }}</td>
 
         @for($i=0;$i<8;$i++)
             <td>-</td>
@@ -358,45 +358,71 @@
     @endforeach
 
 
-    {{-- ================= PROMEDIO ================= --}}
-    @if($count > 1)
+{{-- ================= PROMEDIO ================= --}}
+@if($count > 1)
 
-    @php
-        $arena = [];
-        $limo = [];
-        $arcilla = [];
+@php
+$arena = [];
+$limo = [];
+$arcilla = [];
+$clases = [];
 
-        foreach ($rows as $r) {
-            $t = $texturas[$r->idlab] ?? null;
+foreach ($rows as $r) {
+    $t = $texturas[$r->idlab][$r->rep] ?? null;
 
-            if ($t) {
-                $arena[] = $t['arena'];
-                $limo[] = $t['limo'];
-                $arcilla[] = $t['arcilla'];
-            }
+    if ($t) {
+        $arena[] = $t['arena'];
+        $limo[] = $t['limo'];
+        $arcilla[] = $t['arcilla'];
+
+        if(isset($t['clase'])) {
+            $clases[] = $t['clase'];
         }
+    }
+}
 
-        $promArena = count($arena) ? array_sum($arena)/count($arena) : null;
-        $promLimo = count($limo) ? array_sum($limo)/count($limo) : null;
-        $promArcilla = count($arcilla) ? array_sum($arcilla)/count($arcilla) : null;
-    @endphp
+// promedios numéricos
+$promArena = count($arena) ? array_sum($arena)/count($arena) : null;
+$promLimo = count($limo) ? array_sum($limo)/count($limo) : null;
+$promArcilla = count($arcilla) ? array_sum($arcilla)/count($arcilla) : null;
 
-    <tr class="table-light">
-        <td class="fw-semibold">PROMEDIO</td>
+// 🔥 VALIDACIÓN DE CLASES
+$clasesUnicas = array_unique($clases);
 
-        <td>{{ $promArena !== null ? number_format($promArena,1) : '-' }}</td>
-        <td>{{ $promLimo !== null ? number_format($promLimo,1) : '-' }}</td>
-        <td>{{ $promArcilla !== null ? number_format($promArcilla,1) : '-' }}</td>
-        <td>
-            {{ $promArena !== null ? number_format(($promArena + $promLimo + $promArcilla),1) : '-' }}
-        </td>
+$claseFinal = null;
+$inconsistente = false;
 
-        @for($i=0;$i<8;$i++)
-            <td>-</td>
-        @endfor
-    </tr>
+if (count($clasesUnicas) === 1) {
+    $claseFinal = $clasesUnicas[0];
+} elseif (count($clasesUnicas) > 1) {
+    $inconsistente = true;
+}
+@endphp
 
-    @endif
+<tr class="table-light">
+    <td class="fw-semibold">PROMEDIO</td>
+
+    <td>{{ $promArena !== null ? number_format($promArena,1) : '-' }}</td>
+    <td>{{ $promLimo !== null ? number_format($promLimo,1) : '-' }}</td>
+    <td>{{ $promArcilla !== null ? number_format($promArcilla,1) : '-' }}</td>
+
+    {{-- 🔥 CLASE TEXTURAL VALIDADA --}}
+    <td>
+        @if($inconsistente)
+            <span class="badge bg-danger">REVISAR</span>
+        @else
+            <span class="badge bg-success">
+                {{ $claseFinal ?? '-' }}
+            </span>
+        @endif
+    </td>
+
+    @for($i=0;$i<8;$i++)
+        <td>-</td>
+    @endfor
+</tr>
+
+@endif
 
 </tbody>
 

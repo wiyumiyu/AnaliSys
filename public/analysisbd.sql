@@ -6684,6 +6684,7 @@ END$$
 
 DELIMITER ;
 
+
 -- ----------------------
 -- ----------------------
 -- ESTO ES DE REPORTES DE CLIENTES
@@ -6961,7 +6962,7 @@ DROP PROCEDURE IF EXISTS sp_reporte_cliente_textura_resultados;
 DELIMITER $$
 
 CREATE PROCEDURE sp_reporte_cliente_textura_resultados(
-    IN p_id_solicitud INT
+    IN p_lista_archivos TEXT
 )
 BEGIN
 
@@ -6969,7 +6970,7 @@ SELECT
 
     tm.id_textura,
     tm.idlab,
-    tm.rep, 
+    tm.rep,
 
     AVG(CASE WHEN a.siglas = 'PESO_SECO' THEN tr.resultado END) AS peso_seco,
 
@@ -6988,10 +6989,10 @@ SELECT
     AVG(CASE WHEN a.siglas = 'TIEMPO3' THEN tr.resultado END) AS TIEMPO3,
     AVG(CASE WHEN a.siglas = 'TIEMPO4' THEN tr.resultado END) AS TIEMPO4
 
-FROM trn_textura_muestras tm
+FROM trn_textura t
 
-JOIN trn_textura t
-    ON t.id = tm.id_textura
+JOIN trn_textura_muestras tm
+    ON tm.id_textura = t.id
 
 LEFT JOIN trn_textura_resultados tr
     ON tr.id_textura_muestras = tm.id
@@ -7001,32 +7002,21 @@ LEFT JOIN trn_analisis a
     ON a.id = tr.id_analisis
     AND a.origen = 'TEXTURA'
 
-WHERE tm.id_textura IN (
-
-    SELECT DISTINCT tm2.id_textura
-    FROM tbm_solicitud_muestras sm
-    JOIN trn_textura_muestras tm2
-        ON tm2.idlab = sm.idlab
-    WHERE sm.id_solicitud = p_id_solicitud
-
-)
-
+WHERE FIND_IN_SET(t.archivo, p_lista_archivos) 
 AND tm.estado = 1
 
 GROUP BY
     tm.id_textura,
     tm.idlab,
-    tm.rep  
+    tm.rep
 
 ORDER BY
-    tm.id_textura,
     tm.idlab,
     tm.rep;
 
 END$$
 
 DELIMITER ;
-
 -- -------------------------------------------------------------------------
 DROP PROCEDURE IF EXISTS sp_obtener_viscosidad_cp;
 DELIMITER $$

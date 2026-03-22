@@ -38,65 +38,64 @@ class ReporteClienteController extends Controller {
     }
 
     public function show($id) {
-        
+
         // ENCABEZADO //
-        /*------------------------------------------------*/
+        /* ------------------------------------------------ */
         $encabezado = DB::select(
                 'CALL sp_reporte_cliente_encabezado(?)',
                 [$id]
         );
-     
-        /*------------------------------------------------*/
+
+        /* ------------------------------------------------ */
         // ID USUARIO Y IDLAB //
-        /*------------------------------------------------*/
+        /* ------------------------------------------------ */
         $datos = DB::select(
                 'CALL sp_obtener_reporte_cliente(?)',
                 [$id]
         );
-        /*------------------------------------------------*/
+        /* ------------------------------------------------ */
 
-        
-        /*------------------------------------------------*/
+
+        /* ------------------------------------------------ */
         // TEXTURA //
-        /*------------------------------------------------*/
+        /* ------------------------------------------------ */
         $textura = DB::select(
                 'CALL sp_reporte_cliente_textura(?)',
                 [$id]
         );
-      
+
         $texturas = Textura::calcularTexturas($textura);
-        
-        /*------------------------------------------------*/
+
+        /* ------------------------------------------------ */
         // DENSIDAD APARENTE //
-        /*------------------------------------------------*/
-        
+        /* ------------------------------------------------ */
+
         $densidadAparente = DB::select(
-            'CALL sp_reporte_cliente_densidad_aparente(?)',
-            [$id]
+                'CALL sp_reporte_cliente_densidad_aparente(?)',
+                [$id]
         );
-        
+
         //dd($densidadAparente);
         $densidades = [];
 
         foreach ($densidadAparente as $m) {
-
-        $da = DensidadAparente::calcular_densidad(
-                $m->altura_cilindro,
-                $m->diametro_cilindro,
-                $m->peso_seco,
-                $m->peso_cilindro
-        );
-
-        if ($da !== null) {
-               // $densidades[$m->idlab] = $da;
-                $densidades[(string)$m->idlab] = $da;
+           
+            $da = DensidadAparente::calcular_densidad(
+                    $m->altura_cilindro,
+                    $m->diametro_cilindro,
+                    $m->peso_seco,
+                    $m->peso_cilindro
+            );
+            //dd($da);
+            if ($da !== null) {
+                $densidades[(string) $m->idlab] = $da;
+            }
         }
-        }
-        
-        /*------------------------------------------------*/
+           // dd($densidades);    
+        /* ------------------------------------------------ */
         // DENSIDAD PARTICULAS //
-        /*------------------------------------------------*/
-        
+        /* ------------------------------------------------ */
+
         $densidadParticulas = DB::select(
                 'CALL sp_reporte_cliente_densidad_particulas(?)',
                 [$id]
@@ -108,45 +107,45 @@ class ReporteClienteController extends Controller {
 
         foreach ($densidadParticulas as $m) {
 
-                $dp = DensidadParticulas::calcular(
-                        $m->numero_balon,
-                        $m->p1,
-                        $m->p2,
-                        $m->p3,
-                        $m->temperatura
-                );
+            $dp = DensidadParticulas::calcular(
+                    $m->numero_balon,
+                    $m->p1,
+                    $m->p2,
+                    $m->p3,
+                    $m->temperatura
+            );
 
-                if ($dp !== null) {
-                        $densidadesParticulas[(string)$m->idlab] = $dp;
-                }
+            if ($dp !== null) {
+                $densidadesParticulas[(string) $m->idlab] = $dp;
+            }
         }
 
-        /*------------------------------------------------*/
+        /* ------------------------------------------------ */
         // POROSIDAD //
-        /*------------------------------------------------*/
-        
-        
+        /* ------------------------------------------------ */
+
+
         $porosidades = [];
 
         foreach ($datos as $row) {
 
-        $idlab = trim((string)$row->idlab);
+            $idlab = trim((string) $row->idlab);
 
-        $da = $densidades[$idlab] ?? null;
-        $dp = $densidadesParticulas[$idlab] ?? null;
+            $da = $densidades[$idlab] ?? null;
+            $dp = $densidadesParticulas[$idlab] ?? null;
 
-        if ($da !== null && $dp !== null && $dp != 0) {
+            if ($da !== null && $dp !== null && $dp != 0) {
 
                 $p = (1 - ($da / $dp)) * 100;
 
                 $porosidades[$idlab] = round($p, 2);
-        }
+            }
         }
 
 
-        /*------------------------------------------------*/
+        /* ------------------------------------------------ */
         // HUMEDAD GRAVIMETRICA //
-        /*------------------------------------------------*/
+        /* ------------------------------------------------ */
 
         $humedadGravimetrica = DB::select(
                 'CALL sp_reporte_cliente_humedad_gravimetrica(?)',
@@ -159,20 +158,20 @@ class ReporteClienteController extends Controller {
 
         foreach ($humedadGravimetrica as $m) {
 
-                $hg = HumedadGravimetrica::calcular(
-                        $m->pc,
-                        $m->ph,
-                        $m->ps
-                );
+            $hg = HumedadGravimetrica::calcular(
+                    $m->pc,
+                    $m->ph,
+                    $m->ps
+            );
 
-                if ($hg !== null) {
-                        $humedades[(string)$m->idlab] = $hg;
-                        //$humedades[trim((string)$m->idlab)] = $hg;
-                }
+            if ($hg !== null) {
+                $humedades[(string) $m->idlab] = $hg;
+                //$humedades[trim((string)$m->idlab)] = $hg;
+            }
         }
 
 
-        
+
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,

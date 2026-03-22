@@ -182,7 +182,7 @@
                                     <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
                                     <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
                                     
-                                    <td>-</td>
+                                    <td>{{ $t ? $t['clase'] : '-' }}</td>
                                     
                                     <!-- Densidad Aparente -->
                                     @php

@@ -10,7 +10,7 @@ class DensidadAparente {
         $peso_seco,
         $peso_cilindro
     ) {
-
+        
         // Validaciones
         if (
             $altura <= 0 ||
@@ -23,7 +23,7 @@ class DensidadAparente {
 
         // 1. Masa de suelo seco
         $Ms = $peso_seco - $peso_cilindro;
-
+        
         if ($Ms <= 0) {
             return null;
         }
@@ -34,10 +34,10 @@ class DensidadAparente {
         if ($Vt <= 0) {
             return null;
         }
-
+        
         // 3. Densidad aparente
         $Da = $Ms / $Vt;
-
+       // dd($Da);
         return round($Da, 4);
     }
 }

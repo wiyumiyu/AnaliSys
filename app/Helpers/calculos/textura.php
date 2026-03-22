@@ -18,9 +18,11 @@ class Textura {
     }
 
     /* Porcentaje en suspensión */
-public static function porcentaje_suspension($Cn, $Ms) {
-    return ($Cn / $Ms) * 100;
-}
+
+    public static function porcentaje_suspension($Cn, $Ms) {
+        return ($Cn / $Ms) * 100;
+    }
+
 //    public static function porcentaje_suspension($Cn, $C0) {
 //        return ($Cn / $C0) * 100;
 //    }
@@ -178,6 +180,11 @@ public static function porcentaje_suspension($Cn, $Ms) {
         $densidad = self::obtener_densidad($Temp4);
         $PI4 = $densidad['agua_hmp'];
 
+        $Tiempo1 /= 60;
+        $Tiempo2 /= 60;
+        $Tiempo3 /= 60;
+        $Tiempo4 /= 60;
+
         $X1 = self::diametro_particula($N1, $h1, $Tiempo1, $Ps, $g, $PI1);
         $X2 = self::diametro_particula($N2, $h2, $Tiempo2, $Ps, $g, $PI2);
         $X3 = self::diametro_particula($N3, $h3, $Tiempo3, $Ps, $g, $PI3);
@@ -186,29 +193,54 @@ public static function porcentaje_suspension($Cn, $Ms) {
         if (($X2 - $X1) == 0 || ($X4 - $X3) == 0) {
             return ["arcilla" => 0, "limo" => 0, "arena" => 0];
         }
-
+        $X1 = max($X1, 0.000001);
+        $X2 = max($X2, 0.000001);
+        $X3 = max($X3, 0.000001);
+        $X4 = max($X4, 0.000001);
         //if ($P1 <= 0) {     $P1 = 0.0001; }
         $P1 = max($P1, 0.0001);
         $P2 = max($P2, 0.0001);
         $P3 = max($P3, 0.0001);
         $P4 = max($P4, 0.0001);
 
-        $m1 = (log10($P2) - log10($P1)) / ($X2 - $X1);
-        $m2 = (log10($P4) - log10($P3)) / ($X4 - $X3);
+//        $m1 = (log10($P2) - log10($P1)) / ($X2 - $X1);
+//        $m2 = (log10($P4) - log10($P3)) / ($X4 - $X3);
+//
+//        $b1 = log10($P2) - ($m1 * $X2);
+//        $b2 = log10($P4) - ($m2 * $X4);
+//        $P50 = pow(10, ($m1 * 50) + $b1);   //P50 = 10^(m1*50 + b1)
+//        $PP2 = pow(10, ($m2 * 2) + $b2);     //P2 = 10^(m2*2 + b2) 
 
-        $b1 = log10($P2) - ($m1 * $X2);
-        $b2 = log10($P4) - ($m2 * $X4);
-        $P50 = pow(10, ($m1 * 50) + $b1);   //P50 = 10^(m1*50 + b1)
-        $PP2 = pow(10, ($m2 * 2) + $b2);     //P2 = 10^(m2*2 + b2) 
+        $logX1 = log10($X1);
+        $logX2 = log10($X2);
+        $logX3 = log10($X3);
+        $logX4 = log10($X4);
+
+// pendientes
+        $m1 = (log10($P2) - log10($P1)) / ($logX2 - $logX1);
+        $m2 = (log10($P4) - log10($P3)) / ($logX4 - $logX3);
+
+// interceptos
+        $b1 = log10($P2) - ($m1 * $logX2);
+        $b2 = log10($P4) - ($m2 * $logX4);
+
+// interpolación correcta
+        $P50 = pow(10, ($m1 * log10(0.05)) + $b1);
+        $PP2 = pow(10, ($m2 * log10(0.002)) + $b2);
 
         $arcilla = $PP2;
         $limo = 100 - $PP2 - $P50;
         $arena = 100 - $P50;
 
+        
+        $txt = self::normalizar_textura($arena, $limo, $arcilla);
+        $clase = self::clasificar_textura($arena, $limo, $arcilla);
+    
         return [
-            "arcilla" => $arcilla,
-            "limo" => $limo,
-            "arena" => $arena
+            "arcilla" => $txt["arcilla"],
+            "limo" => $txt["limo"],
+            "arena" => $txt["arena"],
+            "clase" => $clase
         ];
     }
 
@@ -290,5 +322,98 @@ public static function porcentaje_suspension($Cn, $Ms) {
         return in_array($idlab, [
             'BLANCO', 'BLK', 'BLANK', 'CBL', 'C-BL', 'BL'
         ]);
+    }
+
+    public static function clasificar_textura($arena, $limo, $arcilla) {
+        // asegurar suma 100
+        $total = $arena + $limo + $arcilla;
+        if ($total == 0)
+            return "Indefinido";
+
+        $arena = ($arena / $total) * 100;
+        $limo = ($limo / $total) * 100;
+        $arcilla = ($arcilla / $total) * 100;
+
+        // CLASIFICACIÓN USDA
+
+        if ($arcilla >= 40 && $limo <= 40 && $arena <= 45) {
+            return "Arcilla";
+        }
+
+        if ($arcilla >= 35 && $arena >= 45) {
+            return "Arcilla arenosa";
+        }
+
+        if ($arcilla >= 40 && $limo >= 40) {
+            return "Arcilla limosa";
+        }
+
+        if ($arcilla >= 27 && $arcilla < 40 && $arena > 20 && $arena <= 45) {
+            return "Franco arcilloso";
+        }
+
+        if ($arcilla >= 27 && $limo >= 40) {
+            return "Franco arcilloso limoso";
+        }
+
+        if ($arcilla >= 20 && $arcilla < 27 && $arena > 45) {
+            return "Franco arcilloso arenoso";
+        }
+
+        if ($limo >= 80 && $arcilla < 12) {
+            return "Limoso";
+        }
+
+        if ($limo >= 50 && $arcilla < 27) {
+            return "Franco limoso";
+        }
+
+        if ($arena >= 85 && $limo < 15 && $arcilla < 10) {
+            return "Arena";
+        }
+
+        if ($arena >= 70 && $arena < 90 && $arcilla < 15) {
+            return "Franco arenoso";
+        }
+
+        if ($arena >= 43 && $arena < 85 && $arcilla < 20) {
+            return "Franco arenoso fino";
+        }
+
+        if ($arcilla >= 7 && $arcilla < 27 && $limo >= 28 && $limo < 50 && $arena <= 52) {
+            return "Franco";
+        }
+
+        return "No clasificado";
+    }
+
+    public static function normalizar_textura($arena, $limo, $arcilla) {
+        // 1. eliminar negativos
+        $arena = max(0, $arena);
+        $limo = max(0, $limo);
+        $arcilla = max(0, $arcilla);
+
+        // 2. evitar todos en cero
+        if ($arena == 0 && $limo == 0 && $arcilla == 0) {
+            return [
+                "arena" => 33.33,
+                "limo" => 33.33,
+                "arcilla" => 33.33
+            ];
+        }
+
+        // 3. normalizar a 100%
+        $total = $arena + $limo + $arcilla;
+
+        $arena = ($arena / $total) * 100;
+        $limo = ($limo / $total) * 100;
+        $arcilla = ($arcilla / $total) * 100;
+
+        // 4. redondear (opcional)
+        return [
+            "arena" => round($arena, 1),
+            "limo" => round($limo, 1),
+            "arcilla" => round($arcilla, 1)
+        ];
     }
 }

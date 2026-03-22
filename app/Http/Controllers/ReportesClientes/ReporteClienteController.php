@@ -106,7 +106,7 @@ class ReporteClienteController extends Controller {
         $densidadesParticulas = [];
 
         foreach ($densidadParticulas as $m) {
-
+           //dd($m);
             $dp = DensidadParticulas::calcular(
                     $m->numero_balon,
                     $m->p1,
@@ -114,7 +114,7 @@ class ReporteClienteController extends Controller {
                     $m->p3,
                     $m->temperatura
             );
-
+            
             if ($dp !== null) {
                 $densidadesParticulas[(string) $m->idlab] = $dp;
             }

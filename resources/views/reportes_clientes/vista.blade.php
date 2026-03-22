@@ -197,8 +197,23 @@
 
                                     <td>{{ $dp ? number_format($dp, 3) : '-' }}</td>
 
+                                    <!-- Humedad Gravimetrica -->
+                                                                        
+                                    @php
+                                    $hg = $humedades[(string)$row->idlab] ?? null;
+                                    @endphp
+
+                                    <td>{{ $hg ? number_format($hg, 2) : '-' }}</td>
+
                                     
-                                    <td>-</td>
+
+
+
+
+
+
+
+
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>

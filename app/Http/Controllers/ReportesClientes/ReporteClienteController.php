@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Helpers\Calculos\Textura;
 use App\Helpers\Calculos\DensidadAparente;
 use App\Helpers\Calculos\DensidadParticulas;
+use App\Helpers\Calculos\HumedadGravimetrica;
 
 class ReporteClienteController extends Controller {
 
@@ -124,13 +125,45 @@ class ReporteClienteController extends Controller {
         /*------------------------------------------------*/
         
         
+
+
+
+        /*------------------------------------------------*/
+        // HUMEDAD GRAVIMETRICA //
+        /*------------------------------------------------*/
+
+        $humedadGravimetrica = DB::select(
+                'CALL sp_reporte_cliente_humedad_gravimetrica(?)',
+                [$id]
+        );
+
+        //dd($humedadGravimetrica);
+
+        $humedades = [];
+
+        foreach ($humedadGravimetrica as $m) {
+
+                $hg = HumedadGravimetrica::calcular(
+                        $m->pc,
+                        $m->ph,
+                        $m->ps
+                );
+
+                if ($hg !== null) {
+                        $humedades[(string)$m->idlab] = $hg;
+                        //$humedades[trim((string)$m->idlab)] = $hg;
+                }
+        }
+
+
         
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
             'texturas' => $texturas,
             'densidades' => $densidades,
-            'densidadesParticulas' => $densidadesParticulas
+            'densidadesParticulas' => $densidadesParticulas,
+            'humedades' => $humedades
         ]);
     }
 }

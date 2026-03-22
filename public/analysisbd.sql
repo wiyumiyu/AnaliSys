@@ -7131,6 +7131,68 @@ END $$
 
 DELIMITER ;
 
+-- Traer datos de humedad gravimetrica
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_humedad_gravimetrica $$
+
+CREATE PROCEDURE sp_reporte_cliente_humedad_gravimetrica(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+    tm.id_humedad_gravimetrica,
+    tm.idlab,
+
+    AVG(CASE WHEN a.siglas = 'peso_capsula_vacia' THEN tr.resultado END) AS pc,
+    AVG(CASE WHEN a.siglas = 'peso_capsula_suelohumedo' THEN tr.resultado END) AS ph,
+    AVG(CASE WHEN a.siglas = 'peso_capsula_sueloseco' THEN tr.resultado END) AS ps,
+    AVG(CASE WHEN a.siglas = 'temperatura_secado' THEN tr.resultado END) AS temperatura,
+    AVG(CASE WHEN a.siglas = 'tiempo_secado' THEN tr.resultado END) AS tiempo
+
+FROM trn_humedad_gravimetrica_muestras tm
+
+JOIN trn_humedad_gravimetrica t
+    ON t.id = tm.id_humedad_gravimetrica
+
+LEFT JOIN trn_humedad_gravimetrica_resultados tr
+    ON tr.id_humedad_gravimetrica_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'HUMEDAD_GRAVIMETRICA'
+
+WHERE tm.id_humedad_gravimetrica IN (
+
+    SELECT DISTINCT tm2.id_humedad_gravimetrica
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_humedad_gravimetrica_muestras tm2
+        ON tm2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND tm.estado = 1
+
+GROUP BY
+    tm.id_humedad_gravimetrica,
+    tm.idlab
+
+ORDER BY
+    tm.id_humedad_gravimetrica,
+    tm.idlab;
+
+END $$
+
+DELIMITER ;
+
+
+
+
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */
@@ -8160,6 +8222,76 @@ VALUES
 (18,23,192,1),
 (18,24,1,1);
 
+INSERT INTO trn_humedad_gravimetrica_muestras
+(id_humedad_gravimetrica, idlab, rep, material, tipo, posicion, estado, ri)
+VALUES
+(2,1020,1,1,1,1,1,0),
+(2,1021,1,1,1,2,1,0),
+(2,1022,1,1,1,3,1,0),
+(2,1023,1,1,1,4,1,0),
+(2,1024,1,1,1,5,1,0),
+(2,1025,1,1,1,6,1,0),
+(2,1026,1,1,1,7,1,0),
+(2,1027,1,1,1,8,1,0),
+(2,1028,1,1,1,9,1,0);
+
+INSERT INTO trn_humedad_gravimetrica_resultados
+(id_humedad_gravimetrica_muestras, id_analisis, resultado, estado)
+VALUES
+-- 1020
+(9,25,10,1),   -- PC
+(9,26,30,1),   -- PH
+(9,27,25,1),   -- PS
+(9,28,105,1),
+(9,29,24,1),
+-- 1021
+(10,25,10,1),
+(10,26,32,1),
+(10,27,26,1),
+(10,28,104,1),
+(10,29,25,1),
+-- 1022
+(11,25,10,1),
+(11,26,35,1),
+(11,27,28,1),
+(11,28,106,1),
+(11,29,26,1),
+-- 1023
+(12,25,10,1),
+(12,26,31,1),
+(12,27,26,1),
+(12,28,105,1),
+(12,29,24,1),
+-- 1024
+(13,25,10,1),
+(13,26,36,1),
+(13,27,29,1),
+(13,28,107,1),
+(13,29,25,1),
+-- 1025
+(14,25,10,1),
+(14,26,34,1),
+(14,27,28,1),
+(14,28,105,1),
+(14,29,24,1),
+-- 1026
+(15,25,10,1),
+(15,26,38,1),
+(15,27,30,1),
+(15,28,108,1),
+(15,29,26,1),
+-- 1027
+(16,25,10,1),
+(16,26,37,1),
+(16,27,30,1),
+(16,28,107,1),
+(16,29,25,1),
+-- 1028
+(17,25,10,1),
+(17,26,40,1),
+(17,27,32,1),
+(17,28,109,1),
+(17,29,26,1);
 
 CREATE INDEX idx_temp ON trn_textura_densidad_temperatura(temperatura_c);
 

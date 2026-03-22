@@ -49,6 +49,16 @@
                             <th>Temperatura de secado</th>
                             <th>Tiempo de secado</th>
                             <th>Fecha de secado</th>
+                            <th>T19</th>
+                            <th>T9,5</th>
+                            <th>T4,75</th>
+                            <th>T2</th>
+                            <th>T1</th>
+                            <th>T0,5</th>
+                            <th>T0,25</th>
+                            <th>T0,125</th>
+                            <th>T<0,125</th>
+                            
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -75,6 +85,15 @@
                                 <td class="{{ $filaInactiva }}">{{ $m->temperatura_secado }}</td>
                                 <td class="{{ $filaInactiva }}">{{ $m->tiempo_secado }}</td>
                                 <td class="{{ $filaInactiva }}">{{ $m->fecha_secado }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T19 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T9 }} </td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T4 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T2 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T1 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T05 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T025 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T0125 }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->T0 }}</td>
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">

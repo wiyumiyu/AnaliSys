@@ -224,6 +224,15 @@ public function muestras($idArchivo)
                     'temperatura_secado'       => $row['E'],
                     'tiempo_secado'            => $row['F'],
                     'fecha_secado'             => $row['G'],
+                    'T19'                      => $row['H'],
+                    'T9'                      => $row['I'],
+                    'T4'                      => $row['J'],
+                    'T2'                      => $row['K'],
+                    'T1'                      => $row['L'],
+                    'T05'                      => $row['M'],
+                    'T025'                      => $row['N'],
+                    'T0125'                      => $row['O'],
+                    'T0'                      => $row['P'],                    
                 ];
 
                 foreach ($valores as $sigla => $resultado) {

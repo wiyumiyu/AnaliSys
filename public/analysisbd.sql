@@ -2663,6 +2663,8 @@ END$$
 
 DELIMITER ;
 
+
+-- DROP PROCEDURE sp_listar_muestras_granulometria_detalle
 DELIMITER $$
 
 -- Listar muestras (detalle)
@@ -2682,7 +2684,16 @@ BEGIN
         MAX(CASE WHEN a.siglas = 'peso_lata' THEN r.resultado END) AS peso_lata,
         MAX(CASE WHEN a.siglas = 'temperatura_secado' THEN r.resultado END) AS temperatura_secado,
         MAX(CASE WHEN a.siglas = 'tiempo_secado' THEN r.resultado END) AS tiempo_secado,
-        MAX(CASE WHEN a.siglas = 'fecha_secado' THEN r.resultado END) AS fecha_secado
+        MAX(CASE WHEN a.siglas = 'fecha_secado' THEN r.resultado END) AS fecha_secado,
+        MAX(CASE WHEN a.siglas = 'T19' THEN r.resultado END) AS T19,
+        MAX(CASE WHEN a.siglas = 'T9' THEN r.resultado END) AS T9,
+        MAX(CASE WHEN a.siglas = 'T4' THEN r.resultado END) AS T4,
+        MAX(CASE WHEN a.siglas = 'T2' THEN r.resultado END) AS T2,
+        MAX(CASE WHEN a.siglas = 'T1' THEN r.resultado END) AS T1,
+        MAX(CASE WHEN a.siglas = 'T05' THEN r.resultado END) AS T05,
+        MAX(CASE WHEN a.siglas = 'T025' THEN r.resultado END) AS T025,
+        MAX(CASE WHEN a.siglas = 'T0125' THEN r.resultado END) AS T0125,
+        MAX(CASE WHEN a.siglas = 'T0' THEN r.resultado END) AS T0
 
     FROM trn_granulometria_muestras m
 
@@ -7727,7 +7738,16 @@ VALUES
 ('Peso de lata',                 'peso_lata',          'GRANULOMETRIA'),
 ('Temperatura de secado',       'temperatura_secado', 'GRANULOMETRIA'),
 ('Tiempo de secado',            'tiempo_secado',      'GRANULOMETRIA'),
-('Fecha de secado',             'fecha_secado',       'GRANULOMETRIA');
+('Fecha de secado',             'fecha_secado',       'GRANULOMETRIA'),
+('Grava Gruesa 19,00',             'T19',       'GRANULOMETRIA'),
+('Grava media 9,50',             'T9',       'GRANULOMETRIA'),
+('Grava muy fina 4,75',             'T4',       'GRANULOMETRIA'),
+('Arena muy gruesa 2,00',             'T2',       'GRANULOMETRIA'),
+('Arena gruesa 1,00',             'T1',       'GRANULOMETRIA'),
+('Arena media 0,5',             'T05',       'GRANULOMETRIA'),
+('Arena fina 0,25',             'T025',       'GRANULOMETRIA'),
+('Arena muy fina 0,125',             'T0125',       'GRANULOMETRIA'),
+('fracción fina (pasante) <0,125',             'T0',       'GRANULOMETRIA');
 
 INSERT INTO trn_granulometria (periodo, archivo, fecha, analista)
 VALUES
@@ -7749,6 +7769,15 @@ VALUES
 (1,(SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='GRANULOMETRIA'),'105',1),
 (1,(SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='GRANULOMETRIA'),'1440',1),
 (1,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T19' AND origen='GRANULOMETRIA'),'1',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T9' AND origen='GRANULOMETRIA'),'7',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T4' AND origen='GRANULOMETRIA'),'23',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T2' AND origen='GRANULOMETRIA'),'57',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T1' AND origen='GRANULOMETRIA'),'124',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T05' AND origen='GRANULOMETRIA'),'145',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T025' AND origen='GRANULOMETRIA'),'102',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T0125' AND origen='GRANULOMETRIA'),'51',1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='T0' AND origen='GRANULOMETRIA'),'18',1),
 
 -- Muestra 2
 (2,(SELECT id FROM trn_analisis WHERE siglas='peso_seco' AND origen='GRANULOMETRIA'),'480',1),
@@ -7756,13 +7785,31 @@ VALUES
 (2,(SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='GRANULOMETRIA'),'105',1),
 (2,(SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='GRANULOMETRIA'),'1440',1),
 (2,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T19' AND origen='GRANULOMETRIA'),'2',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T9' AND origen='GRANULOMETRIA'),'8',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T4' AND origen='GRANULOMETRIA'),'24',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T2' AND origen='GRANULOMETRIA'),'58',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T1' AND origen='GRANULOMETRIA'),'125',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T05' AND origen='GRANULOMETRIA'),'146',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T025' AND origen='GRANULOMETRIA'),'103',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T0125' AND origen='GRANULOMETRIA'),'54',1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='T0' AND origen='GRANULOMETRIA'),'19',1),
 
 -- Muestra 3
 (3,(SELECT id FROM trn_analisis WHERE siglas='peso_seco' AND origen='GRANULOMETRIA'),'510',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='peso_lata' AND origen='GRANULOMETRIA'),'121',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='temperatura_secado' AND origen='GRANULOMETRIA'),'105',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='tiempo_secado' AND origen='GRANULOMETRIA'),'1440',1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1);
+(3,(SELECT id FROM trn_analisis WHERE siglas='fecha_secado' AND origen='GRANULOMETRIA'),'2024-02-14',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T19' AND origen='GRANULOMETRIA'),'0',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T9' AND origen='GRANULOMETRIA'),'9',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T4' AND origen='GRANULOMETRIA'),'25',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T2' AND origen='GRANULOMETRIA'),'59',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T1' AND origen='GRANULOMETRIA'),'127',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T05' AND origen='GRANULOMETRIA'),'148',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T025' AND origen='GRANULOMETRIA'),'105',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T0125' AND origen='GRANULOMETRIA'),'52',1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='T0' AND origen='GRANULOMETRIA'),'16',1);
 
 -- Estabilidad de Agregados
 SELECT siglas, origen FROM trn_analisis WHERE origen LIKE '%ESTABILIDAD%';

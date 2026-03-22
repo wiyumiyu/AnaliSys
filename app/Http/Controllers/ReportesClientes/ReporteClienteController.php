@@ -45,6 +45,7 @@ class ReporteClienteController extends Controller {
                 'CALL sp_reporte_cliente_encabezado(?)',
                 [$id]
         );
+     
         /*------------------------------------------------*/
         // ID USUARIO Y IDLAB //
         /*------------------------------------------------*/
@@ -62,19 +63,22 @@ class ReporteClienteController extends Controller {
                 'CALL sp_reporte_cliente_textura(?)',
                 [$id]
         );
+      
+        $texturas = Textura::calcularTexturas($textura);
         
-//        $densidadAparente = DB::select(
-//                'CALL sp_reporte_cliente_densidad_aparente(?)',
-//                [$id]
-//        );
+        /*------------------------------------------------*/
+        // DENSIDAD APARENTE //
+        /*------------------------------------------------*/
         
+        $densidadAparente = DB::select(
+            'CALL sp_reporte_cliente_densidad_aparente(?)',
+            [$id]
+        );
         
-        //$da_calculado = cularda();
-         
-        
-        
-        $texturas = [];
-        $blancos = [];
+        //dd($densidadAparente);
+        $densidades = [];
+
+        foreach ($densidadAparente as $m) {
 
         $da = DensidadAparente::calcular_densidad(
                 $m->altura_cilindro,

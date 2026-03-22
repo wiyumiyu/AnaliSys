@@ -126,6 +126,7 @@
 
                                     <th rowspan="2">DA</th>
                                     <th rowspan="2">DP</th>
+                                    <th rowspan="2">Por.</th>
                                     <th rowspan="2">HG</th>
                                     <th rowspan="2">Ret.H</th>
                                     <th rowspan="2">C_RetH</th>
@@ -197,6 +198,13 @@
 
                                     <td>{{ $dp ? number_format($dp, 3) : '-' }}</td>
 
+                                    <!-- Porosidad -->
+                                    @php
+                                    $p = $porosidades[trim((string)$row->idlab)] ?? null;
+                                    @endphp
+
+                                    <td>{{ $p ? number_format($p, 2) : '-' }}</td>
+                                    
                                     <!-- Humedad Gravimetrica -->
                                                                         
                                     @php

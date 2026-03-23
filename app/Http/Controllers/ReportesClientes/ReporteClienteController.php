@@ -10,6 +10,7 @@ use App\Helpers\Calculos\DensidadAparente;
 use App\Helpers\Calculos\DensidadParticulas;
 use App\Helpers\Calculos\HumedadGravimetrica;
 use App\Helpers\Calculos\conductividadHidraulica;
+use App\Helpers\Calculos\RetencionHumedad;
 
 class ReporteClienteController extends Controller {
 
@@ -172,9 +173,7 @@ class ReporteClienteController extends Controller {
         }
         
         
-        /* ------------------------------------------------ */
-        // CONDUCTIVIDAD HIDRAULICA //
-        /* ------------------------------------------------ */
+
 
         /* ------------------------------------------------ */
         // GRANULOMETRIA //
@@ -195,14 +194,29 @@ class ReporteClienteController extends Controller {
                 $granulometrias[$idlab] = round($p, 2);
             }
         }*/
-
+        /* ------------------------------------------------ */
+        // CONDUCTIVIDAD HIDRAULICA //
+        /* ------------------------------------------------ */
         $conductividadHidraulica = DB::select(
                 'CALL sp_reporte_cliente_conductividad_hidraulica(?)',
                 [$id]
         ); 
         
         $conductividades = conductividadHidraulica::calcularConductividades($conductividadHidraulica);
-
+        
+        /* ------------------------------------------------ */
+        // RETENCION HUMEDAD //
+        /* ------------------------------------------------ */
+        
+        $retencionHumedad = DB::select(
+                'CALL sp_reporte_cliente_retencion_humedad(?)',
+                [$id]
+        ); 
+        
+        //dd();
+        
+        $retenciones = RetencionHumedad::calcularRetenciones($retencionHumedad);
+//(dd($retenciones);
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
@@ -211,7 +225,8 @@ class ReporteClienteController extends Controller {
             'densidadesParticulas' => $densidadesParticulas,
             'porosidades' => $porosidades,
             'humedades' => $humedades,
-            'conductividades' => $conductividades
+            'conductividades' => $conductividades,
+            'retenciones' => $retenciones
         ]);
     }
     

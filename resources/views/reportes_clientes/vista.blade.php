@@ -115,7 +115,7 @@
                             <thead class="small">
 
                                 <tr>
-                                    <th colspan="14">ANÁLISIS FÍSICO DE SUELOS</th>
+                                    <th colspan="18">ANÁLISIS FÍSICO DE SUELOS</th>
                                 </tr>
 
                                 <tr>
@@ -128,8 +128,9 @@
                                     <th rowspan="2">DP</th>
                                     <th rowspan="2">Por.</th>
                                     <th rowspan="2">HG</th>
-                                    <th rowspan="2">Con.Hid</th>
-                                    <th rowspan="2">Ret.H</th>
+                                    <th rowspan="2">Cond.Hid</th>
+
+                                    <th colspan="3">Ret. Humedad</th>
 
                                     <th rowspan="2">C_RetH</th>
                                     <th rowspan="2">Frac.A</th>
@@ -139,28 +140,46 @@
                                 </tr>
 
                                 <tr>
+                                    <!-- TEXTURA -->
                                     <th>Arena</th>
                                     <th>Limo</th>
                                     <th>Arcilla</th>
-                                    <th>Clase textural</th>
+                                    <th>Clase</th>
+
+                                    <!-- RETENCION -->
+                                    <th>Hg 33 kPa</th>
+                                    <th>Hg 1500 kPa</th>
+                                    <th>Agua Disp.</th>
                                 </tr>
 
                                 <tr style="font-size:11px">
                                     <th></th>
                                     <th></th>
 
-                                    <th colspan="3">%</th>
+                                    <!-- TEXTURA -->
+                                    <th>%</th>
+                                    <th>%</th>
+                                    <th>%</th>
+                                    <th></th>
 
+                                    <!-- DA, DP, etc -->
+                                    <th></th>
                                     <th></th>
                                     <th>%</th>
                                     <th>%</th>
+                                    <th>cm/s</th>
+
+                                    <!-- RETENCION -->
                                     <th>%</th>
                                     <th>%</th>
                                     <th>%</th>
-                                    <th>%</th>
-                                    <th>%</th>
-                                    <th>%</th>
-                                    <th>%</th>
+
+                                    <!-- RESTO -->
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
                                 </tr>
 
                             </thead>
@@ -215,17 +234,22 @@
                                     @endphp
 
                                     <td>{{ $hg ? number_format($hg, 2) : '-' }}</td>
-                                    
+
                                     <!-- Conductividad Hidraulica -->
 
                                     @php
-                                      $ch = $conductividades[$row->idlab] ?? null;
+                                    $ch = $conductividades[$row->idlab] ?? null;
                                     @endphp
 
                                     <td> {{ isset($ch['conductividad_hidraulica']) ? number_format($ch['conductividad_hidraulica'], 6) : '-' }}</td>
 
+                                    @php
+                                    $rh = $retenciones[$row->idlab] ?? null;
+                                    @endphp
 
-                                    <td>-</td>
+                                    <td>{{ isset($rh['Hg_33']) ? number_format($rh['Hg_33'], 4) : '-' }}</td>
+                                    <td>{{ isset($rh['Hg_1500']) ? number_format($rh['Hg_1500'], 4) : '-' }}</td>
+                                    <td>{{ isset($rh['agua_disponible']) ? number_format($rh['agua_disponible'], 4) : '-' }}</td>
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>

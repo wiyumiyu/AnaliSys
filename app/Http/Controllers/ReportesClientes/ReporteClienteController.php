@@ -196,7 +196,12 @@ class ReporteClienteController extends Controller {
             }
         }*/
 
-
+        $conductividadHidraulica = DB::select(
+                'CALL sp_reporte_cliente_conductividad_hidraulica(?)',
+                [$id]
+        ); 
+        
+        $conductividades = conductividadHidraulica::calcularConductividades($conductividadHidraulica);
 
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,

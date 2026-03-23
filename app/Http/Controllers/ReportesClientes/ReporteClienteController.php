@@ -11,6 +11,7 @@ use App\Helpers\Calculos\DensidadParticulas;
 use App\Helpers\Calculos\HumedadGravimetrica;
 use App\Helpers\Calculos\conductividadHidraulica;
 use App\Helpers\Calculos\RetencionHumedad;
+use App\Helpers\Calculos\Porosidad;
 
 class ReporteClienteController extends Controller {
 
@@ -127,22 +128,26 @@ class ReporteClienteController extends Controller {
         /* ------------------------------------------------ */
 
 
-        $porosidades = [];
+        $porosidades = Porosidad::calcular(
+                    $densidades,
+                    $densidadesParticulas,
+                    $datos
+            );
 
-        foreach ($datos as $row) {
-
-            $idlab = trim((string) $row->idlab);
-
-            $da = $densidades[$idlab] ?? null;
-            $dp = $densidadesParticulas[$idlab] ?? null;
-
-            if ($da !== null && $dp !== null && $dp != 0) {
-
-                $p = (1 - ($da / $dp)) * 100;
-
-                $porosidades[$idlab] = round($p, 2);
-            }
-        }
+//        foreach ($datos as $row) {
+//
+//            $idlab = trim((string) $row->idlab);
+//
+//            $da = $densidades[$idlab] ?? null;
+//            $dp = $densidadesParticulas[$idlab] ?? null;
+//
+//            if ($da !== null && $dp !== null && $dp != 0) {
+//
+//                $p = (1 - ($da / $dp)) * 100;
+//
+//                $porosidades[$idlab] = round($p, 2);
+//            }
+//        }
 
 
         /* ------------------------------------------------ */

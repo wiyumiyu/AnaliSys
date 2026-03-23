@@ -302,8 +302,6 @@
                                 $t = $texturas[$first->idlab][$first->rep] ?? null;
                                 $d = $densidades[$first->idlab][$first->rep] ?? null;
                                 $dp = $densidadesParticulas[$first->idlab][$first->rep] ?? null;
-
-                                $total = $t ? ($t['arena'] + $t['limo'] + $t['arcilla']) : null;
                                 @endphp
 
                                 {{-- TEXTURA --}}
@@ -316,7 +314,6 @@
                                 <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
                                 <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
 
-                                {{-- RESTO --}}
                                 @for($i=0;$i<6;$i++) <td>-</td> @endfor
 
                             </tr>
@@ -337,8 +334,6 @@
                                 $t = $texturas[$row->idlab][$row->rep] ?? null;
                                 $d = $densidades[$row->idlab][$row->rep] ?? null;
                                 $dp = $densidadesParticulas[$row->idlab][$row->rep] ?? null;
-
-                                $total = $t ? ($t['arena'] + $t['limo'] + $t['arcilla']) : null;
                                 @endphp
 
                                 <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
@@ -355,59 +350,66 @@
                             @endforeach
 
 
-{{-- ================= PROM / DESV / CV ================= --}}
-@if($count > 1)
+                            {{-- ================= PROM / DESV / CV ================= --}}
+                            @if($count > 1)
 
-@php
-$stats = $estadisticasTextura[$first->idlab] ?? null;
-@endphp
+                            @php
+                            $statsT = $estadisticasTextura[$first->idlab] ?? null;
+                            $statsDA = $estadisticasDA[$first->idlab] ?? null;
+                            $statsDP = $estadisticasDP[$first->idlab] ?? null;
+                            @endphp
 
-{{-- PROM --}}
-<tr class="table-light">
-<td class="fw-semibold">PROMEDIO</td>
+                            {{-- PROM --}}
+                            <tr class="table-light">
+                                <td class="fw-semibold">PROMEDIO</td>
 
-<td>{{ $stats && $stats['prom']['arena'] !== null ? number_format($stats['prom']['arena'],1) : '-' }}</td>
-<td>{{ $stats && $stats['prom']['limo'] !== null ? number_format($stats['prom']['limo'],1) : '-' }}</td>
-<td>{{ $stats && $stats['prom']['arcilla'] !== null ? number_format($stats['prom']['arcilla'],1) : '-' }}</td>
-<td>-</td>
+                                {{-- TEXTURA --}}
+                                <td>{{ $statsT && $statsT['arena']['prom'] !== null ? number_format($statsT['arena']['prom'],1) : '-' }}</td>
+                                <td>{{ $statsT && $statsT['limo']['prom'] !== null ? number_format($statsT['limo']['prom'],1) : '-' }}</td>
+                                <td>{{ $statsT && $statsT['arcilla']['prom'] !== null ? number_format($statsT['arcilla']['prom'],1) : '-' }}</td>
+                                <td>-</td>
 
-<td>-</td>
-<td>-</td>
+                                <td>{{ $statsDA && $statsDA['prom'] !== null ? number_format($statsDA['prom'],3) : '-' }}</td>
+                                <td>{{ $statsDP && $statsDP['prom'] !== null ? number_format($statsDP['prom'],3) : '-' }}</td>
 
-@for($i=0;$i<6;$i++) <td>-</td> @endfor
-</tr>
+                                @for($i=0;$i<6;$i++) <td>-</td> @endfor
+                            </tr>
 
-{{-- DESV --}}
-<tr class="table-light">
-<td class="fw-semibold">Desv.Est.</td>
+                            {{-- DESV --}}
+                            <tr class="table-light">
+                                <td class="fw-semibold">Desv.Est.</td>
 
-<td>{{ $stats && $stats['desv']['arena'] !== null ? number_format($stats['desv']['arena'],2) : '-' }}</td>
-<td>{{ $stats && $stats['desv']['limo'] !== null ? number_format($stats['desv']['limo'],2) : '-' }}</td>
-<td>{{ $stats && $stats['desv']['arcilla'] !== null ? number_format($stats['desv']['arcilla'],2) : '-' }}</td>
-<td>-</td>
+                                {{-- TEXTURA --}}
+                                <td>{{ $statsT && $statsT['arena']['desv'] !== null ? number_format($statsT['arena']['desv'],2) : '-' }}</td>
+                                <td>{{ $statsT && $statsT['limo']['desv'] !== null ? number_format($statsT['limo']['desv'],2) : '-' }}</td>
+                                <td>{{ $statsT && $statsT['arcilla']['desv'] !== null ? number_format($statsT['arcilla']['desv'],2) : '-' }}</td>
+                                <td>-</td>
 
-<td>-</td>
-<td>-</td>
+                                <td>{{ $statsDA && $statsDA['desv'] !== null ? number_format($statsDA['desv'],3) : '-' }}</td>
+                                <td>{{ $statsDP && $statsDP['desv'] !== null ? number_format($statsDP['desv'],3) : '-' }}</td>
+                                <td>-</td>
 
-@for($i=0;$i<6;$i++) <td>-</td> @endfor
-</tr>
+                                @for($i=0;$i<6;$i++) <td>-</td> @endfor
+                            </tr>
 
-{{-- CV --}}
-<tr class="table-light">
-<td class="fw-semibold">CV</td>
+                            {{-- CV --}}
+                            <tr class="table-light">
+                                <td class="fw-semibold">CV</td>
 
-<td>{{ $stats && $stats['cv']['arena'] !== null ? number_format($stats['cv']['arena'],2) : '-' }}</td>
-<td>{{ $stats && $stats['cv']['limo'] !== null ? number_format($stats['cv']['limo'],2) : '-' }}</td>
-<td>{{ $stats && $stats['cv']['arcilla'] !== null ? number_format($stats['cv']['arcilla'],2) : '-' }}</td>
-<td>-</td>
+                                {{-- TEXTURA --}}
+                                <td>{{ $statsT && $statsT['arena']['cv'] !== null ? number_format($statsT['arena']['cv'],2) : '-' }}</td>
+                                <td>{{ $statsT && $statsT['limo']['cv'] !== null ? number_format($statsT['limo']['cv'],2) : '-' }}</td>
+                                <td>{{ $statsT && $statsT['arcilla']['cv'] !== null ? number_format($statsT['arcilla']['cv'],2) : '-' }}</td>
+                                <td>-</td>
 
-<td>-</td>
-<td>-</td>
+                                <td>{{ $statsDA && $statsDA['cv'] !== null ? number_format($statsDA['cv'],2) : '-' }}</td>
+                                <td>{{ $statsDP && $statsDP['cv'] !== null ? number_format($statsDP['cv'],2) : '-' }}</td>
+                                <td>-</td>
 
-@for($i=0;$i<6;$i++) <td>-</td> @endfor
-</tr>
+                                @for($i=0;$i<6;$i++) <td>-</td> @endfor
+                            </tr>
 
-@endif
+                            @endif
 
                         </tbody>
                     </table>

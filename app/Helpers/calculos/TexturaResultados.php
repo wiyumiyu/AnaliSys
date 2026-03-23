@@ -2,10 +2,11 @@
 
 namespace App\Helpers\Calculos;
 
-class TexturaResultados
-{
-    public static function calcularPorRep($textura)
-    {
+use App\Helpers\Calculos\Estadisticas;
+
+class TexturaResultados {
+
+    public static function calcularPorRep($textura) {
         $texturas = [];
         $blancos = [];
 
@@ -34,25 +35,30 @@ class TexturaResultados
             $blanco = $blancos[$m->id_textura] ?? null;
 
             // 🔥 VALIDACIONES REALES
-            if ($blanco === null) continue;
-            if ($m->peso_seco === null) continue;
+            if ($blanco === null)
+                continue;
+            if ($m->peso_seco === null)
+                continue;
 
             if (
-                $m->R1 === null || $m->R2 === null ||
-                $m->R3 === null || $m->R4 === null ||
-                $blanco->R1 === null || $blanco->R2 === null ||
-                $blanco->R3 === null || $blanco->R4 === null
-            ) continue;
+                    $m->R1 === null || $m->R2 === null ||
+                    $m->R3 === null || $m->R4 === null ||
+                    $blanco->R1 === null || $blanco->R2 === null ||
+                    $blanco->R3 === null || $blanco->R4 === null
+            )
+                continue;
 
             if (
-                $m->TEMP1 === null || $m->TEMP2 === null ||
-                $m->TEMP3 === null || $m->TEMP4 === null
-            ) continue;
+                    $m->TEMP1 === null || $m->TEMP2 === null ||
+                    $m->TEMP3 === null || $m->TEMP4 === null
+            )
+                continue;
 
             if (
-                $m->TIEMPO1 === null || $m->TIEMPO2 === null ||
-                $m->TIEMPO3 === null || $m->TIEMPO4 === null
-            ) continue;
+                    $m->TIEMPO1 === null || $m->TIEMPO2 === null ||
+                    $m->TIEMPO3 === null || $m->TIEMPO4 === null
+            )
+                continue;
 
             // 🔥 DATOS LIMPIOS (SIN ?? 0)
             $R = [
@@ -69,7 +75,6 @@ class TexturaResultados
                 $blanco->R4
             ];
 
-
             $Temp = [
                 $m->TEMP1,
                 $m->TEMP2,
@@ -85,11 +90,11 @@ class TexturaResultados
             ];
 
             $resultado = Textura::calcular_textura_suelo(
-                $m->peso_seco,
-                $R,
-                $RL,
-                $Temp,
-                $Tiempo
+                    $m->peso_seco,
+                    $R,
+                    $RL,
+                    $Temp,
+                    $Tiempo
             );
 
             // 🔥 GUARDAR SOLO SI ES VÁLIDO
@@ -101,11 +106,7 @@ class TexturaResultados
         return $texturas;
     }
 
-    /* ===========================
-     * PROMEDIO
-     * =========================== */
-    public static function promedio($rows, $texturas)
-    {
+    public static function estadisticas($rows, $texturas) {
         $arena = [];
         $limo = [];
         $arcilla = [];
@@ -122,69 +123,13 @@ class TexturaResultados
         }
 
         return [
-            'arena' => count($arena) > 1 ? array_sum($arena)/count($arena) : null,
-            'limo' => count($limo) > 1 ? array_sum($limo)/count($limo) : null,
-            'arcilla' => count($arcilla) > 1 ? array_sum($arcilla)/count($arcilla) : null,
+            'arena' => Estadisticas::calcularDesdeArray($arena),
+            'limo' => Estadisticas::calcularDesdeArray($limo),
+            'arcilla' => Estadisticas::calcularDesdeArray($arcilla),
         ];
     }
 
-    /* ===========================
-     * DESVIACIÓN ESTÁNDAR
-     * =========================== */
-    public static function desviacion($rows, $texturas, $prom)
-    {
-        $calc = function($values, $mean) {
-            if (count($values) <= 1 || $mean === null) return null;
-
-            $sum = 0;
-            foreach ($values as $v) {
-                $sum += pow($v - $mean, 2);
-            }
-
-            return sqrt($sum / count($values));
-        };
-
-        $arena = [];
-        $limo = [];
-        $arcilla = [];
-
-        foreach ($rows as $r) {
-
-            $t = $texturas[$r->idlab][$r->rep] ?? null;
-
-            if ($t) {
-                $arena[] = $t['arena'];
-                $limo[] = $t['limo'];
-                $arcilla[] = $t['arcilla'];
-            }
-        }
-
-        return [
-            'arena' => $calc($arena, $prom['arena']),
-            'limo' => $calc($limo, $prom['limo']),
-            'arcilla' => $calc($arcilla, $prom['arcilla']),
-        ];
-    }
-
-    /* ===========================
-     * CV
-     * =========================== */
-    public static function cv($desv, $prom)
-    {
-        $calc = function($d, $p) {
-            if ($d === null || $p == 0) return null;
-            return ($d / $p) * 100;
-        };
-
-        return [
-            'arena' => $calc($desv['arena'], $prom['arena']),
-            'limo' => $calc($desv['limo'], $prom['limo']),
-            'arcilla' => $calc($desv['arcilla'], $prom['arcilla']),
-        ];
-    }
-
-    private static function esBlanco($idlab)
-    {
+    private static function esBlanco($idlab) {
         $idlab = strtoupper($idlab);
 
         return in_array($idlab, [

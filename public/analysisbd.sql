@@ -6643,7 +6643,7 @@ CREATE PROCEDURE sp_resultado_vista(
 )
 BEGIN
 
-SELECT
+SELECT DISTINCT
     r.id AS id_resultado,
     r.consecutivo,
 
@@ -6651,15 +6651,12 @@ SELECT
     s.numero AS solicitud,
     DATE(s.fecha) AS fecha,
 
-    tm.idlab,
-    tm.rep,
+    base.idlab,
+    base.rep,
 
     sm.etiqueta,
-
     sc.cultivo,
-
     c.nombre AS cliente,
-
     can.canton
 
 FROM trn_resultados r
@@ -6667,18 +6664,78 @@ FROM trn_resultados r
 INNER JOIN trn_resultados_lista rl
     ON rl.id_resultado = r.id
 
-INNER JOIN trn_textura t
-    ON t.id = rl.id_archivo
+-- UNION DE TODAS LAS MUESTRAS (CLAVE REAL)
+INNER JOIN (
 
-INNER JOIN trn_textura_muestras tm
-    ON tm.id_textura = t.id
+    SELECT idlab, rep, id_textura AS id_archivo, 'TEXTURA' AS tipo
+    FROM trn_textura_muestras
+
+    UNION
+
+    SELECT idlab, rep, id_densidad_aparente, 'DENSIDAD_APARENTE'
+    FROM trn_densidad_aparente_muestras
+
+    UNION
+
+    SELECT idlab, rep, id_densidad_particulas, 'DENSIDAD_PARTICULAS'
+    FROM trn_densidad_particulas_muestras
+
+    UNION
+
+    SELECT idlab, rep, id_humedad_gravimetrica, 'HUMEDAD_GRAVIMETRICA'
+    FROM trn_humedad_gravimetrica_muestras
+
+    UNION
+
+    SELECT idlab, rep, id_conductividad_hidraulica, 'CONDUCTIVIDAD_HIDRAULICA'
+    FROM trn_conductividad_hidraulica_muestras
+
+    UNION
+
+    SELECT idlab, rep, id_retencion_humedad, 'RETENCION_HUMEDAD'
+    FROM trn_retencion_humedad_muestras
+
+    UNION
+
+    SELECT idlab, rep, id_estabilidad_agregados, 'ESTABILIDAD_AGREGADOS'
+    FROM trn_estabilidad_agregados_muestras
+
+    UNION
+
+    SELECT idlab, rep, id_coeficiente_extensibilidad, 'COEFICIENTE_EXTENSIBILIDAD'
+    FROM trn_coeficiente_extensibilidad_muestras
+
+) base
+    ON base.id_archivo = rl.id_archivo
+   AND base.tipo = rl.tipo
+
+LEFT JOIN (
+    SELECT 'TEXTURA' AS tipo, id, archivo FROM trn_textura
+    UNION ALL
+    SELECT 'GRANULOMETRIA', id, archivo FROM trn_granulometria
+    UNION ALL
+    SELECT 'DENSIDAD_APARENTE', id, archivo FROM trn_densidad_aparente
+    UNION ALL
+    SELECT 'DENSIDAD_PARTICULAS', id, archivo FROM trn_densidad_particulas
+    UNION ALL
+    SELECT 'HUMEDAD_GRAVIMETRICA', id, archivo FROM trn_humedad_gravimetrica
+    UNION ALL
+    SELECT 'CONDUCTIVIDAD_HIDRAULICA', id, archivo FROM trn_conductividad_hidraulica
+    UNION ALL
+    SELECT 'RETENCION_HUMEDAD', id, archivo FROM trn_retencion_humedad
+    UNION ALL
+    SELECT 'ESTABILIDAD_AGREGADOS', id, archivo FROM trn_estabilidad_agregados
+    UNION ALL
+    SELECT 'COEFICIENTE_EXTENSIBILIDAD', id, archivo FROM trn_coeficiente_extensibilidad
+) v
+    ON v.id = rl.id_archivo
+   AND v.tipo = rl.tipo
 
 INNER JOIN tbm_solicitud_muestras sm
-    ON sm.idlab = tm.idlab
+    ON sm.idlab = base.idlab
 
 INNER JOIN tbm_solicitud s
     ON s.id_solicitud = sm.id_solicitud
-
 
 LEFT JOIN tbm_cliente c
     ON c.id_cliente = s.id_cliente
@@ -6691,11 +6748,12 @@ LEFT JOIN tbm_dircanton can
 
 WHERE r.id = p_id_resultado
 
-ORDER BY tm.idlab, tm.rep;
+ORDER BY base.idlab, base.rep;
 
 END$$
 
 DELIMITER ;
+
 
 -- ----------------------
 -- ----------------------

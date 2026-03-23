@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Helpers\Calculos\TexturaResultados;
 use App\Helpers\Calculos\DensidadAparenteResultados;
 use App\Helpers\Calculos\DensidadParticulasResultados;
+use App\Helpers\Calculos\Estadisticas;
 
 class ResultadosController extends Controller {
 
@@ -239,15 +240,18 @@ class ResultadosController extends Controller {
 
             $rows = $card->rows;
 
-            $prom = TexturaResultados::promedio($rows, $texturas);
-            $desv = TexturaResultados::desviacion($rows, $texturas, $prom);
-            $cv = TexturaResultados::cv($desv, $prom);
+            $estadisticasTextura[$key] = TexturaResultados::estadisticas($rows, $texturas);
+        }
 
-            $estadisticasTextura[$key] = [
-                'prom' => $prom,
-                'desv' => $desv,
-                'cv' => $cv
-            ];
+        $estadisticasDA = [];
+        $estadisticasDP = [];
+
+        foreach ($cards as $key => $card) {
+
+            $rows = $card->rows;
+
+            $estadisticasDA[$key] = Estadisticas::calcular($rows, $densidades);
+            $estadisticasDP[$key] = Estadisticas::calcular($rows, $densidadesParticulas);
         }
 
         /* ------------------------------------------------ */
@@ -260,7 +264,9 @@ class ResultadosController extends Controller {
                         'texturas',
                         'densidades',
                         'estadisticasTextura',
-                        'densidadesParticulas'
+                        'densidadesParticulas',
+                        'estadisticasDA',
+                        'estadisticasDP'
                 ));
     }
 

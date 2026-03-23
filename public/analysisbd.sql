@@ -7715,6 +7715,123 @@ rhm.idlab;
 END$$
 
 DELIMITER ;
+
+
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_listar_muestras_estabilidad_agregados_detalle $$
+
+CREATE PROCEDURE sp_listar_muestras_estabilidad_agregados_detalle (
+    IN p_id_estabilidad_agregados INT
+)
+BEGIN
+    SELECT
+        m.id AS id_muestra,
+        m.idlab,
+        m.rep,
+        m.estado,
+
+        
+        MAX(CASE WHEN a.siglas = 'peso_suelo_seco' THEN r.resultado END) AS Pt,
+
+        
+        MAX(CASE WHEN a.siglas = 'Pri2' THEN r.resultado END)   AS Pri2,
+        MAX(CASE WHEN a.siglas = 'Pri1' THEN r.resultado END)   AS Pri1,
+        MAX(CASE WHEN a.siglas = 'Pri05' THEN r.resultado END)  AS Pri05,
+        MAX(CASE WHEN a.siglas = 'Pri025' THEN r.resultado END) AS Pri025,
+        MAX(CASE WHEN a.siglas = 'Pri0' THEN r.resultado END)   AS Pri0,
+
+        
+        MAX(CASE WHEN a.siglas = 'T2' THEN r.resultado END)   AS T2,
+        MAX(CASE WHEN a.siglas = 'T1' THEN r.resultado END)   AS T1,
+        MAX(CASE WHEN a.siglas = 'T05' THEN r.resultado END)  AS T05,
+        MAX(CASE WHEN a.siglas = 'T025' THEN r.resultado END) AS T025,
+        MAX(CASE WHEN a.siglas = 'T0' THEN r.resultado END)   AS T0
+
+    FROM trn_estabilidad_agregados_muestras m
+
+    LEFT JOIN trn_estabilidad_agregados_resultados r
+        ON r.id_estabilidad_agregados_muestras = m.id
+       AND r.estado = 1
+
+    LEFT JOIN trn_analisis a
+        ON a.id = r.id_analisis
+       AND a.origen = 'ESTABILIDAD_AGREGADOS'
+
+    WHERE m.id_estabilidad_agregados = p_id_estabilidad_agregados
+
+    GROUP BY
+        m.id, m.idlab, m.rep, m.estado
+
+    ORDER BY
+        m.idlab, m.rep;
+
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_estabilidad_agregados;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_estabilidad_agregados(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+eam.id_estabilidad_agregados,
+eam.idlab,
+
+-- Peso total
+AVG(CASE WHEN a.siglas = 'peso_suelo_seco' THEN tr.resultado END) AS Pt,
+
+-- Pesos retenidos
+AVG(CASE WHEN a.siglas = 'Pri2' THEN tr.resultado END)   AS Pri2,
+AVG(CASE WHEN a.siglas = 'Pri1' THEN tr.resultado END)   AS Pri1,
+AVG(CASE WHEN a.siglas = 'Pri05' THEN tr.resultado END)  AS Pri05,
+AVG(CASE WHEN a.siglas = 'Pri025' THEN tr.resultado END) AS Pri025,
+AVG(CASE WHEN a.siglas = 'Pri0' THEN tr.resultado END)   AS Pri0
+
+FROM trn_estabilidad_agregados_muestras eam
+
+JOIN trn_estabilidad_agregados ea
+    ON ea.id = eam.id_estabilidad_agregados
+
+LEFT JOIN trn_estabilidad_agregados_resultados tr
+    ON tr.id_estabilidad_agregados_muestras = eam.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'ESTABILIDAD_AGREGADOS'
+
+WHERE eam.idlab IN (
+
+    SELECT sm.idlab
+    FROM tbm_solicitud_muestras sm
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND eam.estado = 1
+
+GROUP BY
+eam.id_estabilidad_agregados,
+eam.idlab
+
+ORDER BY
+eam.id_estabilidad_agregados,
+eam.idlab;
+
+END$$
+
+DELIMITER ;
+
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */
@@ -8090,6 +8207,8 @@ VALUES
 ('Carga hidráulica h (cm) - Diferencia de nivel de agua', 'carga_hidraulica', 'CONDUCTIVIDAD_HIDRAULICA'),
 ('Volumen recolectado Q (cm³) - Agua recolectada', 'volumen', 'CONDUCTIVIDAD_HIDRAULICA'),
 ('Tiempo de medición', 'tiempo', 'CONDUCTIVIDAD_HIDRAULICA');
+
+
 /*
 INSERT INTO trn_conductividad_hidraulica (periodo, archivo, fecha, analista)
 VALUES
@@ -8265,11 +8384,20 @@ SELECT siglas, origen FROM trn_analisis WHERE origen LIKE '%ESTABILIDAD%';
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
 ('Peso total de suelo seco usado',  'peso_suelo_seco',      'ESTABILIDAD_AGREGADOS'),
-('Peso del conjunto de tamices',    'peso_tamices',        'ESTABILIDAD_AGREGADOS'),
-('Temperatura','temperatura',       'ESTABILIDAD_AGREGADOS'),
-('Humedad Ambiental',  'humedad_ambiental', 'ESTABILIDAD_AGREGADOS'),
-('Fecha de inicio del análisis',         'fecha_inicio',     'ESTABILIDAD_AGREGADOS');
+('Tamiz 2',		'T2',	'ESTABILIDAD_AGREGADOS'),
+('T2 suelo retenido',	'Pri2',		'ESTABILIDAD_AGREGADOS'),
+('Tamiz 1',		'T1',	'ESTABILIDAD_AGREGADOS'),
+('T1 suelo retenido',	'Pri1',		'ESTABILIDAD_AGREGADOS'),
+('Tamiz 0.5',  	'T05',	'ESTABILIDAD_AGREGADOS'),
+('T05 suelo retenido',	'Pri05',	'ESTABILIDAD_AGREGADOS'),
+('Tamiz 0.25',	'T025',	'ESTABILIDAD_AGREGADOS'),
+('T025 suelo retenido',	'Pri025',	'ESTABILIDAD_AGREGADOS'),
+('Tamiz 0',		'T0',	'ESTABILIDAD_AGREGADOS'),
+('T0 suelo retenido',	'Pri0',		'ESTABILIDAD_AGREGADOS');
 
+
+
+/*
 INSERT INTO trn_estabilidad_agregados
 (periodo, archivo, fecha, analista)
 VALUES
@@ -8307,7 +8435,7 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='temperatura' AND origen='ESTABILIDAD_AGREGADOS'),'24',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='humedad_ambiental' AND origen='ESTABILIDAD_AGREGADOS'),'59',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='fecha_inicio' AND origen='ESTABILIDAD_AGREGADOS'),'2026-02-15',1);
-
+*/
 -- Coeficiente de Extensibilidad
 
 INSERT INTO trn_analisis (analisis, siglas, origen)

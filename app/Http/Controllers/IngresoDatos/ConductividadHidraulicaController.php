@@ -176,92 +176,101 @@ class ConductividadHidraulicaController extends Controller {
      * =============================== */
 
     public function importar(Request $request) {
-        
-        DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
-        DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
 
-        $request->validate([
-            'archivo' => 'required|file|mimes:xlsx,xls'
+    DB::statement('SET @bitacora_usuario = ?', [session('id_persona') ?? 0]);
+    DB::statement('SET @bitacora_ip = ?', [$request->ip() ?? 'UNKNOWN']);
+
+    $request->validate([
+        'archivo' => 'required|file|mimes:xlsx,xls'
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        $idConductividad = DB::table('trn_conductividad_hidraulica')->insertGetId([
+            'periodo' => date('Y'),
+            'archivo' => $request->file('archivo')->getClientOriginalName(),
+            'fecha' => now(),
+            'analista' => session('id_persona')
         ]);
 
-        DB::beginTransaction();
+        $analisisMap = DB::table('trn_analisis')
+            ->where('origen', 'CONDUCTIVIDAD_HIDRAULICA')
+            ->pluck('id', 'siglas')
+            ->toArray();
 
-        try {
+        $spreadsheet = IOFactory::load(
+            $request->file('archivo')->getPathname()
+        );
 
-            $idConductividad = DB::table('trn_conductividad_hidraulica')->insertGetId([
-                'periodo' => date('Y'),
-                'archivo' => $request->file('archivo')->getClientOriginalName(),
-                'fecha' => now(),
-                'analista' => session('id_persona')
+        $rows = $spreadsheet
+            ->getActiveSheet()
+            ->toArray(null, true, true, true);
+
+        $i = 1;
+
+        foreach ($rows as $fila => $row) {
+
+            if ($fila < 3 || empty($row['A'])) {
+                continue;
+            }
+
+            $idMuestra = DB::table('trn_conductividad_hidraulica_muestras')->insertGetId([
+                'id_conductividad_hidraulica' => $idConductividad,
+                'idlab' => $row['A'],
+                'rep' => $row['B'],
+                'material' => 1,
+                'tipo' => 1,
+                'posicion' => $i,
+                'estado' => 1,
+                'ri' => 0
             ]);
 
-            $analisisMap = DB::table('trn_analisis')
-                    ->where('origen', 'CONDUCTIVIDAD_HIDRAULICA')
-                    ->pluck('id', 'siglas')
-                    ->toArray();
+            // 🔥 NUEVOS CAMPOS (según trn_analisis)
+            $valores = [
+                'longitud_muestra' => $row['C'],
+                'diametro_interno' => $row['D'],
+                'carga_hidraulica' => $row['E'],
+                'volumen' => $row['F'],
+                'tiempo' => $row['G'],
+            ];
 
-            $spreadsheet = IOFactory::load(
-                    $request->file('archivo')->getPathname()
-            );
+            foreach ($valores as $sigla => $resultado) {
 
-            $rows = $spreadsheet
-                    ->getActiveSheet()
-                    ->toArray(null, true, true, true);
-
-            $i = 1;
-            foreach ($rows as $fila => $row) {
-
-                if ($fila < 3 || empty($row['A'])) {
+                if (!isset($analisisMap[$sigla])) {
                     continue;
                 }
 
-                $idMuestra = DB::table('trn_conductividad_hidraulica_muestras')->insertGetId([
-                    'id_conductividad_hidraulica' => $idConductividad,
-                    'idlab' => $row['A'],
-                    'rep' => $row['B'],
-                    'material' => 1,
-                    'tipo' => 1,
-                    'posicion' => $i,
-                    'estado' => 1,
-                    'ri' => 0
-                ]);
-
-                $valores = [
-                    'longitud_muestra' => $row['C'],
-                    'diametro_interno' => $row['D'],
-                    'area_transversal' => $row['E'],
-                    'temperatura_agua' => $row['F'],
-                    'condicion_compactacion_saturacion' => $row['G'],
-                ];
-
-                foreach ($valores as $sigla => $resultado) {
-                    if (!isset($analisisMap[$sigla])) {
-                        continue;
-                    }
-
-                    DB::table('trn_conductividad_hidraulica_resultados')->insert([
-                        'id_conductividad_hidraulica_muestras' => $idMuestra,
-                        'id_analisis' => $analisisMap[$sigla],
-                        'resultado' => $resultado,
-                        'estado' => 1
-                    ]);
+                // Evitar insertar vacíos
+                if ($resultado === null || $resultado === '') {
+                    continue;
                 }
 
-                $i++;
+                DB::table('trn_conductividad_hidraulica_resultados')->insert([
+                    'id_conductividad_hidraulica_muestras' => $idMuestra,
+                    'id_analisis' => $analisisMap[$sigla],
+                    'resultado' => $resultado,
+                    'estado' => 1
+                ]);
             }
 
-            DB::commit();
-
-            return redirect()
-                            ->route('conductividad_hidraulica.index')
-                            ->with('success', 'Archivo importado correctamente');
-        } catch (\Throwable $e) {
-
-            DB::rollBack();
-
-            return back()->withErrors(
-                            'Error al importar: ' . $e->getMessage()
-                    );
+            $i++;
         }
+
+        DB::commit();
+
+        return redirect()
+            ->route('conductividad_hidraulica.index')
+            ->with('success', 'Archivo importado correctamente');
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        return back()->withErrors(
+            'Error al importar: ' . $e->getMessage()
+        );
     }
+}
 }

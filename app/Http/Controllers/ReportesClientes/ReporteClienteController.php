@@ -12,6 +12,7 @@ use App\Helpers\Calculos\HumedadGravimetrica;
 use App\Helpers\Calculos\conductividadHidraulica;
 use App\Helpers\Calculos\RetencionHumedad;
 use App\Helpers\Calculos\Porosidad;
+use App\Helpers\Calculos\EstabilidadAgregados;
 
 class ReporteClienteController extends Controller {
 
@@ -217,11 +218,21 @@ class ReporteClienteController extends Controller {
                 'CALL sp_reporte_cliente_retencion_humedad(?)',
                 [$id]
         ); 
-        
-        //dd();
-        
         $retenciones = RetencionHumedad::calcularRetenciones($retencionHumedad);
-//(dd($retenciones);
+
+        
+        /* ------------------------------------------------ */
+        // ESTABILIDAD DE AGREGADOS//
+        /* ------------------------------------------------ */
+        
+        $estabilidadAgregados = DB::select(
+                'CALL sp_reporte_cliente_estabilidad_agregados(?)',
+                [$id]
+        );
+        
+        $estabilidades = EstabilidadAgregados::calcular($estabilidadAgregados);        
+        
+       
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
@@ -231,7 +242,8 @@ class ReporteClienteController extends Controller {
             'porosidades' => $porosidades,
             'humedades' => $humedades,
             'conductividades' => $conductividades,
-            'retenciones' => $retenciones
+            'retenciones' => $retenciones,
+            'estabilidades' => $estabilidades
         ]);
     }
     

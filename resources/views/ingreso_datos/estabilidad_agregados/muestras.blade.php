@@ -40,77 +40,84 @@
                 <table id="default_datatable"
                        class="table table-nowrap align-middle">
 
-                    <thead>
-                        <tr>
-                            <th>ID Lab</th>
-                            <th>Rep</th>
-                            <th>Peso total de suelo seco usado</th>
-                            <th>Peso del conjunto de tamices</th>
-                            <th>Temperatura</th>
-                            <th>Humedad Ambiental</th>
-                            <th>Fecha de inicio del análisis</th>
-                            <th class="text-end">Acciones</th>
-                        </tr>
-                    </thead>
+<thead>
+    <tr>
+        <th>ID Lab</th>
+        <th>Rep</th>
+        <th>Pt (g)</th>
+        <th>Pri 2 mm</th>
+        <th>Pri 1 mm</th>
+        <th>Pri 0.5 mm</th>
+        <th>Pri 0.25 mm</th>
+        <th>Pri < 0.25 mm</th>
+        <th class="text-end">Acciones</th>
+    </tr>
+</thead>
 
-                    <tbody>
-                        @forelse($muestras as $m)
-                            @php
-                                $filaInactiva = $m->estado == 0 ? 'opacity-40' : '';
-                            @endphp
+ <tbody>
+@forelse($muestras as $m)
+    @php
+        $filaInactiva = $m->estado == 0 ? 'opacity-40' : '';
+    @endphp
 
-                            <tr>
+    <tr>
 
-                                {{-- ID LAB --}}
-                                <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('estabilidad_agregados.muestra.edit', $m->id_muestra) }}"
-                                       class="fw-semibold text-reset text-decoration-none">
-                                        {{ $m->idlab }}
-                                    </a>
-                                </td>
+        {{-- ID LAB --}}
+        <td class="{{ $filaInactiva }}">
+            <a href="{{ route('estabilidad_agregados.muestra.edit', $m->id_muestra) }}"
+               class="fw-semibold text-reset text-decoration-none">
+                {{ $m->idlab }}
+            </a>
+        </td>
 
-                                <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_suelo_seco }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->peso_tamices }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->temperatura }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->humedad_ambiental }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->fecha_inicio }}</td>
+        {{-- REP --}}
+        <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
 
-                                {{-- ACCIONES --}}
-                                <td class="text-end">
-                                    <div class="hstack gap-2 fs-15 justify-content-end">
+        {{-- PT --}}
+        <td class="{{ $filaInactiva }}">{{ $m->Pt }}</td>
 
-                                        {{-- ANULAR / ACTIVAR --}}
-                                        <button type="button"
-                                                class="btn {{ $m->estado == 1
-                                                    ? 'bg-warning-subtle text-warning'
-                                                    : 'bg-success-subtle text-success' }} btn-sm"
-                                                onclick="confirmarEstadoMuestra({{ $m->id_muestra }}, {{ $m->estado }})">
-                                            <i class="{{ $m->estado == 1
-                                                ? 'ri-close-circle-line'
-                                                : 'ri-refresh-line' }}"></i>
-                                        </button>
+        {{-- PRI POR TAMIZ --}}
+        <td class="{{ $filaInactiva }}">{{ $m->Pri2 }}</td>
+        <td class="{{ $filaInactiva }}">{{ $m->Pri1 }}</td>
+        <td class="{{ $filaInactiva }}">{{ $m->Pri05 }}</td>
+        <td class="{{ $filaInactiva }}">{{ $m->Pri025 }}</td>
+        <td class="{{ $filaInactiva }}">{{ $m->Pri0 }}</td>
 
-                                        {{-- ELIMINAR --}}
-                                        <button type="button"
-                                                class="btn bg-danger-subtle text-danger btn-sm"
-                                                onclick="confirmarEliminarMuestra({{ $m->id_muestra }})">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
+        {{-- ACCIONES --}}
+        <td class="text-end">
+            <div class="hstack gap-2 fs-15 justify-content-end">
 
-                                    </div>
-                                </td>
+                {{-- ANULAR / ACTIVAR --}}
+                <button type="button"
+                        class="btn {{ $m->estado == 1
+                            ? 'bg-warning-subtle text-warning'
+                            : 'bg-success-subtle text-success' }} btn-sm"
+                        onclick="confirmarEstadoMuestra({{ $m->id_muestra }}, {{ $m->estado }})">
+                    <i class="{{ $m->estado == 1
+                        ? 'ri-close-circle-line'
+                        : 'ri-refresh-line' }}"></i>
+                </button>
 
-                            </tr>
-                        @empty
-                            <tr>
-                               <td colspan="8"
-                                    class="text-center text-muted py-4">
-                                    No hay muestras registradas para este archivo.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+                {{-- ELIMINAR --}}
+                <button type="button"
+                        class="btn bg-danger-subtle text-danger btn-sm"
+                        onclick="confirmarEliminarMuestra({{ $m->id_muestra }})">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+
+            </div>
+        </td>
+
+    </tr>
+
+@empty
+    <tr>
+        <td colspan="9" class="text-center text-muted py-4">
+            No hay muestras registradas para este archivo.
+        </td>
+    </tr>
+@endforelse
+</tbody>
 
                 </table>
 

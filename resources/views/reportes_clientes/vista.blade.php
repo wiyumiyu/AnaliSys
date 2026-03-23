@@ -132,11 +132,12 @@
 
                                     <th colspan="3">Ret. Humedad</th>
 
-                                    <th rowspan="2">C_RetH</th>
+                                    <!-- 🔥 ESTABILIDAD AGR -->
+                                    <th colspan="2">Est. Agregados</th>
+
                                     <th rowspan="2">Frac.A</th>
-                                    <th rowspan="2">Est.Agr</th>
                                     <th rowspan="2">COEL</th>
-                                    <th rowspan="2">Con.Por</th>
+                                    
                                 </tr>
 
                                 <tr>
@@ -150,6 +151,10 @@
                                     <th>Hg 33 kPa</th>
                                     <th>Hg 1500 kPa</th>
                                     <th>Agua Disp.</th>
+
+                                    <!-- 🔥 ESTABILIDAD -->
+                                    <th>DMP</th>
+                                    <th>EAA</th>
                                 </tr>
 
                                 <tr style="font-size:11px">
@@ -162,9 +167,9 @@
                                     <th>%</th>
                                     <th></th>
 
-                                    <!-- DA, DP, etc -->
-                                    <th></th>
-                                    <th></th>
+                                    <!-- DA, DP -->
+                                    <th>g/cm³</th>
+                                    <th>g/cm³</th>
                                     <th>%</th>
                                     <th>%</th>
                                     <th>cm/s</th>
@@ -174,12 +179,14 @@
                                     <th>%</th>
                                     <th>%</th>
 
+                                    <!-- 🔥 ESTABILIDAD -->
+                                    <th>mm</th>
+                                    <th>%</th>
+
                                     <!-- RESTO -->
                                     <th></th>
                                     <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
+                                    
                                 </tr>
 
                             </thead>
@@ -250,8 +257,11 @@
                                     <td>{{ isset($rh['Hg_33']) ? number_format($rh['Hg_33'], 4) : '-' }}</td>
                                     <td>{{ isset($rh['Hg_1500']) ? number_format($rh['Hg_1500'], 4) : '-' }}</td>
                                     <td>{{ isset($rh['agua_disponible']) ? number_format($rh['agua_disponible'], 4) : '-' }}</td>
-                                    <td>-</td>
-                                    <td>-</td>
+                                    @php
+                                    $ea = $estabilidades[$row->idlab] ?? null;
+                                    @endphp                                    
+                                    <td>{{ isset($ea['dmp']) ? number_format($ea['dmp'], 2) : '-' }}</td>
+                                    <td>{{ isset($ea['eaa']) ? number_format($ea['eaa'], 2) : '-' }}</td>
                                     <td>-</td>
                                     <td>-</td>
 

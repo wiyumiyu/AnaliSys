@@ -164,17 +164,15 @@ class EstabilidadAgregadosController extends Controller {
      * IMPORTAR EXCEL
      * =============================== */
 
-    public function importar(Request $request)
+ public function importar(Request $request)
 {
-        
-        
     $request->validate([
         'archivo' => 'required|file|mimes:xlsx,xls'
     ]);
 
     DB::beginTransaction();
 
-   try {
+    try {
 
         /* ===== Crear archivo ===== */
         $archivoResult = DB::select(
@@ -187,6 +185,12 @@ class EstabilidadAgregadosController extends Controller {
         );
 
         $idEstabilidadAgregados = $archivoResult[0]->id_generado;
+
+        /* ===== Mapa de análisis ===== */
+        $analisisMap = DB::table('trn_analisis')
+            ->where('origen', 'ESTABILIDAD_AGREGADOS')
+            ->pluck('id', 'siglas')
+            ->toArray();
 
         /* ===== Leer Excel ===== */
         $spreadsheet = IOFactory::load(
@@ -209,8 +213,8 @@ class EstabilidadAgregadosController extends Controller {
                 'CALL sp_insertar_muestra_estabilidad_agregados(?,?,?,?,?,?)',
                 [
                     $idEstabilidadAgregados,
-                    $row['A'],
-                    $row['B'],
+                    $row['A'], // IDLAB
+                    $row['B'], // REP
                     1,
                     1,
                     $i
@@ -219,16 +223,33 @@ class EstabilidadAgregadosController extends Controller {
 
             $idMuestra = $muestraResult[0]->id_muestra;
 
-            /* ===== Resultados ===== */
+            /* ===== MAPEO CORREGIDO ===== */
             $valores = [
-                'peso_suelo_seco'   => $row['C'],
-                'peso_tamices'      => $row['D'],
-                'temperatura'       => $row['E'],
-                'humedad_ambiental' => $row['F'],
-                'fecha_inicio'      => $row['G'],
+
+                // ✅ AHORA SÍ SE GUARDA Pt
+                'peso_suelo_seco' => $row['C'],
+
+                // Tamices
+                'T2'   => $row['D'],
+                'Pri2' => $row['E'],
+
+                'T1'   => $row['F'],
+                'Pri1' => $row['G'],
+
+                'T05'   => $row['H'],
+                'Pri05' => $row['I'],
+
+                'T025'   => $row['J'],
+                'Pri025' => $row['K'],
+
+                'T0'   => $row['L'],
+                'Pri0' => $row['M'],
             ];
 
             foreach ($valores as $sigla => $resultado) {
+
+                // 🔥 IMPORTANTE: ahora NO se pierde Pt
+                if (!array_key_exists($sigla, $analisisMap)) continue;
 
                 if ($resultado === null || $resultado === '') continue;
 

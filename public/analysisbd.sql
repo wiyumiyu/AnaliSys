@@ -7426,7 +7426,59 @@ ORDER BY
 END $$
 
 DELIMITER ;
----------------------------------------------------------------------------
+
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_humedad_gravimetrica_resultados;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_humedad_gravimetrica_resultados(
+    IN p_lista_archivos TEXT
+)
+BEGIN
+
+SELECT
+
+    tm.id_humedad_gravimetrica,
+    tm.idlab,
+    tm.rep,
+
+    AVG(CASE WHEN a.siglas = 'peso_capsula_vacia' THEN tr.resultado END) AS pc,
+    AVG(CASE WHEN a.siglas = 'peso_capsula_suelohumedo' THEN tr.resultado END) AS ph,
+    AVG(CASE WHEN a.siglas = 'peso_capsula_sueloseco' THEN tr.resultado END) AS ps,
+    AVG(CASE WHEN a.siglas = 'temperatura_secado' THEN tr.resultado END) AS temperatura,
+    AVG(CASE WHEN a.siglas = 'tiempo_secado' THEN tr.resultado END) AS tiempo
+
+FROM trn_humedad_gravimetrica t
+
+JOIN trn_humedad_gravimetrica_muestras tm
+    ON tm.id_humedad_gravimetrica = t.id
+
+LEFT JOIN trn_humedad_gravimetrica_resultados tr
+    ON tr.id_humedad_gravimetrica_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'HUMEDAD_GRAVIMETRICA'
+
+WHERE FIND_IN_SET(t.archivo, p_lista_archivos)
+AND tm.estado = 1
+
+GROUP BY
+    tm.id_humedad_gravimetrica,
+    tm.idlab,
+    tm.rep
+
+ORDER BY
+    tm.idlab,
+    tm.rep;
+
+END$$
+
+DELIMITER ;
+-- -------------------------------------------------------------------------
+
 
 DELIMITER $$
 
@@ -7550,7 +7602,57 @@ END$$
 
 DELIMITER ;
 
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_conductividad_hidraulica_resultados;
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_conductividad_hidraulica_resultados(
+    IN p_lista_archivos TEXT
+)
+BEGIN
+
+SELECT
+
+    chm.id_conductividad_hidraulica,
+    chm.idlab,
+    chm.rep,
+
+    AVG(CASE WHEN a.siglas = 'longitud_muestra' THEN tr.resultado END) AS L,
+    AVG(CASE WHEN a.siglas = 'diametro_interno' THEN tr.resultado END) AS D,
+    AVG(CASE WHEN a.siglas = 'carga_hidraulica' THEN tr.resultado END) AS h,
+    AVG(CASE WHEN a.siglas = 'volumen' THEN tr.resultado END) AS V,
+    AVG(CASE WHEN a.siglas = 'tiempo' THEN tr.resultado END) AS t
+
+FROM trn_conductividad_hidraulica ch
+
+JOIN trn_conductividad_hidraulica_muestras chm
+    ON chm.id_conductividad_hidraulica = ch.id
+
+LEFT JOIN trn_conductividad_hidraulica_resultados tr
+    ON tr.id_conductividad_hidraulica_muestras = chm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'CONDUCTIVIDAD_HIDRAULICA'
+
+WHERE FIND_IN_SET(ch.archivo, p_lista_archivos)
+AND chm.estado = 1
+
+GROUP BY
+    chm.id_conductividad_hidraulica,
+    chm.idlab,
+    chm.rep
+
+ORDER BY
+    chm.idlab,
+    chm.rep;
+
+END$$
+
+DELIMITER ;
+-- -------------------------------------------------------------------------
 
 DROP PROCEDURE IF EXISTS sp_reporte_cliente_retencion_humedad;
 

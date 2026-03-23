@@ -9,6 +9,9 @@ use App\Helpers\Calculos\TexturaResultados;
 use App\Helpers\Calculos\DensidadAparenteResultados;
 use App\Helpers\Calculos\DensidadParticulasResultados;
 use App\Helpers\Calculos\Estadisticas;
+use App\Helpers\Calculos\HumedadGravimetricaResultados;
+use App\Helpers\Calculos\PorosidadResultados;
+use App\Helpers\Calculos\ConductividadHidraulicaResultados;
 
 class ResultadosController extends Controller {
 
@@ -221,6 +224,51 @@ class ResultadosController extends Controller {
             $densidadesParticulas = DensidadParticulasResultados::calcularPorRep($dp);
         }
 
+        $porosidades = PorosidadResultados::calcularPorRep(
+                $densidades,
+                $densidadesParticulas
+        );
+
+        $archivosHG = $archivos
+                ->where('tipo', 'HUMEDAD_GRAVIMETRICA')
+                ->pluck('archivo')
+                ->filter()
+                ->toArray();
+
+        $humedades = [];
+
+        if (!empty($archivosHG)) {
+
+            $lista = implode(',', $archivosHG);
+
+            $hg = DB::select(
+                    'CALL sp_humedad_gravimetrica_resultados(?)',
+                    [$lista]
+            );
+
+            $humedades = HumedadGravimetricaResultados::calcularPorRep($hg);
+        }
+
+        $archivosCH = $archivos
+                ->where('tipo', 'CONDUCTIVIDAD_HIDRAULICA')
+                ->pluck('archivo')
+                ->filter()
+                ->toArray();
+
+        $conductividades = [];
+
+        if (!empty($archivosCH)) {
+
+            $lista = implode(',', $archivosCH);
+
+            $ch = DB::select(
+                    'CALL sp_conductividad_hidraulica_resultados(?)',
+                    [$lista]
+            );
+
+            $conductividades = ConductividadHidraulicaResultados::calcularPorRep($ch);
+        }
+
         /* ------------------------------------------------ */
         // AGRUPAR POR IDLAB (CARDS)
         /* ------------------------------------------------ */
@@ -245,6 +293,9 @@ class ResultadosController extends Controller {
 
         $estadisticasDA = [];
         $estadisticasDP = [];
+        $estadisticasPor = [];
+        $estadisticasHG = [];
+        $estadisticasCH = [];
 
         foreach ($cards as $key => $card) {
 
@@ -252,6 +303,9 @@ class ResultadosController extends Controller {
 
             $estadisticasDA[$key] = Estadisticas::calcular($rows, $densidades);
             $estadisticasDP[$key] = Estadisticas::calcular($rows, $densidadesParticulas);
+            $estadisticasPor[$key] = Estadisticas::calcular($rows, $porosidades);
+            $estadisticasHG[$key] = Estadisticas::calcular($rows, $humedades);
+            $estadisticasCH[$key] = Estadisticas::calcular($rows, $conductividades);
         }
 
         /* ------------------------------------------------ */
@@ -266,7 +320,13 @@ class ResultadosController extends Controller {
                         'estadisticasTextura',
                         'densidadesParticulas',
                         'estadisticasDA',
-                        'estadisticasDP'
+                        'porosidades',
+                        'estadisticasPor',
+                        'estadisticasDP',
+                        'estadisticasHG',
+                        'humedades',
+                        'conductividades',
+                        'estadisticasCH'
                 ));
     }
 

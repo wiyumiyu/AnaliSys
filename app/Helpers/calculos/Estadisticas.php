@@ -3,6 +3,8 @@
 namespace App\Helpers\Calculos;
 
 class Estadisticas {
+    /* PARA LOS QUE SON EN ARCHIVOS  --------------------------------------------------------- */
+
     /* ===========================
      * OBTENER VALORES VÁLIDOS
      * =========================== */
@@ -75,6 +77,8 @@ class Estadisticas {
             'cv' => $cv
         ];
     }
+
+    /* PARA LOS QUE SON EN ARRAY EN ESTE CASO TEXTURA  --------------------------------------------------------- */
 
     public static function calcularDesdeArray($vals) {
         $prom = self::promedio($vals);

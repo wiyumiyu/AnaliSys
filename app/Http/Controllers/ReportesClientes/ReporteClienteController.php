@@ -9,6 +9,7 @@ use App\Helpers\Calculos\Textura;
 use App\Helpers\Calculos\DensidadAparente;
 use App\Helpers\Calculos\DensidadParticulas;
 use App\Helpers\Calculos\HumedadGravimetrica;
+use App\Helpers\Calculos\conductividadHidraulica;
 
 class ReporteClienteController extends Controller {
 
@@ -169,6 +170,11 @@ class ReporteClienteController extends Controller {
                 //$humedades[trim((string)$m->idlab)] = $hg;
             }
         }
+        
+        
+        /* ------------------------------------------------ */
+        // CONDUCTIVIDAD HIDRAULICA //
+        /* ------------------------------------------------ */
 
         /* ------------------------------------------------ */
         // GRANULOMETRIA //
@@ -199,7 +205,8 @@ class ReporteClienteController extends Controller {
             'densidades' => $densidades,
             'densidadesParticulas' => $densidadesParticulas,
             'porosidades' => $porosidades,
-            'humedades' => $humedades
+            'humedades' => $humedades,
+            'conductividades' => $conductividades
         ]);
     }
     

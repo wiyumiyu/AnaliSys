@@ -46,9 +46,9 @@
                             <th>Rep</th>
                             <th>Longitud muestra</th>
                             <th>Diámetro interno</th>
-                            <th>Área transversal</th>
-                            <th>Temperatura agua</th>
-                            <th>Condición compactación / saturación</th>
+                            <th>Carga Hidráulica</th>
+                            <th>Volumen Recolectado</th>
+                            <th>Tiempo</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -72,9 +72,9 @@
                                 <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
                                 <td class="{{ $filaInactiva }}">{{ $m->longitud_muestra }}</td>
                                 <td class="{{ $filaInactiva }}">{{ $m->diametro_interno }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->area_transversal }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->temperatura_agua }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->condicion_compactacion_saturacion }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->carga_hidraulica }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->volumen }}</td>
+                                <td class="{{ $filaInactiva }}">{{ $m->tiempo }}</td>
 
                                 {{-- ACCIONES --}}
                                 <td class="text-end">

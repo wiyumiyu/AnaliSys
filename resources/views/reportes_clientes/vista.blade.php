@@ -128,7 +128,9 @@
                                     <th rowspan="2">DP</th>
                                     <th rowspan="2">Por.</th>
                                     <th rowspan="2">HG</th>
+                                    <th rowspan="2">Con.Hid</th>
                                     <th rowspan="2">Ret.H</th>
+
                                     <th rowspan="2">C_RetH</th>
                                     <th rowspan="2">Frac.A</th>
                                     <th rowspan="2">Est.Agr</th>
@@ -150,6 +152,7 @@
                                     <th colspan="3">%</th>
 
                                     <th></th>
+                                    <th>%</th>
                                     <th>%</th>
                                     <th>%</th>
                                     <th>%</th>
@@ -181,19 +184,19 @@
                                     <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
                                     <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
                                     <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-                                    
+
                                     <td>{{ $t ? $t['clase'] : '-' }}</td>
-                                    
+
                                     <!-- Densidad Aparente -->
                                     @php
-                                        $d = $densidades[$row->idlab] ?? null;
+                                    $d = $densidades[$row->idlab] ?? null;
                                     @endphp
 
                                     <td>{{ $d ? number_format($d, 3) : '-' }}</td>                                    
-                                    
+
                                     <!-- Densidad de Particulas -->
                                     @php
-                                        $dp = $densidadesParticulas[(string)$row->idlab] ?? null;
+                                    $dp = $densidadesParticulas[(string)$row->idlab] ?? null;
                                     @endphp
 
                                     <td>{{ $dp ? number_format($dp, 3) : '-' }}</td>
@@ -204,22 +207,22 @@
                                     @endphp
 
                                     <td>{{ $p ? number_format($p, 2) : '-' }}</td>
-                                    
+
                                     <!-- Humedad Gravimetrica -->
-                                                                        
+
                                     @php
                                     $hg = $humedades[(string)$row->idlab] ?? null;
                                     @endphp
 
                                     <td>{{ $hg ? number_format($hg, 2) : '-' }}</td>
-
                                     
+                                    <!-- Conductividad Hidraulica -->
 
+                                    @php
+                                      $ch = $conductividades[$row->idlab] ?? null;
+                                    @endphp
 
-
-
-
-
+                                    <td> {{ isset($ch['conductividad_hidraulica']) ? number_format($ch['conductividad_hidraulica'], 6) : '-' }}</td>
 
 
                                     <td>-</td>

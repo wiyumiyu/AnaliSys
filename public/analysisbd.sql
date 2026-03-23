@@ -3204,10 +3204,13 @@ BEGIN
         m.rep,
         m.estado,
         MAX(CASE WHEN a.siglas = 'longitud_inicial' THEN r.resultado END) AS longitud_inicial,
+        MAX(CASE WHEN a.siglas = 'longitud_final' THEN r.resultado END) AS longitud_final,
         MAX(CASE WHEN a.siglas = 'diametro_muestra' THEN r.resultado END) AS diametro_muestra,
+        MAX(CASE WHEN a.siglas = 'altura_cilindro' THEN r.resultado END) AS altura_cilindro,
+        MAX(CASE WHEN a.siglas = 'diametro_cilindro' THEN r.resultado END) AS diametro_cilindro,
         MAX(CASE WHEN a.siglas = 'fecha_medicion' THEN r.resultado END) AS fecha_medicion,
-        MAX(CASE WHEN a.siglas = 'hora_medicion' THEN r.resultado END) AS hora_medicion,
         MAX(CASE WHEN a.siglas = 'observaciones' THEN r.resultado END) AS observaciones
+        MAX(CASE WHEN a.siglas = 'hora_medicion' THEN r.resultado END) AS hora_medicion
         
     FROM trn_coeficiente_extensibilidad_muestras m
     LEFT JOIN trn_coeficiente_extensibilidad_resultados r
@@ -6695,7 +6698,6 @@ END$$
 
 DELIMITER ;
 
-
 -- ----------------------
 -- ----------------------
 -- ESTO ES DE REPORTES DE CLIENTES
@@ -7028,6 +7030,7 @@ ORDER BY
 END$$
 
 DELIMITER ;
+
 -- -------------------------------------------------------------------------
 DROP PROCEDURE IF EXISTS sp_obtener_viscosidad_cp;
 DELIMITER $$
@@ -7262,9 +7265,64 @@ ORDER BY
 END $$
 
 DELIMITER ;
+---------------------------------------------------------------------------
 
+DELIMITER $$
 
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_coeficiente_extensibilidad $$
+CREATE PROCEDURE sp_reporte_cliente_coeficiente_extensibilidad(
+    IN p_id_solicitud INT
+)
 
+BEGIN
+
+SELECT
+
+coem.id_coeficiente_extensibilidad,
+coemm.idlab,
+
+AVG(CASE WHEN a.siglas = 'longitud_inicial' THEN coer.resultado END) AS longitud_inicial,
+AVG(CASE WHEN a.siglas = 'diametro_muestra' THEN coer.resultado END) AS diametro_muestra,
+
+AVG(CASE WHEN a.siglas = 'fecha_medicion' THEN coer.resultado END) AS fecha_medicion,
+AVG(CASE WHEN a.siglas = 'hora_medicion' THEN coer.resultado END) AS hora_medicion
+
+FROM trn_coeficiente_extensibilidad_muestras coem
+
+JOIN trn_coeficiente_extensibilidad coe
+    ON coe.id = coem.id_coeficiente_extensibilidad
+
+LEFT JOIN trn_coeficiente_extensibilidad_resultados coer
+    ON coer.id_coeficiente_extensibilidad_muestras = coem.id
+    AND coer.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = coer.id_analisis
+    AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
+
+WHERE coem.id_coeficiente_extensibilidad IN (
+
+    SELECT DISTINCT coem2.id_coeficiente_extensibilidad
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_coeficiente_extensibilidad_muestras coem2
+        ON coem2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND coem.estado = 1
+
+GROUP BY
+coem.id_coeficiente_extensibilidad,
+coem.idlab
+
+ORDER BY
+coem.id_coeficiente_extensibilidad,
+coem.idlab;
+
+END$$
+
+DELIMITER ;
 
 /* ============================================================
    6. DATOS INICIALES
@@ -7865,7 +7923,10 @@ INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
 
 ('Longitud inicial',          'longitud_inicial',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Longitud final',            'longitud_final',     'COEFICIENTE_EXTENSIBILIDAD'),
 ('Diametro de la muestra',    'diametro_muestra',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Altura  del cilindro',      'altura_cilindro',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Diametro del cilindro',     'diametro_cilindro',     'COEFICIENTE_EXTENSIBILIDAD'),
 ('Fecha de Medición',         'fecha_medicion',       'COEFICIENTE_EXTENSIBILIDAD'),
 ('Hora de Medicion',          'hora_medicion',        'COEFICIENTE_EXTENSIBILIDAD');
 
@@ -7893,19 +7954,28 @@ INSERT INTO trn_coeficiente_extensibilidad_resultados
 VALUES
 -- Muestra 1
 (1,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.50', 1),
-(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='longitud_final' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10.30', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='altura_cilindro' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '1.30', 1),
+(1,(SELECT id FROM trn_analisis WHERE siglas='diametro_cilindro' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '30', 1),
 (1,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
 (1,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:30', 1),
 
 -- Muestra 2
 (2,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.60', 1),
-(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.25', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='longitud_final' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10.30', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='altura_cilindro' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '1.30', 1),
+(2,(SELECT id FROM trn_analisis WHERE siglas='diametro_cilindro' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '30', 1),
 (2,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
 (2,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10:45', 1),
 
 -- Muestra 3
 (3,(SELECT id FROM trn_analisis WHERE siglas='longitud_inicial' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'10.40', 1),
-(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.10', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='longitud_final' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'5.20', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_muestra' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '10.30', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='altura_cilindro' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '1.30', 1),
+(3,(SELECT id FROM trn_analisis WHERE siglas='diametro_cilindro' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '30', 1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '11:00', 1);
 

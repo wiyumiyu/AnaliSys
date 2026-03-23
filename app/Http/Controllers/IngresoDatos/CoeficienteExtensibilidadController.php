@@ -230,9 +230,12 @@ class CoeficienteExtensibilidadController extends Controller
                 /* ===== Resultados ===== */
                 $valores = [
                     'longitud_inicial'     => $row['C'],
-                    'diametro_muestra'     => $row['D'],
-                    'fecha_medicion'       => $row['E'],
-                    'hora_medicion'        => $row['F']
+                    'longitud_final'       => $row['D'],
+                    'diametro_muestra'     => $row['E'],
+                    'altura_cilindro'      => $row['F'],
+                    'diametro_cilindro'    => $row['G'],
+                    'fecha_medicion'       => $row['H'],
+                    'hora_medicion'        => $row['I']
 
                 ];
 

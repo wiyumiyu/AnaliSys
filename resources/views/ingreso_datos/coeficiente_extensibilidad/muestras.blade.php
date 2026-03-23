@@ -46,7 +46,10 @@
                             <th>ID Lab</th>
                             <th>Rep</th>
                             <th>Longitud inicial</th>
+                            <th>Longitud final</th>
                             <th>Diametro de la muestra</th>
+                            <th>Altura del cilindro</th>
+                            <th>Diametro del cilindro</th>
                             <th>Fecha de Medición</th>
                             <th>Hora de Medicion</th>
                             <th class="text-end">Acciones</th>

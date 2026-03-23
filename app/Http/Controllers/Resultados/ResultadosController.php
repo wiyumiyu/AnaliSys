@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\Calculos\TexturaResultados;
+use App\Helpers\Calculos\DensidadAparenteResultados;
+use App\Helpers\Calculos\DensidadParticulasResultados;
 
 class ResultadosController extends Controller {
 
@@ -128,80 +130,139 @@ class ResultadosController extends Controller {
      * Vista detalle resultado
      * ------------------------------------------------------------
      */
-public function show($id) {
+    public function show($id) {
 
-    /* ------------------------------------------------ */
-    // ARCHIVOS DEL RESULTADO
-    /* ------------------------------------------------ */
-    $archivos = collect(DB::select(
-        'CALL sp_traer_archivos_por_resultado(?)',
-        [$id]
-    ));
+        /* ------------------------------------------------ */
+        // ARCHIVOS DEL RESULTADO
+        /* ------------------------------------------------ */
+        $archivos = collect(DB::select(
+                        'CALL sp_traer_archivos_por_resultado(?)',
+                        [$id]
+                ));
 
-    /* ------------------------------------------------ */
-    // COMENTARIOS
-    /* ------------------------------------------------ */
-    $comentarios = collect(DB::select(
-        'CALL sp_traer_comentarios_resultado(?)',
-        [$id]
-    ));
+        /* ------------------------------------------------ */
+        // COMENTARIOS
+        /* ------------------------------------------------ */
+        $comentarios = collect(DB::select(
+                        'CALL sp_traer_comentarios_resultado(?)',
+                        [$id]
+                ));
 
-    /* ------------------------------------------------ */
-    // DATOS BASE (IDLAB, REP, ETC)
-    /* ------------------------------------------------ */
-    $datos = collect(DB::select(
-        'CALL sp_resultado_vista(?)',
-        [$id]
-    ));
+        /* ------------------------------------------------ */
+        // DATOS BASE (IDLAB, REP, ETC)
+        /* ------------------------------------------------ */
+        $datos = collect(DB::select(
+                        'CALL sp_resultado_vista(?)',
+                        [$id]
+                ));
 
-    /* ------------------------------------------------ */
-    //  TEXTURA (MULTI ARCHIVO)
-    /* ------------------------------------------------ */
-    $archivosTextura = $archivos
-        ->where('tipo', 'TEXTURA')
-        ->pluck('archivo')
-        ->filter()
-        ->values()
-        ->toArray();
+        /* ------------------------------------------------ */
+        //  TEXTURA (MULTI ARCHIVO)
+        /* ------------------------------------------------ */
+        $archivosTextura = $archivos
+                ->where('tipo', 'TEXTURA')
+                ->pluck('archivo')
+                ->filter()
+                ->values()
+                ->toArray();
 
-    $texturas = [];
+        $texturas = [];
 
-    if (!empty($archivosTextura)) {
+        if (!empty($archivosTextura)) {
 
-        $lista = implode(',', $archivosTextura);
+            $lista = implode(',', $archivosTextura);
 
-        $textura = DB::select(
-            'CALL sp_reporte_cliente_textura_resultados(?)',
-            [$lista]
-        );
+            $textura = DB::select(
+                    'CALL sp_reporte_cliente_textura_resultados(?)',
+                    [$lista]
+            );
 
-        $texturas = \App\Helpers\Calculos\TexturaResultados::calcularPorRep($textura);
+            $texturas = \App\Helpers\Calculos\TexturaResultados::calcularPorRep($textura);
+        }
+
+        // ARCHIVOS DA
+        $archivosDA = $archivos
+                ->where('tipo', 'DENSIDAD_APARENTE')
+                ->pluck('archivo')
+                ->toArray();
+
+        $densidades = [];
+
+        if (!empty($archivosDA)) {
+
+            $lista = implode(',', $archivosDA);
+
+            $da = DB::select(
+                    'CALL sp_densidad_aparente_resultados(?)',
+                    [$lista]
+            );
+
+            $densidades = DensidadAparenteResultados::calcularPorRep($da);
+        }
+
+        $archivosDP = $archivos
+                ->where('tipo', 'DENSIDAD_PARTICULAS')
+                ->pluck('archivo')
+                ->filter()
+                ->toArray();
+
+        $densidadesParticulas = [];
+
+        if (!empty($archivosDP)) {
+
+            $lista = implode(',', $archivosDP);
+
+            $dp = DB::select(
+                    'CALL sp_densidad_particulas_resultados(?)',
+                    [$lista]
+            );
+
+            $densidadesParticulas = DensidadParticulasResultados::calcularPorRep($dp);
+        }
+
+        /* ------------------------------------------------ */
+        // AGRUPAR POR IDLAB (CARDS)
+        /* ------------------------------------------------ */
+        $cards = $datos->groupBy('idlab')->map(function ($rows) {
+
+            $rows = collect($rows);
+
+            return (object) [
+                        'rows' => $rows,
+                        'first' => $rows->first(),
+                        'count' => $rows->count()
+            ];
+        });
+        $estadisticasTextura = [];
+
+        foreach ($cards as $key => $card) {
+
+            $rows = $card->rows;
+
+            $prom = TexturaResultados::promedio($rows, $texturas);
+            $desv = TexturaResultados::desviacion($rows, $texturas, $prom);
+            $cv = TexturaResultados::cv($desv, $prom);
+
+            $estadisticasTextura[$key] = [
+                'prom' => $prom,
+                'desv' => $desv,
+                'cv' => $cv
+            ];
+        }
+
+        /* ------------------------------------------------ */
+        // VIEW
+        /* ------------------------------------------------ */
+        return view('resultados.vista', compact(
+                        'archivos',
+                        'comentarios',
+                        'cards',
+                        'texturas',
+                        'densidades',
+                        'estadisticasTextura',
+                        'densidadesParticulas'
+                ));
     }
-
-    /* ------------------------------------------------ */
-    // AGRUPAR POR IDLAB (CARDS)
-    /* ------------------------------------------------ */
-    $cards = $datos->groupBy('idlab')->map(function ($rows) {
-
-        $rows = collect($rows);
-
-        return (object) [
-            'rows' => $rows,
-            'first' => $rows->first(),
-            'count' => $rows->count()
-        ];
-    });
-
-    /* ------------------------------------------------ */
-    // VIEW
-    /* ------------------------------------------------ */
-    return view('resultados.vista', compact(
-        'archivos',
-        'comentarios',
-        'cards',
-        'texturas'
-    ));
-}
 
     /**
      * ------------------------------------------------------------

@@ -33,14 +33,33 @@ class TexturaResultados
 
             $blanco = $blancos[$m->id_textura] ?? null;
 
-            if (!$blanco) continue;
-            if (!$m->peso_seco) continue;
+            // 🔥 VALIDACIONES REALES
+            if ($blanco === null) continue;
+            if ($m->peso_seco === null) continue;
 
+            if (
+                $m->R1 === null || $m->R2 === null ||
+                $m->R3 === null || $m->R4 === null ||
+                $blanco->R1 === null || $blanco->R2 === null ||
+                $blanco->R3 === null || $blanco->R4 === null
+            ) continue;
+
+            if (
+                $m->TEMP1 === null || $m->TEMP2 === null ||
+                $m->TEMP3 === null || $m->TEMP4 === null
+            ) continue;
+
+            if (
+                $m->TIEMPO1 === null || $m->TIEMPO2 === null ||
+                $m->TIEMPO3 === null || $m->TIEMPO4 === null
+            ) continue;
+
+            // 🔥 DATOS LIMPIOS (SIN ?? 0)
             $R = [
-                $m->R1 ?? 0,
-                $m->R2 ?? 0,
-                $m->R3 ?? 0,
-                $m->R4 ?? 0
+                $m->R1,
+                $m->R2,
+                $m->R3,
+                $m->R4
             ];
 
             $RL = [
@@ -49,6 +68,7 @@ class TexturaResultados
                 $blanco->R3,
                 $blanco->R4
             ];
+
 
             $Temp = [
                 $m->TEMP1,
@@ -72,14 +92,17 @@ class TexturaResultados
                 $Tiempo
             );
 
-            // CLAVE: guardar por idlab + rep
-            $texturas[$m->idlab][$m->rep] = $resultado;
+            // 🔥 GUARDAR SOLO SI ES VÁLIDO
+            if ($resultado !== null) {
+                $texturas[$m->idlab][$m->rep] = $resultado;
+            }
         }
+
         return $texturas;
     }
 
     /* ===========================
-     * PROMEDIO POR GRUPO
+     * PROMEDIO
      * =========================== */
     public static function promedio($rows, $texturas)
     {
@@ -99,9 +122,9 @@ class TexturaResultados
         }
 
         return [
-            'arena' => count($arena) ? array_sum($arena)/count($arena) : null,
-            'limo' => count($limo) ? array_sum($limo)/count($limo) : null,
-            'arcilla' => count($arcilla) ? array_sum($arcilla)/count($arcilla) : null,
+            'arena' => count($arena) > 1 ? array_sum($arena)/count($arena) : null,
+            'limo' => count($limo) > 1 ? array_sum($limo)/count($limo) : null,
+            'arcilla' => count($arcilla) > 1 ? array_sum($arcilla)/count($arcilla) : null,
         ];
     }
 
@@ -111,7 +134,7 @@ class TexturaResultados
     public static function desviacion($rows, $texturas, $prom)
     {
         $calc = function($values, $mean) {
-            if (!$values || $mean === null) return null;
+            if (count($values) <= 1 || $mean === null) return null;
 
             $sum = 0;
             foreach ($values as $v) {

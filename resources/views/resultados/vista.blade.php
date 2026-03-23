@@ -263,169 +263,153 @@
                             </tr>
                         </thead>
 
-<tbody>
+                        <tbody>
 
-    {{-- ================= FILA 1 ================= --}}
-    <tr>
+                            {{-- ================= FILA 1 ================= --}}
+                            <tr>
 
-        {{-- PANEL IZQUIERDO --}}
-        <td rowspan="{{ $count > 1 ? $count + 3 : $count }}" 
-            class="text-start align-top p-4 border-end">
+                                <td rowspan="{{ $count > 1 ? $count + 3 : $count }}" 
+                                    class="text-start align-top p-4 border-end">
 
-            <div class="fw-bold text-primary mb-3 fs-5">
-                SOL. {{ $first->solicitud }}
-            </div>
+                                    <div class="fw-bold text-primary mb-3 fs-5">
+                                        SOL. {{ $first->solicitud }}
+                                    </div>
 
-            <div class="small text-muted">Cultivo</div>
-            <div class="fw-semibold text-primary">
-                {{ $first->cultivo ?? '-' }}
-            </div>
+                                    <div class="small text-muted">Cultivo</div>
+                                    <div class="fw-semibold text-primary">{{ $first->cultivo ?? '-' }}</div>
 
-            <div class="small text-muted mt-2">Cliente</div>
-            <div class="fw-semibold">
-                {{ $first->cliente ?? '-' }}
-            </div>
+                                    <div class="small text-muted mt-2">Cliente</div>
+                                    <div class="fw-semibold">{{ $first->cliente ?? '-' }}</div>
 
-            <div class="small text-muted mt-2">Cantón</div>
-            <div class="fw-semibold">
-                {{ $first->canton ?? '-' }}
-            </div>
+                                    <div class="small text-muted mt-2">Cantón</div>
+                                    <div class="fw-semibold">{{ $first->canton ?? '-' }}</div>
 
-            <div class="small text-muted mt-2">Fecha</div>
-            <div class="fw-semibold">
-                {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
-            </div>
+                                    <div class="small text-muted mt-2">Fecha</div>
+                                    <div class="fw-semibold">
+                                        {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
+                                    </div>
 
-        </td>
+                                </td>
 
-        {{-- IDLAB + REP --}}
-        <td>
-            <span class="badge bg-primary-subtle text-primary">
-                {{ $first->idlab }}
-            </span>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        {{ $first->idlab }}
+                                    </span>
+                                    <div class="small text-muted">Rep {{ $first->rep }}</div>
+                                </td>
 
-            <div class="small text-muted">
-                Rep {{ $first->rep }}
-            </div>
-        </td>
+                                @php
+                                $t = $texturas[$first->idlab][$first->rep] ?? null;
+                                $d = $densidades[$first->idlab][$first->rep] ?? null;
+                                $dp = $densidadesParticulas[$first->idlab][$first->rep] ?? null;
 
-        {{--  TEXTURA --}}
-@php
-$t = $texturas[$first->idlab][$first->rep] ?? null;
-@endphp
+                                $total = $t ? ($t['arena'] + $t['limo'] + $t['arcilla']) : null;
+                                @endphp
 
-        <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
-        <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
-        <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-        <td>{{ $t['clase'] ?? '-' }}</td>
+                                {{-- TEXTURA --}}
+                                <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
+                                <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
+                                <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
+                                <td>{{ $t['clase'] ?? '-' }}</td>
 
-        @for($i=0;$i<8;$i++)
-            <td>-</td>
-        @endfor
+                                {{-- DA / DP --}}
+                                <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
+                                <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
 
-    </tr>
+                                {{-- RESTO --}}
+                                @for($i=0;$i<6;$i++) <td>-</td> @endfor
+
+                            </tr>
 
 
-    {{-- ================= RESTO DE REPS ================= --}}
-    @foreach($rows->skip(1) as $row)
-    <tr>
+                            {{-- ================= RESTO ================= --}}
+                            @foreach($rows->skip(1) as $row)
+                            <tr>
 
-        <td>
-            <span class="badge bg-primary-subtle text-primary">
-                {{ $row->idlab }}
-            </span>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        {{ $row->idlab }}
+                                    </span>
+                                    <div class="small text-muted">Rep {{ $row->rep }}</div>
+                                </td>
 
-            <div class="small text-muted">
-                Rep {{ $row->rep }}
-            </div>
-        </td>
+                                @php
+                                $t = $texturas[$row->idlab][$row->rep] ?? null;
+                                $d = $densidades[$row->idlab][$row->rep] ?? null;
+                                $dp = $densidadesParticulas[$row->idlab][$row->rep] ?? null;
 
-        {{--  TEXTURA --}}
-@php
-$t = $texturas[$row->idlab][$row->rep] ?? null;
-@endphp
+                                $total = $t ? ($t['arena'] + $t['limo'] + $t['arcilla']) : null;
+                                @endphp
 
-        <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
-        <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
-        <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-        <td>{{ $t['clase'] ?? '-' }}</td>
+                                <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
+                                <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
+                                <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
+                                <td>{{ $t['clase'] ?? '-' }}</td>
 
-        @for($i=0;$i<8;$i++)
-            <td>-</td>
-        @endfor
+                                <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
+                                <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
 
-    </tr>
-    @endforeach
+                                @for($i=0;$i<6;$i++) <td>-</td> @endfor
+
+                            </tr>
+                            @endforeach
 
 
-{{-- ================= PROMEDIO ================= --}}
+{{-- ================= PROM / DESV / CV ================= --}}
 @if($count > 1)
 
 @php
-$arena = [];
-$limo = [];
-$arcilla = [];
-$clases = [];
-
-foreach ($rows as $r) {
-    $t = $texturas[$r->idlab][$r->rep] ?? null;
-
-    if ($t) {
-        $arena[] = $t['arena'];
-        $limo[] = $t['limo'];
-        $arcilla[] = $t['arcilla'];
-
-        if(isset($t['clase'])) {
-            $clases[] = $t['clase'];
-        }
-    }
-}
-
-// promedios numéricos
-$promArena = count($arena) ? array_sum($arena)/count($arena) : null;
-$promLimo = count($limo) ? array_sum($limo)/count($limo) : null;
-$promArcilla = count($arcilla) ? array_sum($arcilla)/count($arcilla) : null;
-
-// 🔥 VALIDACIÓN DE CLASES
-$clasesUnicas = array_unique($clases);
-
-$claseFinal = null;
-$inconsistente = false;
-
-if (count($clasesUnicas) === 1) {
-    $claseFinal = $clasesUnicas[0];
-} elseif (count($clasesUnicas) > 1) {
-    $inconsistente = true;
-}
+$stats = $estadisticasTextura[$first->idlab] ?? null;
 @endphp
 
+{{-- PROM --}}
 <tr class="table-light">
-    <td class="fw-semibold">PROMEDIO</td>
+<td class="fw-semibold">PROMEDIO</td>
 
-    <td>{{ $promArena !== null ? number_format($promArena,1) : '-' }}</td>
-    <td>{{ $promLimo !== null ? number_format($promLimo,1) : '-' }}</td>
-    <td>{{ $promArcilla !== null ? number_format($promArcilla,1) : '-' }}</td>
+<td>{{ $stats && $stats['prom']['arena'] !== null ? number_format($stats['prom']['arena'],1) : '-' }}</td>
+<td>{{ $stats && $stats['prom']['limo'] !== null ? number_format($stats['prom']['limo'],1) : '-' }}</td>
+<td>{{ $stats && $stats['prom']['arcilla'] !== null ? number_format($stats['prom']['arcilla'],1) : '-' }}</td>
+<td>-</td>
 
-    {{-- 🔥 CLASE TEXTURAL VALIDADA --}}
-    <td>
-        @if($inconsistente)
-            <span class="badge bg-danger">REVISAR</span>
-        @else
-            <span class="badge bg-success">
-                {{ $claseFinal ?? '-' }}
-            </span>
-        @endif
-    </td>
+<td>-</td>
+<td>-</td>
 
-    @for($i=0;$i<8;$i++)
-        <td>-</td>
-    @endfor
+@for($i=0;$i<6;$i++) <td>-</td> @endfor
+</tr>
+
+{{-- DESV --}}
+<tr class="table-light">
+<td class="fw-semibold">Desv.Est.</td>
+
+<td>{{ $stats && $stats['desv']['arena'] !== null ? number_format($stats['desv']['arena'],2) : '-' }}</td>
+<td>{{ $stats && $stats['desv']['limo'] !== null ? number_format($stats['desv']['limo'],2) : '-' }}</td>
+<td>{{ $stats && $stats['desv']['arcilla'] !== null ? number_format($stats['desv']['arcilla'],2) : '-' }}</td>
+<td>-</td>
+
+<td>-</td>
+<td>-</td>
+
+@for($i=0;$i<6;$i++) <td>-</td> @endfor
+</tr>
+
+{{-- CV --}}
+<tr class="table-light">
+<td class="fw-semibold">CV</td>
+
+<td>{{ $stats && $stats['cv']['arena'] !== null ? number_format($stats['cv']['arena'],2) : '-' }}</td>
+<td>{{ $stats && $stats['cv']['limo'] !== null ? number_format($stats['cv']['limo'],2) : '-' }}</td>
+<td>{{ $stats && $stats['cv']['arcilla'] !== null ? number_format($stats['cv']['arcilla'],2) : '-' }}</td>
+<td>-</td>
+
+<td>-</td>
+<td>-</td>
+
+@for($i=0;$i<6;$i++) <td>-</td> @endfor
 </tr>
 
 @endif
 
-</tbody>
-
+                        </tbody>
                     </table>
 
                 </div>

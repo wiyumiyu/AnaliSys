@@ -7148,6 +7148,57 @@ END $$
 
 DELIMITER ;
 
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_densidad_aparente_resultados;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_densidad_aparente_resultados(
+    IN p_lista_archivos TEXT
+)
+BEGIN
+
+SELECT
+
+    tm.id_densidad_aparente,
+    tm.idlab,
+    tm.rep,
+
+    AVG(CASE WHEN a.siglas = 'altura' THEN tr.resultado END) AS altura_cilindro,
+    AVG(CASE WHEN a.siglas = 'diametro' THEN tr.resultado END) AS diametro_cilindro,
+    AVG(CASE WHEN a.siglas = 'peso_cilindro_suelo' THEN tr.resultado END) AS peso_seco,
+    AVG(CASE WHEN a.siglas = 'peso_cilindro' THEN tr.resultado END) AS peso_cilindro
+
+FROM trn_densidad_aparente t
+
+JOIN trn_densidad_aparente_muestras tm
+    ON tm.id_densidad_aparente = t.id
+
+LEFT JOIN trn_densidad_aparente_resultados tr
+    ON tr.id_densidad_aparente_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'DENSIDAD_APARENTE'
+
+WHERE FIND_IN_SET(t.archivo, p_lista_archivos)
+AND tm.estado = 1
+
+GROUP BY
+    tm.id_densidad_aparente,
+    tm.idlab,
+    tm.rep
+
+ORDER BY
+    tm.idlab,
+    tm.rep;
+
+END$$
+
+DELIMITER ;
+-- -------------------------------------------------------------------------
+
 -- Traer datos densidad de particulas
 
 DELIMITER $$
@@ -7206,6 +7257,59 @@ ORDER BY
 END $$
 
 DELIMITER ;
+
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_densidad_particulas_resultados;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_densidad_particulas_resultados(
+    IN p_lista_archivos TEXT
+)
+BEGIN
+
+SELECT
+
+    tm.id_densidad_particulas,
+    tm.idlab,
+    tm.rep,
+
+    AVG(CASE WHEN a.siglas = 'numero_balon_vol' THEN tr.resultado END) AS numero_balon,
+    AVG(CASE WHEN a.siglas = 'peso_balon_vol_vacio_p1' THEN tr.resultado END) AS p1,
+    AVG(CASE WHEN a.siglas = 'peso_balon_vol_suelo_seco_p2' THEN tr.resultado END) AS p2,
+    AVG(CASE WHEN a.siglas = 'peso_balon_vol_suelo_agua_p3' THEN tr.resultado END) AS p3,
+    AVG(CASE WHEN a.siglas = 'temperatura_agua' THEN tr.resultado END) AS temperatura
+
+FROM trn_densidad_particulas t
+
+JOIN trn_densidad_particulas_muestras tm
+    ON tm.id_densidad_particulas = t.id
+
+LEFT JOIN trn_densidad_particulas_resultados tr
+    ON tr.id_densidad_particulas_muestras = tm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'DENSIDAD_PARTICULAS'
+
+
+WHERE FIND_IN_SET(t.archivo, p_lista_archivos)
+AND tm.estado = 1
+
+GROUP BY
+    tm.id_densidad_particulas,
+    tm.idlab,
+    tm.rep   
+
+ORDER BY
+    tm.idlab,
+    tm.rep;
+
+END$$
+
+DELIMITER ;
+-- -------------------------------------------------------------------------
 
 -- Traer datos de humedad gravimetrica
 

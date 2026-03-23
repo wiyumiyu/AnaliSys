@@ -170,6 +170,26 @@ class ReporteClienteController extends Controller {
             }
         }
 
+        /* ------------------------------------------------ */
+        // GRANULOMETRIA //
+        /* ------------------------------------------------ */
+       /* $granulometrias = [];
+
+        foreach ($datos as $row) {
+
+            $idlab = trim((string) $row->idlab);
+
+            $da = $densidades[$idlab] ?? null;
+            $dp = $densidadesParticulas[$idlab] ?? null;
+
+            if ($da !== null && $dp !== null && $dp != 0) {
+
+                $p = (1 - ($da / $dp)) * 100;
+
+                $granulometrias[$idlab] = round($p, 2);
+            }
+        }*/
+
 
 
         return view('reportes_clientes.vista', [
@@ -182,4 +202,5 @@ class ReporteClienteController extends Controller {
             'humedades' => $humedades
         ]);
     }
+    
 }

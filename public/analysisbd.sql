@@ -2235,7 +2235,7 @@ END$$
 DELIMITER ;
 
 -- Listar muestras del archivo (detalle)
-
+--  drop procedure  sp_listar_muestras_conductividad_hidraulica_detalle
 DELIMITER $$
 
 CREATE PROCEDURE sp_listar_muestras_conductividad_hidraulica_detalle (
@@ -2254,14 +2254,14 @@ BEGIN
         MAX(CASE WHEN a.siglas = 'diametro_interno'
                  THEN r.resultado END) AS diametro_interno,
 
-        MAX(CASE WHEN a.siglas = 'area_transversal'
-                 THEN r.resultado END) AS area_transversal,
+        MAX(CASE WHEN a.siglas = 'carga_hidraulica'
+                 THEN r.resultado END) AS carga_hidraulica,
 
-        MAX(CASE WHEN a.siglas = 'temperatura_agua'
-                 THEN r.resultado END) AS temperatura_agua,
+        MAX(CASE WHEN a.siglas = 'volumen'
+                 THEN r.resultado END) AS volumen,
 
-        MAX(CASE WHEN a.siglas = 'condicion_compactacion_saturacion'
-                 THEN r.resultado END) AS condicion_compactacion_saturacion
+        MAX(CASE WHEN a.siglas = 'tiempo'
+                 THEN r.resultado END) AS tiempo
 
     FROM trn_conductividad_hidraulica_muestras m
     LEFT JOIN trn_conductividad_hidraulica_resultados r
@@ -2281,7 +2281,6 @@ BEGIN
 END$$
 
 DELIMITER ;
-
 
 -- Obtener una muestra
 
@@ -3209,7 +3208,7 @@ BEGIN
         MAX(CASE WHEN a.siglas = 'altura_cilindro' THEN r.resultado END) AS altura_cilindro,
         MAX(CASE WHEN a.siglas = 'diametro_cilindro' THEN r.resultado END) AS diametro_cilindro,
         MAX(CASE WHEN a.siglas = 'fecha_medicion' THEN r.resultado END) AS fecha_medicion,
-        MAX(CASE WHEN a.siglas = 'observaciones' THEN r.resultado END) AS observaciones
+        MAX(CASE WHEN a.siglas = 'observaciones' THEN r.resultado END) AS observaciones,
         MAX(CASE WHEN a.siglas = 'hora_medicion' THEN r.resultado END) AS hora_medicion
         
     FROM trn_coeficiente_extensibilidad_muestras m
@@ -7428,6 +7427,134 @@ END$$
 
 DELIMITER ;
 
+
+
+
+
+
+
+
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_conductividad_hidraulica;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_conductividad_hidraulica(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+chm.id_conductividad_hidraulica,
+chm.idlab,
+
+AVG(CASE WHEN a.siglas = 'longitud_muestra' THEN tr.resultado END) AS longitud_muestra,
+AVG(CASE WHEN a.siglas = 'diametro_interno' THEN tr.resultado END) AS diametro_interno,
+AVG(CASE WHEN a.siglas = 'carga_hidraulica' THEN tr.resultado END) AS carga_hidraulica,
+AVG(CASE WHEN a.siglas = 'volumen' THEN tr.resultado END) AS volumen,
+AVG(CASE WHEN a.siglas = 'tiempo' THEN tr.resultado END) AS tiempo
+
+FROM trn_conductividad_hidraulica_muestras chm
+
+JOIN trn_conductividad_hidraulica ch
+    ON ch.id = chm.id_conductividad_hidraulica
+
+LEFT JOIN trn_conductividad_hidraulica_resultados tr
+    ON tr.id_conductividad_hidraulica_muestras = chm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'CONDUCTIVIDAD_HIDRAULICA'
+
+WHERE chm.id_conductividad_hidraulica IN (
+
+    SELECT DISTINCT chm2.id_conductividad_hidraulica
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_conductividad_hidraulica_muestras chm2
+        ON chm2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND chm.estado = 1
+
+GROUP BY
+chm.id_conductividad_hidraulica,
+chm.idlab
+
+ORDER BY
+chm.id_conductividad_hidraulica,
+chm.idlab;
+
+END$$
+
+DELIMITER ;
+
+
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_retencion_humedad;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_retencion_humedad(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+rhm.id_retencion_humedad,
+rhm.idlab,
+
+AVG(CASE WHEN a.siglas = 'presion_aplicada' THEN tr.resultado END) AS presion_aplicada,
+
+AVG(CASE WHEN a.siglas = 'ph1_L1' THEN tr.resultado END) AS ph1_L1,
+AVG(CASE WHEN a.siglas = 'ps1_L1' THEN tr.resultado END) AS ps1_L1,
+
+AVG(CASE WHEN a.siglas = 'ph_L2' THEN tr.resultado END) AS ph_L2,
+AVG(CASE WHEN a.siglas = 'ps2_L2' THEN tr.resultado END) AS ps2_L2,
+
+AVG(CASE WHEN a.siglas = 'L1' THEN tr.resultado END) AS L1,
+AVG(CASE WHEN a.siglas = 'L2' THEN tr.resultado END) AS L2
+
+FROM trn_retencion_humedad_muestras rhm
+
+JOIN trn_retencion_humedad rh
+    ON rh.id = rhm.id_retencion_humedad
+
+LEFT JOIN trn_retencion_humedad_resultados tr
+    ON tr.id_retencion_humedad_muestras = rhm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'RETENCION_HUMEDAD'
+
+WHERE rhm.id_retencion_humedad IN (
+
+    SELECT DISTINCT rhm2.id_retencion_humedad
+    FROM tbm_solicitud_muestras sm
+    JOIN trn_retencion_humedad_muestras rhm2
+        ON rhm2.idlab = sm.idlab
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND rhm.estado = 1
+
+GROUP BY
+rhm.id_retencion_humedad,
+rhm.idlab
+
+ORDER BY
+rhm.id_retencion_humedad,
+rhm.idlab;
+
+END$$
+
+DELIMITER ;
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */
@@ -7800,10 +7927,10 @@ INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
 ('Longitud de la muestra', 'longitud_muestra', 'CONDUCTIVIDAD_HIDRAULICA'),
 ('Diámetro interno', 'diametro_interno', 'CONDUCTIVIDAD_HIDRAULICA'),
-('Área transversal', 'area_transversal', 'CONDUCTIVIDAD_HIDRAULICA'),
-('Temperatura del agua', 'temperatura_agua', 'CONDUCTIVIDAD_HIDRAULICA'),
-('Condición de compactación / saturación', 'condicion_compactacion_saturacion', 'CONDUCTIVIDAD_HIDRAULICA');
-
+('Carga hidráulica h (cm) - Diferencia de nivel de agua', 'carga_hidraulica', 'CONDUCTIVIDAD_HIDRAULICA'),
+('Volumen recolectado Q (cm³) - Agua recolectada', 'volumen', 'CONDUCTIVIDAD_HIDRAULICA'),
+('Tiempo de medición', 'tiempo', 'CONDUCTIVIDAD_HIDRAULICA');
+/*
 INSERT INTO trn_conductividad_hidraulica (periodo, archivo, fecha, analista)
 VALUES
 (2024, 'CH-2026-001', '2024-09-20', 1);
@@ -7839,7 +7966,7 @@ VALUES
 (3, (SELECT id FROM trn_analisis WHERE siglas='temperatura_agua' AND origen='CONDUCTIVIDAD_HIDRAULICA'), '22.9', 1),
 (3, (SELECT id FROM trn_analisis WHERE siglas='condicion_compactacion_saturacion' AND origen='CONDUCTIVIDAD_HIDRAULICA'), 'Compactada', 1);
 
-
+*/
 -- RETENCIÓN DE HUMEDAD
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES

@@ -12,6 +12,7 @@ use App\Helpers\Calculos\Estadisticas;
 use App\Helpers\Calculos\HumedadGravimetricaResultados;
 use App\Helpers\Calculos\PorosidadResultados;
 use App\Helpers\Calculos\ConductividadHidraulicaResultados;
+use App\Helpers\Calculos\RetencionHumedadResultados;
 
 class ResultadosController extends Controller {
 
@@ -269,6 +270,27 @@ class ResultadosController extends Controller {
             $conductividades = ConductividadHidraulicaResultados::calcularPorRep($ch);
         }
 
+        $archivosRH = $archivos
+                ->where('tipo', 'RETENCION_HUMEDAD')
+                ->pluck('archivo')
+                ->filter()
+                ->toArray();
+
+        $retenciones = [];
+
+        if (!empty($archivosRH)) {
+
+            $lista = implode(',', $archivosRH);
+
+            $rh = DB::select(
+                    'CALL sp_retencion_humedad_resultados(?)',
+                    [$lista]
+            );
+
+            $retenciones = RetencionHumedadResultados::calcularPorRep($rh);
+        }
+
+
         /* ------------------------------------------------ */
         // AGRUPAR POR IDLAB (CARDS)
         /* ------------------------------------------------ */
@@ -296,6 +318,7 @@ class ResultadosController extends Controller {
         $estadisticasPor = [];
         $estadisticasHG = [];
         $estadisticasCH = [];
+        $estadisticasRH = [];
 
         foreach ($cards as $key => $card) {
 
@@ -306,6 +329,7 @@ class ResultadosController extends Controller {
             $estadisticasPor[$key] = Estadisticas::calcular($rows, $porosidades);
             $estadisticasHG[$key] = Estadisticas::calcular($rows, $humedades);
             $estadisticasCH[$key] = Estadisticas::calcular($rows, $conductividades);
+            $estadisticasRH[$key] = RetencionHumedadResultados::estadisticas($rows, $retenciones);
         }
 
         /* ------------------------------------------------ */
@@ -326,7 +350,9 @@ class ResultadosController extends Controller {
                         'estadisticasHG',
                         'humedades',
                         'conductividades',
-                        'estadisticasCH'
+                        'estadisticasCH',
+                        'retenciones',
+                        'estadisticasRH'
                 ));
     }
 

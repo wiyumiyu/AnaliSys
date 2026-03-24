@@ -7716,7 +7716,62 @@ END$$
 
 DELIMITER ;
 
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_retencion_humedad_resultados;
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_retencion_humedad_resultados(
+    IN p_lista_archivos TEXT
+)
+BEGIN
+
+SELECT
+
+    rhm.id_retencion_humedad,
+    rhm.idlab,
+    rhm.rep,
+
+    AVG(CASE WHEN a.siglas = 'presion_aplicada' THEN tr.resultado END) AS presion,
+
+    AVG(CASE WHEN a.siglas = 'ph1_L1' THEN tr.resultado END) AS ph1_L1,
+    AVG(CASE WHEN a.siglas = 'ps1_L1' THEN tr.resultado END) AS ps1_L1,
+
+    AVG(CASE WHEN a.siglas = 'ph_L2' THEN tr.resultado END) AS ph_L2,
+    AVG(CASE WHEN a.siglas = 'ps2_L2' THEN tr.resultado END) AS ps2_L2,
+
+    AVG(CASE WHEN a.siglas = 'L1' THEN tr.resultado END) AS L1,
+    AVG(CASE WHEN a.siglas = 'L2' THEN tr.resultado END) AS L2
+
+FROM trn_retencion_humedad rh
+
+JOIN trn_retencion_humedad_muestras rhm
+    ON rhm.id_retencion_humedad = rh.id
+
+LEFT JOIN trn_retencion_humedad_resultados tr
+    ON tr.id_retencion_humedad_muestras = rhm.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'RETENCION_HUMEDAD'
+
+WHERE FIND_IN_SET(rh.archivo, p_lista_archivos)
+AND rhm.estado = 1
+
+GROUP BY
+    rhm.id_retencion_humedad,
+    rhm.idlab,
+    rhm.rep
+
+ORDER BY
+    rhm.idlab,
+    rhm.rep;
+
+END$$
+
+DELIMITER ;
+-- -------------------------------------------------------------------------
 
 
 DELIMITER $$

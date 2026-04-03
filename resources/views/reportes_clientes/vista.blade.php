@@ -135,9 +135,9 @@
                                     <!-- 🔥 ESTABILIDAD AGR -->
                                     <th colspan="2">Est. Agregados</th>
 
-                                    <th rowspan="2">Frac.A</th>
                                     <th rowspan="2">COEL</th>
-                                    
+                                    <th rowspan="2">Frac.A</th>
+
                                 </tr>
 
                                 <tr>
@@ -262,8 +262,12 @@
                                     @endphp                                    
                                     <td>{{ isset($ea['dmp']) ? number_format($ea['dmp'], 2) : '-' }}</td>
                                     <td>{{ isset($ea['eaa']) ? number_format($ea['eaa'], 2) : '-' }}</td>
-                                    <td>-</td>
-                                    <td>-</td>
+                                    @php
+                                    $coel = $coeles[$row->idlab] ?? null;
+                                    @endphp
+                                    <td> {{ isset($coel['cole']) ? number_format($coel['cole'], 4) : '-' }}</td>
+                                    <td></td>
+                                    
 
                                 </tr>
 

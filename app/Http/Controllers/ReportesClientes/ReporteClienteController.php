@@ -13,6 +13,7 @@ use App\Helpers\Calculos\conductividadHidraulica;
 use App\Helpers\Calculos\RetencionHumedad;
 use App\Helpers\Calculos\Porosidad;
 use App\Helpers\Calculos\EstabilidadAgregados;
+use App\Helpers\Calculos\CoeficienteExtensibilidad;
 
 class ReporteClienteController extends Controller {
 
@@ -232,7 +233,16 @@ class ReporteClienteController extends Controller {
         
         $estabilidades = EstabilidadAgregados::calcular($estabilidadAgregados);        
         
-       
+        $coel = DB::select(
+                'CALL sp_reporte_cliente_coeficiente_extensibilidad(?)',
+                [$id]
+        );       
+        
+          
+        
+        
+      $coeles = CoeficienteExtensibilidad::calcularPorMuestras($coel); 
+       // dd($coeles); 
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
@@ -243,7 +253,8 @@ class ReporteClienteController extends Controller {
             'humedades' => $humedades,
             'conductividades' => $conductividades,
             'retenciones' => $retenciones,
-            'estabilidades' => $estabilidades
+            'estabilidades' => $estabilidades,
+            'coeles' => $coeles
         ]);
     }
     

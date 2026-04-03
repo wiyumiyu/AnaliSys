@@ -98,21 +98,80 @@
                         Resultados de coeficiente de extensibilidad
                     </h5>
 
+                    @php
+                    $map = [];
+                    foreach($resultados as $r){
+                    $map[$r->siglas] = $r;
+                    }
+                    @endphp
+
                     <div class="row g-3">
 
-                        @foreach($resultados as $r)
-                            <div class="col-md-3">
-                                <label class="form-label">
-                                    {{ $r->analisis }}
-                                    <small class="text-muted">({{ $r->siglas }})</small>
-                                </label>
+                        {{-- ================= OD ================= --}}
+                        <div class="col-12">
+                            <h6 class="fw-semibold text-primary">Secado al Horno (OD)</h6>
+                        </div>
 
-                                <input type="text"
-                                       class="form-control"
-                                       name="resultados[{{ $r->id_resultado }}]"
-                                       value="{{ $r->resultado }}">
-                            </div>
-                        @endforeach
+                        <div class="col-md-3">
+                            <label class="form-label">Altura Cilindro (OD)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['altura_cilindro_od']->id_resultado ?? '' }}]"
+                                   value="{{ $map['altura_cilindro_od']->resultado ?? '' }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Diámetro Cilindro (OD)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['diametro_cilindro_od']->id_resultado ?? '' }}]"
+                                   value="{{ $map['diametro_cilindro_od']->resultado ?? '' }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Peso + suelo seco (OD)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['peso_cilindro_suelo_seco_od']->id_resultado ?? '' }}]"
+                                   value="{{ $map['peso_cilindro_suelo_seco_od']->resultado ?? '' }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Peso Cilindro Vacío (OD)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['peso_cilindro_vacio_od']->id_resultado ?? '' }}]"
+                                   value="{{ $map['peso_cilindro_vacio_od']->resultado ?? '' }}">
+                        </div>
+
+                        {{-- ================= 33 kPa ================= --}}
+                        <div class="col-12 mt-4">
+                            <h6 class="fw-semibold text-success">Tercio de bar (33 kPa)</h6>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Altura Cilindro (33 kPa)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['altura_cilindro_33kpa']->id_resultado ?? '' }}]"
+                                   value="{{ $map['altura_cilindro_33kpa']->resultado ?? '' }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Diámetro Cilindro (33 kPa)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['diametro_cilindro_33kpa']->id_resultado ?? '' }}]"
+                                   value="{{ $map['diametro_cilindro_33kpa']->resultado ?? '' }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Peso + suelo (33 kPa)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['peso_cilindro_suelo_33kpa']->id_resultado ?? '' }}]"
+                                   value="{{ $map['peso_cilindro_suelo_33kpa']->resultado ?? '' }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Peso Cilindro Vacío (33 kPa)</label>
+                            <input type="text" class="form-control"
+                                   name="resultados[{{ $map['peso_cilindro_vacio_33kpa']->id_resultado ?? '' }}]"
+                                   value="{{ $map['peso_cilindro_vacio_33kpa']->resultado ?? '' }}">
+                        </div>
 
                     </div>
 

@@ -45,72 +45,81 @@
                         <tr>
                             <th>ID Lab</th>
                             <th>Rep</th>
-                            <th>Longitud inicial</th>
-                            <th>Longitud final</th>
-                            <th>Diametro de la muestra</th>
-                            <th>Altura del cilindro</th>
-                            <th>Diametro del cilindro</th>
-                            <th>Fecha de Medición</th>
-                            <th>Hora de Medicion</th>
+
+                            <th>Altura OD</th>
+                            <th>Diámetro OD</th>
+                            <th>Peso OD</th>
+                            <th>Peso Vacío OD</th>
+
+                            <th>Altura 33</th>
+                            <th>Diámetro 33</th>
+                            <th>Peso 33</th>
+                            <th>Peso Vacío 33</th>
+
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @forelse($muestras as $m)
-                            @php
-                                $filaInactiva = $m->estado == 0 ? 'opacity-40' : '';
-                            @endphp
+                        @php
+                        $filaInactiva = $m->estado == 0 ? 'opacity-40' : '';
+                        @endphp
 
-                            <tr>
+                        <tr>
 
-                                {{-- ID LAB --}}
-                                <td class="{{ $filaInactiva }}">
-                                    <a href="{{ route('coeficiente_extensibilidad.muestra.edit', $m->id_muestra) }}"
-                                       class="fw-semibold text-reset text-decoration-none">
-                                        {{ $m->idlab }}
-                                    </a>
-                                </td>
+                            <td class="{{ $filaInactiva }}">
+                                <a href="{{ route('coeficiente_extensibilidad.muestra.edit', $m->id_muestra) }}"
+                                   class="fw-semibold text-reset text-decoration-none">
+                                    {{ $m->idlab }}
+                                </a>
+                            </td>
 
-                                <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->longitud_inicial }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->diametro_muestra }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->fecha_medicion }}</td>
-                                <td class="{{ $filaInactiva }}">{{ $m->hora_medicion }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->rep }}</td>
 
-                                {{-- ACCIONES --}}
-                                <td class="text-end">
-                                    <div class="hstack gap-2 fs-15 justify-content-end">
+                            {{-- OD --}}
+                            <td class="{{ $filaInactiva }}">{{ $m->altura_cilindro_od }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->diametro_cilindro_od }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro_suelo_seco_od }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro_vacio_od }}</td>
 
-                                        {{-- ANULAR / ACTIVAR --}}
-                                        <button type="button"
-                                                class="btn {{ $m->estado == 1
-                                                    ? 'bg-warning-subtle text-warning'
-                                                    : 'bg-success-subtle text-success' }} btn-sm"
-                                                onclick="confirmarEstadoMuestra({{ $m->id_muestra }}, {{ $m->estado }})">
-                                            <i class="{{ $m->estado == 1
-                                                ? 'ri-close-circle-line'
-                                                : 'ri-refresh-line' }}"></i>
-                                        </button>
+                            {{-- 33 kPa --}}
+                            <td class="{{ $filaInactiva }}">{{ $m->altura_cilindro_33kpa }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->diametro_cilindro_33kpa }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro_suelo_33kpa }}</td>
+                            <td class="{{ $filaInactiva }}">{{ $m->peso_cilindro_vacio_33kpa }}</td>
 
-                                        {{-- ELIMINAR --}}
-                                        <button type="button"
-                                                class="btn bg-danger-subtle text-danger btn-sm"
-                                                onclick="confirmarEliminarMuestra({{ $m->id_muestra }})">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
+                            {{-- ACCIONES --}}
+                            <td class="text-end">
+                                <div class="hstack gap-2 fs-15 justify-content-end">
 
-                                    </div>
-                                </td>
+                                    <button type="button"
+                                            class="btn {{ $m->estado == 1
+                            ? 'bg-warning-subtle text-warning'
+                            : 'bg-success-subtle text-success' }} btn-sm"
+                                            onclick="confirmarEstadoMuestra({{ $m->id_muestra }}, {{ $m->estado }})">
+                                        <i class="{{ $m->estado == 1
+                        ? 'ri-close-circle-line'
+                        : 'ri-refresh-line' }}"></i>
+                                    </button>
 
-                            </tr>
+                                    <button type="button"
+                                            class="btn bg-danger-subtle text-danger btn-sm"
+                                            onclick="confirmarEliminarMuestra({{ $m->id_muestra }})">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </button>
+
+                                </div>
+                            </td>
+
+                        </tr>
+
                         @empty
-                            <tr>
-                                <td colspan="9"
-                                    class="text-center text-muted py-4">
-                                    No hay muestras registradas para este archivo.
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="11" class="text-center text-muted py-4">
+                                No hay muestras registradas para este archivo.
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
 
@@ -173,87 +182,74 @@
 <script src="{{ asset('js/app.js') }}"></script>
 
 <script>
-let muestraModal;
-let modalForm;
-let modalTitle;
-let modalBody;
-let modalBtn;
-let modalMethod;
+                            let muestraModal;
+                            let modalForm;
+                            let modalTitle;
+                            let modalBody;
+                            let modalBtn;
+                            let modalMethod;
+                            document.addEventListener('DOMContentLoaded', function () {
+                            muestraModal = new bootstrap.Modal(
+                                    document.getElementById('confirmMuestraModal')
+                                    );
+                            modalForm = document.getElementById('modalForm');
+                            modalTitle = document.getElementById('modalTitle');
+                            modalBody = document.getElementById('modalBody');
+                            modalBtn = document.getElementById('modalConfirmBtn');
+                            modalMethod = document.getElementById('modalMethod');
+                            });
+                            /* ===============================
+                             * ANULAR / ACTIVAR
+                             * =============================== */
+                            function confirmarEstadoMuestra(id, estado) {
 
-document.addEventListener('DOMContentLoaded', function () {
-    muestraModal = new bootstrap.Modal(
-        document.getElementById('confirmMuestraModal')
-    );
-
-    modalForm   = document.getElementById('modalForm');
-    modalTitle  = document.getElementById('modalTitle');
-    modalBody   = document.getElementById('modalBody');
-    modalBtn    = document.getElementById('modalConfirmBtn');
-    modalMethod = document.getElementById('modalMethod');
-});
-
-/* ===============================
- * ANULAR / ACTIVAR
- * =============================== */
-function confirmarEstadoMuestra(id, estado) {
-
-    modalForm.action = `/ingreso-datos/coeficiente-extensibilidad/muestra/${id}/estado`;
-    modalMethod.value = 'PATCH';
-
-    if (estado === 1) {
-        modalTitle.textContent = 'Anular muestra';
-        modalTitle.className = 'modal-title text-warning fw-semibold';
-
-        modalBody.innerHTML = `
+                            modalForm.action = `/ingreso-datos/coeficiente-extensibilidad/muestra/${id}/estado`;
+                            modalMethod.value = 'PATCH';
+                            if (estado === 1) {
+                            modalTitle.textContent = 'Anular muestra';
+                            modalTitle.className = 'modal-title text-warning fw-semibold';
+                            modalBody.innerHTML = `
             ¿Está seguro que desea <strong>anular</strong> esta muestra?
             <br>
             <small class="text-muted">
                 La muestra seguirá visible, pero no se considerará activa.
             </small>
         `;
-
-        modalBtn.textContent = 'Anular';
-        modalBtn.className = 'btn btn-warning';
-
-    } else {
-        modalTitle.textContent = 'Reactivar muestra';
-        modalTitle.className = 'modal-title text-success fw-semibold';
-
-        modalBody.innerHTML = `
+                            modalBtn.textContent = 'Anular';
+                            modalBtn.className = 'btn btn-warning';
+                            } else {
+                            modalTitle.textContent = 'Reactivar muestra';
+                            modalTitle.className = 'modal-title text-success fw-semibold';
+                            modalBody.innerHTML = `
             ¿Desea <strong>reactivar</strong> esta muestra?
         `;
+                            modalBtn.textContent = 'Reactivar';
+                            modalBtn.className = 'btn btn-success';
+                            }
 
-        modalBtn.textContent = 'Reactivar';
-        modalBtn.className = 'btn btn-success';
-    }
+                            muestraModal.show();
+                            }
 
-    muestraModal.show();
-}
+                            /* ===============================
+                             * ELIMINAR
+                             * =============================== */
+                            function confirmarEliminarMuestra(id) {
 
-/* ===============================
- * ELIMINAR
- * =============================== */
-function confirmarEliminarMuestra(id) {
-
-    modalForm.action = `/ingreso-datos/coeficiente-extensibilidad/muestra/${id}`;
-    modalMethod.value = 'DELETE';
-
-    modalTitle.textContent = 'Eliminar muestra';
-    modalTitle.className = 'modal-title text-danger fw-semibold';
-
-    modalBody.innerHTML = `
+                            modalForm.action = `/ingreso-datos/coeficiente-extensibilidad/muestra/${id}`;
+                            modalMethod.value = 'DELETE';
+                            modalTitle.textContent = 'Eliminar muestra';
+                            modalTitle.className = 'modal-title text-danger fw-semibold';
+                            modalBody.innerHTML = `
         Esta acción eliminará la muestra y <strong>todos sus resultados</strong>.
         <br>
         <small class="text-muted">
             Una vez eliminado no se puede deshacer.
         </small>
     `;
-
-    modalBtn.textContent = 'Eliminar';
-    modalBtn.className = 'btn btn-danger';
-
-    muestraModal.show();
-}
+                            modalBtn.textContent = 'Eliminar';
+                            modalBtn.className = 'btn btn-danger';
+                            muestraModal.show();
+                            }
 </script>
 
 @endsection

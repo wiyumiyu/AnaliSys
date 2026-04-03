@@ -3169,7 +3169,11 @@ DELIMITER ;
 
 
 -- Coeficiente de Extensibilidad
+
+
 DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_listar_coeficiente_extensibilidad_por_periodo $$
 
 CREATE PROCEDURE sp_listar_coeficiente_extensibilidad_por_periodo (
     IN p_periodo YEAR
@@ -3191,6 +3195,8 @@ END$$
 
 DELIMITER ;
 
+
+DROP PROCEDURE IF EXISTS sp_listar_muestras_coeficiente_extensibilidad_detalle;
 DELIMITER $$
 
 CREATE PROCEDURE sp_listar_muestras_coeficiente_extensibilidad_detalle (
@@ -3202,29 +3208,37 @@ BEGIN
         m.idlab,
         m.rep,
         m.estado,
-        MAX(CASE WHEN a.siglas = 'longitud_inicial' THEN r.resultado END) AS longitud_inicial,
-        MAX(CASE WHEN a.siglas = 'longitud_final' THEN r.resultado END) AS longitud_final,
-        MAX(CASE WHEN a.siglas = 'diametro_muestra' THEN r.resultado END) AS diametro_muestra,
-        MAX(CASE WHEN a.siglas = 'altura_cilindro' THEN r.resultado END) AS altura_cilindro,
-        MAX(CASE WHEN a.siglas = 'diametro_cilindro' THEN r.resultado END) AS diametro_cilindro,
-        MAX(CASE WHEN a.siglas = 'fecha_medicion' THEN r.resultado END) AS fecha_medicion,
-        MAX(CASE WHEN a.siglas = 'observaciones' THEN r.resultado END) AS observaciones,
-        MAX(CASE WHEN a.siglas = 'hora_medicion' THEN r.resultado END) AS hora_medicion
-        
+
+        MAX(CASE WHEN a.siglas = 'altura_cilindro_od' THEN r.resultado END) AS altura_cilindro_od,
+        MAX(CASE WHEN a.siglas = 'diametro_cilindro_od' THEN r.resultado END) AS diametro_cilindro_od,
+        MAX(CASE WHEN a.siglas = 'peso_cilindro_suelo_seco_od' THEN r.resultado END) AS peso_cilindro_suelo_seco_od,
+        MAX(CASE WHEN a.siglas = 'peso_cilindro_vacio_od' THEN r.resultado END) AS peso_cilindro_vacio_od,
+
+        MAX(CASE WHEN a.siglas = 'altura_cilindro_33kpa' THEN r.resultado END) AS altura_cilindro_33kpa,
+        MAX(CASE WHEN a.siglas = 'diametro_cilindro_33kpa' THEN r.resultado END) AS diametro_cilindro_33kpa,
+        MAX(CASE WHEN a.siglas = 'peso_cilindro_suelo_33kpa' THEN r.resultado END) AS peso_cilindro_suelo_33kpa,
+        MAX(CASE WHEN a.siglas = 'peso_cilindro_vacio_33kpa' THEN r.resultado END) AS peso_cilindro_vacio_33kpa
+
     FROM trn_coeficiente_extensibilidad_muestras m
+
     LEFT JOIN trn_coeficiente_extensibilidad_resultados r
         ON r.id_coeficiente_extensibilidad_muestras = m.id
        AND r.estado = 1
+
     LEFT JOIN trn_analisis a
         ON a.id = r.id_analisis
        AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
+
     WHERE m.id_coeficiente_extensibilidad = p_id_coeficiente_extensibilidad
+
     GROUP BY
         m.id, m.idlab, m.rep, m.estado
+
     ORDER BY
         m.idlab, m.rep;
-        
+
 END$$
+
 DELIMITER ;
 
 DELIMITER $$
@@ -7537,7 +7551,68 @@ END$$
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_coeficiente_extensibilidad;
 
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_coeficiente_extensibilidad(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+cem.id_coeficiente_extensibilidad,
+cem.idlab,
+
+/* ================= OD ================= */
+
+AVG(CASE WHEN a.siglas = 'altura_cilindro_od' THEN tr.resultado END) AS altura_cilindro_od,
+AVG(CASE WHEN a.siglas = 'diametro_cilindro_od' THEN tr.resultado END) AS diametro_cilindro_od,
+AVG(CASE WHEN a.siglas = 'peso_cilindro_suelo_seco_od' THEN tr.resultado END) AS peso_cilindro_suelo_seco_od,
+AVG(CASE WHEN a.siglas = 'peso_cilindro_vacio_od' THEN tr.resultado END) AS peso_cilindro_vacio_od,
+
+/* ================= 33 kPa ================= */
+
+AVG(CASE WHEN a.siglas = 'altura_cilindro_33kpa' THEN tr.resultado END) AS altura_cilindro_33kpa,
+AVG(CASE WHEN a.siglas = 'diametro_cilindro_33kpa' THEN tr.resultado END) AS diametro_cilindro_33kpa,
+AVG(CASE WHEN a.siglas = 'peso_cilindro_suelo_33kpa' THEN tr.resultado END) AS peso_cilindro_suelo_33kpa,
+AVG(CASE WHEN a.siglas = 'peso_cilindro_vacio_33kpa' THEN tr.resultado END) AS peso_cilindro_vacio_33kpa
+
+FROM trn_coeficiente_extensibilidad_muestras cem
+
+JOIN trn_coeficiente_extensibilidad ce
+    ON ce.id = cem.id_coeficiente_extensibilidad
+
+LEFT JOIN trn_coeficiente_extensibilidad_resultados tr
+    ON tr.id_coeficiente_extensibilidad_muestras = cem.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
+
+WHERE cem.idlab IN (
+
+    SELECT sm.idlab
+    FROM tbm_solicitud_muestras sm
+    WHERE sm.id_solicitud = p_id_solicitud
+
+)
+
+AND cem.estado = 1
+
+GROUP BY
+cem.id_coeficiente_extensibilidad,
+cem.idlab
+
+ORDER BY
+cem.id_coeficiente_extensibilidad,
+cem.idlab;
+
+END$$
+
+DELIMITER ;
 
 
 
@@ -8497,13 +8572,13 @@ INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
 
 ('Altura Cilindro (OD)',          'altura_cilindro_od',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Diametro Cilindro (OD)',            'diametro_cilindro_od',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Diámetro Cilindro (OD)',            'diametro_cilindro_od',     'COEFICIENTE_EXTENSIBILIDAD'),
 ('Peso cilindro + suelo seco (OD)',    'peso_cilindro_suelo_seco_od',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Peso Cilindro Vacío (OD)',      'peso_cilindro_vacío_od',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Peso Cilindro Vacío (OD)',      'peso_cilindro_vacio_od',     'COEFICIENTE_EXTENSIBILIDAD'),
 ('Altura Cilindro (33 kPa)',     'altura_cilindro_33kpa',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Diametro Cilindro (33 kPa)',         'diametro_cilindro_33kpa',       'COEFICIENTE_EXTENSIBILIDAD'),
-('Peso cilindro + suelo (33 kPa)',         'peso_cilindro_suelo_seco_33kpa',       'COEFICIENTE_EXTENSIBILIDAD'),
-('Peso Cilindro Vacío (33 kPa)',          'peso_cilindro_vacío_33kpa',        'COEFICIENTE_EXTENSIBILIDAD');
+('Diámetro Cilindro (33 kPa)',         'diametro_cilindro_33kpa',       'COEFICIENTE_EXTENSIBILIDAD'),
+('Peso cilindro + suelo (33 kPa)',         'peso_cilindro_suelo_33kpa',       'COEFICIENTE_EXTENSIBILIDAD'),
+('Peso Cilindro Vacío (33 kPa)',          'peso_cilindro_vacio_33kpa',        'COEFICIENTE_EXTENSIBILIDAD');
 
 /*
 INSERT INTO trn_coeficiente_extensibilidad

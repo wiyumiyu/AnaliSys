@@ -242,8 +242,11 @@
                                 <td rowspan="6" style="background:#F97316; width:300px;"></td>
                                 <th rowspan="2">IDLAB</th>
 
-                                <th colspan="4">Textura (%)</th>
-                                <th colspan="8">(%)</th>
+                                <th colspan="4">Textura</th>
+                                <th colspan="3">Propiedades Físicas</th>
+                                <th colspan="2">Hidráulicas</th>
+                                <th colspan="3">Ret H</th>
+                                <th colspan="2">Estructura</th>
                             </tr>
 
                             <tr>
@@ -257,10 +260,13 @@
                                 <th>Por</th>
                                 <th>HG</th>
                                 <th>CH</th>
-                                <th>Ret H</th>
+                                <th>Hg 33</th>
+                                <th>Hg 1500</th>
+                                <th>Agua Disp</th>
                                 <th>Est Agr</th>
                                 <th>COEL</th>
                             </tr>
+                            
                         </thead>
 
                         <tbody>
@@ -274,20 +280,24 @@
                                 $statsPor = $estadisticasPor[$first->idlab] ?? null;
                                 $statsHG = $estadisticasHG[$first->idlab] ?? null;
                                 $statsCH = $estadisticasCH[$first->idlab] ?? null;
+                                $statsRH = $estadisticasRH[$first->idlab] ?? null;
 
-                                // 🔥 condición correcta (cualquier variable con >1 valor)
                                 $tieneStats =
                                 ($statsDA && count($statsDA['vals']) > 1) ||
                                 ($statsDP && count($statsDP['vals']) > 1) ||
                                 ($statsPor && count($statsPor['vals']) > 1) ||
                                 ($statsHG && count($statsHG['vals']) > 1) ||
-                                ($statsCH && count($statsCH['vals']) > 1);
+                                ($statsCH && count($statsCH['vals']) > 1) ||
+                                ($statsRH && (
+                                count($statsRH['Hg_33']['vals']) > 1 ||
+                                count($statsRH['Hg_1500']['vals']) > 1 ||
+                                count($statsRH['agua_disponible']['vals']) > 1
+                                ));
 
                                 $totalFilas = $count + ($tieneStats ? 3 : 0);
                                 @endphp
 
-                                <td rowspan="{{ $totalFilas }}"
-                                    class="text-start align-top p-4 border-end">
+                                <td rowspan="{{ $totalFilas }}" class="text-start align-top p-4 border-end">
 
                                     <div class="fw-bold text-primary mb-3 fs-5">
                                         SOL. {{ $first->solicitud }}
@@ -322,6 +332,7 @@
                                 $p = $porosidades[$first->idlab][$first->rep] ?? null;
                                 $hg = $humedades[$first->idlab][$first->rep] ?? null;
                                 $ch = $conductividades[$first->idlab][$first->rep] ?? null;
+                                $rh = $retenciones[$first->idlab][$first->rep] ?? null;
                                 @endphp
 
                                 <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
@@ -335,8 +346,12 @@
                                 <td>{{ $hg !== null ? number_format($hg,2) : '-' }}</td>
                                 <td>{{ $ch !== null ? number_format($ch,6) : '-' }}</td>
 
-                                {{-- 🔥 SOLO 4 columnas restantes --}}
-                                @for($i=0;$i<3;$i++) <td>-</td> @endfor
+                                <td>{{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}</td>
+                                <td>{{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}</td>
+                                <td>{{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}</td>
+
+                                <td>-</td> {{-- Est Agr --}}
+                                <td>-</td> {{-- COEL --}}
 
                             </tr>
 
@@ -358,6 +373,7 @@
                                 $p = $porosidades[$row->idlab][$row->rep] ?? null;
                                 $hg = $humedades[$row->idlab][$row->rep] ?? null;
                                 $ch = $conductividades[$row->idlab][$row->rep] ?? null;
+                                $rh = $retenciones[$row->idlab][$row->rep] ?? null;
                                 @endphp
 
                                 <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
@@ -370,9 +386,13 @@
                                 <td>{{ $p !== null ? number_format($p,2) : '-' }}</td>
                                 <td>{{ $hg !== null ? number_format($hg,2) : '-' }}</td>
                                 <td>{{ $ch !== null ? number_format($ch,6) : '-' }}</td>
-                                
 
-                                @for($i=0;$i<3;$i++) <td>-</td> @endfor
+                                <td>{{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}</td>
+                                <td>{{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}</td>
+                                <td>{{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}</td>
+
+                                <td>-</td>
+                                <td>-</td>
 
                             </tr>
                             @endforeach
@@ -394,7 +414,12 @@
                                 <td>{{ $statsHG && $statsHG['prom'] !== null ? number_format($statsHG['prom'],2) : '-' }}</td>
                                 <td>{{ $statsCH && $statsCH['prom'] !== null ? number_format($statsCH['prom'],6) : '-' }}</td>
 
-                                @for($i=0;$i<3;$i++) <td>-</td> @endfor
+                                <td>{{ $statsRH && $statsRH['Hg_33']['prom'] !== null ? number_format($statsRH['Hg_33']['prom'],4) : '-' }}</td>
+                                <td>{{ $statsRH && $statsRH['Hg_1500']['prom'] !== null ? number_format($statsRH['Hg_1500']['prom'],4) : '-' }}</td>
+                                <td>{{ $statsRH && $statsRH['agua_disponible']['prom'] !== null ? number_format($statsRH['agua_disponible']['prom'],4) : '-' }}</td>
+
+                                <td>-</td>
+                                <td>-</td>
                             </tr>
 
                             <tr class="table-light">
@@ -411,7 +436,12 @@
                                 <td>{{ $statsHG && $statsHG['desv'] !== null ? number_format($statsHG['desv'],2) : '-' }}</td>
                                 <td>{{ $statsCH && $statsCH['desv'] !== null ? number_format($statsCH['desv'],6) : '-' }}</td>
 
-                                @for($i=0;$i<3;$i++) <td>-</td> @endfor
+                                <td>{{ $statsRH && $statsRH['Hg_33']['desv'] !== null ? number_format($statsRH['Hg_33']['desv'],4) : '-' }}</td>
+                                <td>{{ $statsRH && $statsRH['Hg_1500']['desv'] !== null ? number_format($statsRH['Hg_1500']['desv'],4) : '-' }}</td>
+                                <td>{{ $statsRH && $statsRH['agua_disponible']['desv'] !== null ? number_format($statsRH['agua_disponible']['desv'],4) : '-' }}</td>
+
+                                <td>-</td>
+                                <td>-</td>
                             </tr>
 
                             <tr class="table-light">
@@ -428,8 +458,12 @@
                                 <td>{{ $statsHG && $statsHG['cv'] !== null ? number_format($statsHG['cv'],2) : '-' }}</td>
                                 <td>{{ $statsCH && $statsCH['cv'] !== null ? number_format($statsCH['cv'],2) : '-' }}</td>
 
+                                <td>{{ $statsRH && $statsRH['Hg_33']['cv'] !== null ? number_format($statsRH['Hg_33']['cv'],2) : '-' }}</td>
+                                <td>{{ $statsRH && $statsRH['Hg_1500']['cv'] !== null ? number_format($statsRH['Hg_1500']['cv'],2) : '-' }}</td>
+                                <td>{{ $statsRH && $statsRH['agua_disponible']['cv'] !== null ? number_format($statsRH['agua_disponible']['cv'],2) : '-' }}</td>
 
-                                @for($i=0;$i<3;$i++) <td>-</td> @endfor
+                                <td>-</td>
+                                <td>-</td>
                             </tr>
 
                             @endif

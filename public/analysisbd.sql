@@ -8496,15 +8496,16 @@ VALUES
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
 
-('Longitud inicial',          'longitud_inicial',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Longitud final',            'longitud_final',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Diametro de la muestra',    'diametro_muestra',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Altura  del cilindro',      'altura_cilindro',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Diametro del cilindro',     'diametro_cilindro',     'COEFICIENTE_EXTENSIBILIDAD'),
-('Fecha de Medición',         'fecha_medicion',       'COEFICIENTE_EXTENSIBILIDAD'),
-('Hora de Medicion',          'hora_medicion',        'COEFICIENTE_EXTENSIBILIDAD');
+('Altura Cilindro (OD)',          'altura_cilindro_od',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Diametro Cilindro (OD)',            'diametro_cilindro_od',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Peso cilindro + suelo seco (OD)',    'peso_cilindro_suelo_seco_od',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Peso Cilindro Vacío (OD)',      'peso_cilindro_vacío_od',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Altura Cilindro (33 kPa)',     'altura_cilindro_33kpa',     'COEFICIENTE_EXTENSIBILIDAD'),
+('Diametro Cilindro (33 kPa)',         'diametro_cilindro_33kpa',       'COEFICIENTE_EXTENSIBILIDAD'),
+('Peso cilindro + suelo (33 kPa)',         'peso_cilindro_suelo_seco_33kpa',       'COEFICIENTE_EXTENSIBILIDAD'),
+('Peso Cilindro Vacío (33 kPa)',          'peso_cilindro_vacío_33kpa',        'COEFICIENTE_EXTENSIBILIDAD');
 
-
+/*
 INSERT INTO trn_coeficiente_extensibilidad
 (periodo, archivo, fecha, analista)
 
@@ -8552,8 +8553,8 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='diametro_cilindro' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '30', 1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='fecha_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'),'2024-02-22', 1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='hora_medicion' AND origen='COEFICIENTE_EXTENSIBILIDAD'), '11:00', 1);
-
-
+*/
+/*
 -- Permeabilidad del Aire
 INSERT INTO trn_analisis (analisis, siglas, origen)
 VALUES
@@ -8602,7 +8603,7 @@ VALUES
 (3,(SELECT id FROM trn_analisis WHERE siglas='area_transversal' AND origen='PERMEABILIDAD_AIRE'),'18.85',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='volumen_muestra' AND origen='PERMEABILIDAD_AIRE'),'179.07',1),
 (3,(SELECT id FROM trn_analisis WHERE siglas='temperatura_aire' AND origen='PERMEABILIDAD_AIRE'),'26.00',1);
-
+*/
 
 /* ============================================================
    CONTROLES

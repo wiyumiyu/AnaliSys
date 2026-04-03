@@ -32,8 +32,15 @@
             || (Route::has('coeficiente_extensibilidad.index') && request()->routeIs('coeficiente_extensibilidad.*'))
             || (Route::has('permeabilidad_aire.index') && request()->routeIs('permeabilidad_aire.*'));
 
+            $reportesActive =
+            (Route::has('resultados.index') && request()->routeIs('resultados.*'))
+            || (Route::has('reportes_clientes.index') && request()->routeIs('reportes_clientes.*'));
+
+
             $resultadosActive =
             Route::has('resultados.index') && request()->routeIs('resultados.*');
+
+
             @endphp
             <li class="pe-slide pe-has-sub {{ $ingresoDatosActive ? 'active' : '' }}">
                 <a href="#collapseAdvancedUI"
@@ -77,11 +84,7 @@
                         </a>
                     </li>
 
-                    <li class="pe-slide-item">
-                        <a href="/pages/ingreso_datos/porosidad_total/listado.php" class="pe-nav-link">
-                            Porosidad Total
-                        </a>
-                    </li>
+
 
                     {{-- HUMEDAD GRAVIMETRICA (LARAVEL) --}}
                     <li class="pe-slide-item">
@@ -135,13 +138,13 @@
                         </a>
                     </li>
                     {{-- PERMEABILIDAD (LARAVEL) --}}
-<!--                    <li class="pe-slide-item">
-
-                        <a href="{{ route('permeabilidad_aire.index') }}"
-                           class="pe-nav-link {{ request()->routeIs('permeabilidad_aire.*') ? 'active' : '' }}">
-                            Permeabilidad del aire
-                        </a>
-                    </li>-->
+                    <!--                    <li class="pe-slide-item">
+                    
+                                            <a href="{{ route('permeabilidad_aire.index') }}"
+                                               class="pe-nav-link {{ request()->routeIs('permeabilidad_aire.*') ? 'active' : '' }}">
+                                                Permeabilidad del aire
+                                            </a>
+                                        </li>-->
 
                 </ul>
             </li>
@@ -162,33 +165,82 @@
                         </a>
                     </li>
 
-                    <li class="pe-slide-item">
+<!--                    <li class="pe-slide-item">
                         <a href="#" class="pe-nav-link">Densidad Aparente</a>
-                    </li>
+                    </li>-->
                 </ul>
             </li>
 
-            <li class="pe-slide">
-                <a href="{{ route('resultados.index') }}" class="pe-nav-link">
-                    <i class="ri-check-double-line pe-nav-icon"></i>
-                    <span class="pe-nav-content">Resultados</span>
-                </a>
-            </li>
+            <li class="pe-slide pe-has-sub {{ $reportesActive ? 'active' : '' }}">
+                <a href="#collapseReportes"
+                   class="pe-nav-link {{ $reportesActive ? '' : 'collapsed' }}"
+                   data-bs-toggle="collapse"
+                   aria-expanded="{{ $reportesActive ? 'true' : 'false' }}"
+                   aria-controls="collapseReportes">
 
-
-
-            <li class="pe-slide">
-                <a href="{{ route('reportes_clientes.index') }}" class="pe-nav-link">
                     <i class="ri-file-text-line pe-nav-icon"></i>
-                    <span class="pe-nav-content">Reportes de Clientes</span>
+                    <span class="pe-nav-content">Reportes</span>
+                    <i class="ri-arrow-down-s-line pe-nav-arrow"></i>
                 </a>
-            </li>
-@if(esAdmin())
 
-    @php
-    $adminActive = request()->routeIs('usuarios.*')
-        || request()->routeIs('bitacora.*');
-    @endphp
+                <ul class="pe-slide-menu collapse {{ $reportesActive ? 'show' : '' }}"
+                    id="collapseReportes">
+
+                    <li class="slide pe-nav-content1">
+                        <a href="javascript:void(0)">Reportes</a>
+                    </li>
+
+                    {{-- Resultados (LARAVEL) --}}
+                    <li class="pe-slide-item">
+                        <a href="{{ route('resultados.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('resultados.*') ? 'active' : '' }}">
+                            Resultados
+                        </a>
+                    </li>
+
+                    <!--                    <li class="pe-slide-item">
+                                            <a href="{{ route('resultados.index') }}" class="pe-nav-link">
+                                                Resultados
+                                            </a>
+                                        </li>-->
+                    {{-- Reportes de clientes (LARAVEL) --}}
+                    <li class="pe-slide-item">
+                        <a href="{{ route('reportes_clientes.index') }}"
+                           class="pe-nav-link {{ request()->routeIs('reportes_clientes.*') ? 'active' : '' }}">
+                            Reportes de Clientes
+                        </a>
+                    </li>
+                    <!--                    <li class="pe-slide-item">
+                                            <a href="{{ route('reportes_clientes.index') }}" class="pe-nav-link">
+                                                Reportes de Clientes
+                                            </a>
+                                        </li>-->
+
+                </ul>
+            </li>
+
+            <!--            <li class="pe-slide">
+                            <a href="{{ route('resultados.index') }}" class="pe-nav-link d-flex align-items-center">
+                                <i class="ri-check-double-line pe-nav-icon"></i>
+                                <span class="pe-nav-content">Resultados</span>
+                            </a>
+                        </li>  
+            
+            
+            
+            
+                        <li class="pe-slide">
+                            <a href="{{ route('reportes_clientes.index') }}" class="pe-nav-link">
+                                <i class="ri-file-text-line pe-nav-icon"></i>
+                                <span class="pe-nav-content">Reportes de Clientes</span>
+                            </a>
+                        </li>-->
+            @if(esAdmin())
+
+            @php
+            $adminActive = request()->routeIs('usuarios.*')
+            || request()->routeIs('bitacora.*');
+            @endphp
 
             <li class="pe-slide pe-has-sub {{ $adminActive ? 'active' : '' }}">
                 <a href="#collapseAuth"
@@ -226,7 +278,7 @@
                 </ul>
             </li>
 
-@endif
+            @endif
 
 
 

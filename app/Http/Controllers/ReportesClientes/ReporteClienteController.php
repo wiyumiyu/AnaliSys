@@ -43,7 +43,7 @@ class ReporteClienteController extends Controller {
                 ));
     }
 
-    public function show($id) {
+    public function show2($id) {
 
         // ENCABEZADO //
         /* ------------------------------------------------ */
@@ -81,11 +81,11 @@ class ReporteClienteController extends Controller {
                 [$id]
         );
 
-        //dd($densidadAparente);
+
         $densidades = [];
 
         foreach ($densidadAparente as $m) {
-           
+
             $da = DensidadAparente::calcular_densidad(
                     $m->altura_cilindro,
                     $m->diametro_cilindro,
@@ -97,7 +97,7 @@ class ReporteClienteController extends Controller {
                 $densidades[(string) $m->idlab] = $da;
             }
         }
-           // dd($densidades);    
+
         /* ------------------------------------------------ */
         // DENSIDAD PARTICULAS //
         /* ------------------------------------------------ */
@@ -112,7 +112,7 @@ class ReporteClienteController extends Controller {
         $densidadesParticulas = [];
 
         foreach ($densidadParticulas as $m) {
-           //dd($m);
+            //dd($m);
             $dp = DensidadParticulas::calcular(
                     $m->numero_balon,
                     $m->p1,
@@ -120,7 +120,7 @@ class ReporteClienteController extends Controller {
                     $m->p3,
                     $m->temperatura
             );
-            
+
             if ($dp !== null) {
                 $densidadesParticulas[(string) $m->idlab] = $dp;
             }
@@ -132,10 +132,10 @@ class ReporteClienteController extends Controller {
 
 
         $porosidades = Porosidad::calcular(
-                    $densidades,
-                    $densidadesParticulas,
-                    $datos
-            );
+                $densidades,
+                $densidadesParticulas,
+                $datos
+        );
 
 //        foreach ($datos as $row) {
 //
@@ -179,77 +179,74 @@ class ReporteClienteController extends Controller {
                 //$humedades[trim((string)$m->idlab)] = $hg;
             }
         }
-        
-        
+
+
 
 
         /* ------------------------------------------------ */
         // GRANULOMETRIA //
         /* ------------------------------------------------ */
-       /* $granulometrias = [];
+        /* $granulometrias = [];
 
-        foreach ($datos as $row) {
+          foreach ($datos as $row) {
 
-            $idlab = trim((string) $row->idlab);
+          $idlab = trim((string) $row->idlab);
 
-            $da = $densidades[$idlab] ?? null;
-            $dp = $densidadesParticulas[$idlab] ?? null;
+          $da = $densidades[$idlab] ?? null;
+          $dp = $densidadesParticulas[$idlab] ?? null;
 
-            if ($da !== null && $dp !== null && $dp != 0) {
+          if ($da !== null && $dp !== null && $dp != 0) {
 
-                $p = (1 - ($da / $dp)) * 100;
+          $p = (1 - ($da / $dp)) * 100;
 
-                $granulometrias[$idlab] = round($p, 2);
-            }
-        }*/
+          $granulometrias[$idlab] = round($p, 2);
+          }
+          } */
         /* ------------------------------------------------ */
         // CONDUCTIVIDAD HIDRAULICA //
         /* ------------------------------------------------ */
         $conductividadHidraulica = DB::select(
                 'CALL sp_reporte_cliente_conductividad_hidraulica(?)',
                 [$id]
-        ); 
-        
+        );
+
         $conductividades = conductividadHidraulica::calcularConductividades($conductividadHidraulica);
-        
+
         /* ------------------------------------------------ */
         // RETENCION HUMEDAD //
         /* ------------------------------------------------ */
-        
+
         $retencionHumedad = DB::select(
                 'CALL sp_reporte_cliente_retencion_humedad(?)',
                 [$id]
-        ); 
+        );
         $retenciones = RetencionHumedad::calcularRetenciones($retencionHumedad);
 
-        
         /* ------------------------------------------------ */
         // ESTABILIDAD DE AGREGADOS//
         /* ------------------------------------------------ */
-        
+
         $estabilidadAgregados = DB::select(
                 'CALL sp_reporte_cliente_estabilidad_agregados(?)',
                 [$id]
         );
-        
-        $estabilidades = EstabilidadAgregados::calcular($estabilidadAgregados);        
-        
+
+        $estabilidades = EstabilidadAgregados::calcular($estabilidadAgregados);
+
         $coel = DB::select(
                 'CALL sp_reporte_cliente_coeficiente_extensibilidad(?)',
                 [$id]
-        );       
-        
-          
-        $coeles = CoeficienteExtensibilidad::calcularPorMuestras($coel); 
-        
-        
+        );
+
+        $coeles = CoeficienteExtensibilidad::calcularPorMuestras($coel);
+
         $granulometria = DB::select(
                 'CALL  sp_reporte_cliente_granulometria(?)',
                 [$id]
-        );       
-        
-        $granulometrias = Granulometria::calcularPorMuestras($granulometria); 
-      // dd($granulometrias);
+        );
+
+        $granulometrias = Granulometria::calcularPorMuestras($granulometria);
+        // dd($granulometrias);
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
@@ -265,5 +262,175 @@ class ReporteClienteController extends Controller {
             'granulometrias' => $granulometrias
         ]);
     }
-    
+
+    public function show($id) {
+        $data = $this->getDatosReporte($id);
+
+        return view('reportes_clientes.vista', $data);
+    }
+
+    public function exportar($id) {
+        $data = $this->getDatosReporte($id);
+
+        // 🔥 aquí luego armamos el Excel
+        dd($data); // prueba primero
+    }
+
+    private function getDatosReporte($id) {
+        /* ------------------------------------------------ */
+        // ENCABEZADO
+        /* ------------------------------------------------ */
+        $encabezado = DB::select(
+                'CALL sp_reporte_cliente_encabezado(?)',
+                [$id]
+        );
+
+        /* ------------------------------------------------ */
+        // DATOS BASE
+        /* ------------------------------------------------ */
+        $datos = DB::select(
+                'CALL sp_obtener_reporte_cliente(?)',
+                [$id]
+        );
+
+        /* ------------------------------------------------ */
+        // TEXTURA
+        /* ------------------------------------------------ */
+        $textura = DB::select(
+                'CALL sp_reporte_cliente_textura(?)',
+                [$id]
+        );
+        $texturas = Textura::calcularTexturas($textura);
+
+        /* ------------------------------------------------ */
+        // DENSIDAD APARENTE
+        /* ------------------------------------------------ */
+        $densidadAparente = DB::select(
+                'CALL sp_reporte_cliente_densidad_aparente(?)',
+                [$id]
+        );
+
+        $densidades = [];
+        foreach ($densidadAparente as $m) {
+            $da = DensidadAparente::calcular_densidad(
+                    $m->altura_cilindro,
+                    $m->diametro_cilindro,
+                    $m->peso_seco,
+                    $m->peso_cilindro
+            );
+
+            if ($da !== null) {
+                $densidades[(string) $m->idlab] = $da;
+            }
+        }
+
+        /* ------------------------------------------------ */
+        // DENSIDAD PARTICULAS
+        /* ------------------------------------------------ */
+        $densidadParticulas = DB::select(
+                'CALL sp_reporte_cliente_densidad_particulas(?)',
+                [$id]
+        );
+
+        $densidadesParticulas = [];
+        foreach ($densidadParticulas as $m) {
+            $dp = DensidadParticulas::calcular(
+                    $m->numero_balon,
+                    $m->p1,
+                    $m->p2,
+                    $m->p3,
+                    $m->temperatura
+            );
+
+            if ($dp !== null) {
+                $densidadesParticulas[(string) $m->idlab] = $dp;
+            }
+        }
+
+        /* ------------------------------------------------ */
+        // POROSIDAD
+        /* ------------------------------------------------ */
+        $porosidades = Porosidad::calcular(
+                $densidades,
+                $densidadesParticulas,
+                $datos
+        );
+
+        /* ------------------------------------------------ */
+        // HUMEDAD
+        /* ------------------------------------------------ */
+        $humedadGravimetrica = DB::select(
+                'CALL sp_reporte_cliente_humedad_gravimetrica(?)',
+                [$id]
+        );
+
+        $humedades = [];
+        foreach ($humedadGravimetrica as $m) {
+            $hg = HumedadGravimetrica::calcular($m->pc, $m->ph, $m->ps);
+
+            if ($hg !== null) {
+                $humedades[(string) $m->idlab] = $hg;
+            }
+        }
+
+        /* ------------------------------------------------ */
+        // CONDUCTIVIDAD
+        /* ------------------------------------------------ */
+        $conductividadHidraulica = DB::select(
+                'CALL sp_reporte_cliente_conductividad_hidraulica(?)',
+                [$id]
+        );
+        $conductividades = conductividadHidraulica::calcularConductividades($conductividadHidraulica);
+
+        /* ------------------------------------------------ */
+        // RETENCION
+        /* ------------------------------------------------ */
+        $retencionHumedad = DB::select(
+                'CALL sp_reporte_cliente_retencion_humedad(?)',
+                [$id]
+        );
+        $retenciones = RetencionHumedad::calcularRetenciones($retencionHumedad);
+
+        /* ------------------------------------------------ */
+        // ESTABILIDAD
+        /* ------------------------------------------------ */
+        $estabilidadAgregados = DB::select(
+                'CALL sp_reporte_cliente_estabilidad_agregados(?)',
+                [$id]
+        );
+        $estabilidades = EstabilidadAgregados::calcular($estabilidadAgregados);
+
+        /* ------------------------------------------------ */
+        // COEL
+        /* ------------------------------------------------ */
+        $coel = DB::select(
+                'CALL sp_reporte_cliente_coeficiente_extensibilidad(?)',
+                [$id]
+        );
+        $coeles = CoeficienteExtensibilidad::calcularPorMuestras($coel);
+
+        /* ------------------------------------------------ */
+        // GRANULOMETRIA
+        /* ------------------------------------------------ */
+        $granulometria = DB::select(
+                'CALL sp_reporte_cliente_granulometria(?)',
+                [$id]
+        );
+        $granulometrias = Granulometria::calcularPorMuestras($granulometria);
+
+        return [
+            'encabezado' => $encabezado[0] ?? null,
+            'datos' => $datos,
+            'texturas' => $texturas,
+            'densidades' => $densidades,
+            'densidadesParticulas' => $densidadesParticulas,
+            'porosidades' => $porosidades,
+            'humedades' => $humedades,
+            'conductividades' => $conductividades,
+            'retenciones' => $retenciones,
+            'estabilidades' => $estabilidades,
+            'coeles' => $coeles,
+            'granulometrias' => $granulometrias
+        ];
+    }
 }

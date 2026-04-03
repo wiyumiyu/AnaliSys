@@ -14,6 +14,7 @@ use App\Helpers\Calculos\RetencionHumedad;
 use App\Helpers\Calculos\Porosidad;
 use App\Helpers\Calculos\EstabilidadAgregados;
 use App\Helpers\Calculos\CoeficienteExtensibilidad;
+use App\Helpers\Calculos\Granulometria;
 
 class ReporteClienteController extends Controller {
 
@@ -239,10 +240,16 @@ class ReporteClienteController extends Controller {
         );       
         
           
+        $coeles = CoeficienteExtensibilidad::calcularPorMuestras($coel); 
         
         
-      $coeles = CoeficienteExtensibilidad::calcularPorMuestras($coel); 
-       // dd($coeles); 
+        $granulometria = DB::select(
+                'CALL  sp_reporte_cliente_granulometria(?)',
+                [$id]
+        );       
+        
+        $granulometrias = Granulometria::calcularPorMuestras($granulometria); 
+      // dd($granulometrias);
         return view('reportes_clientes.vista', [
             'encabezado' => $encabezado[0] ?? null,
             'datos' => $datos,
@@ -254,7 +261,8 @@ class ReporteClienteController extends Controller {
             'conductividades' => $conductividades,
             'retenciones' => $retenciones,
             'estabilidades' => $estabilidades,
-            'coeles' => $coeles
+            'coeles' => $coeles,
+            'granulometrias' => $granulometrias
         ]);
     }
     

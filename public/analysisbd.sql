@@ -8013,6 +8013,67 @@ END$$
 DELIMITER ;
 -- -------------------------------------------------------------------------
 
+
+
+DROP PROCEDURE IF EXISTS sp_reporte_cliente_granulometria;
+DELIMITER $$
+
+CREATE PROCEDURE sp_reporte_cliente_granulometria(
+    IN p_id_solicitud INT
+)
+BEGIN
+
+SELECT
+
+gmm.id_granulometria,
+gmm.idlab,
+
+
+MAX(CASE WHEN a.siglas = 'peso_seco' THEN gr.resultado END) AS peso_seco_lata,
+MAX(CASE WHEN a.siglas = 'peso_lata' THEN gr.resultado END) AS peso_lata,
+
+
+MAX(CASE WHEN a.siglas = 'T19' THEN gr.resultado END) AS T19,
+MAX(CASE WHEN a.siglas = 'T9' THEN gr.resultado END) AS T9,
+MAX(CASE WHEN a.siglas = 'T4' THEN gr.resultado END) AS T4,
+MAX(CASE WHEN a.siglas = 'T2' THEN gr.resultado END) AS T2,
+MAX(CASE WHEN a.siglas = 'T1' THEN gr.resultado END) AS T1,
+MAX(CASE WHEN a.siglas = 'T05' THEN gr.resultado END) AS T05,
+MAX(CASE WHEN a.siglas = 'T025' THEN gr.resultado END) AS T025,
+MAX(CASE WHEN a.siglas = 'T0125' THEN gr.resultado END) AS T0125,
+MAX(CASE WHEN a.siglas = 'T0' THEN gr.resultado END) AS T0
+
+FROM trn_granulometria_muestras gmm
+
+JOIN trn_granulometria gm
+    ON gm.id = gmm.id_granulometria
+
+
+JOIN tbm_solicitud_muestras sm
+    ON sm.idlab = gmm.idlab
+
+LEFT JOIN trn_granulometria_resultados gr
+    ON gr.id_granulometria_muestras = gmm.id
+    AND gr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = gr.id_analisis
+    AND a.origen = 'GRANULOMETRIA'
+
+WHERE sm.id_solicitud = p_id_solicitud  
+
+AND gmm.estado = 1
+
+GROUP BY
+gmm.id_granulometria,
+gmm.idlab
+
+ORDER BY
+gmm.idlab;
+
+END$$
+
+DELIMITER ;
 /* ============================================================
    6. DATOS INICIALES
    ============================================================ */

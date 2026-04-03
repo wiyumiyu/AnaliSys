@@ -186,7 +186,7 @@
                                     <!-- RESTO -->
                                     <th></th>
                                     <th></th>
-                                    
+
                                 </tr>
 
                             </thead>
@@ -267,7 +267,7 @@
                                     @endphp
                                     <td> {{ isset($coel['cole']) ? number_format($coel['cole'], 4) : '-' }}</td>
                                     <td></td>
-                                    
+
 
                                 </tr>
 
@@ -277,6 +277,72 @@
 
                         </table>
                     </div>
+                    <br>
+                    @php
+  $mapEtiquetas = collect($datos)
+    ->groupBy(fn($item) => (string)$item->idlab)
+    ->map(fn($items) => $items->first());
+                    
+                    
+                    @endphp      
+                    <div class="mt-4">
+
+                        <h5 class="fw-semibold mb-3">
+                            Granulometría de la Fracción Gruesa
+                        </h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm text-center align-middle">
+
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID USUARIO</th>
+                                        <th>IDLAB</th>
+                                        <th>Tamiz (mm)</th>
+                                        <th>Peso (g)</th>
+                                        <th>% Retenido</th>
+                                        <th>% Acumulado</th>
+                                        <th>% Pasante</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach($granulometrias as $idlab => $filas)
+
+                                    @foreach($filas as $index => $f)
+
+                                    <tr>
+
+                                        {{-- Mostrar ID solo en la primera fila del grupo --}}
+                                        @if($index === 0)
+                                        <td rowspan="{{ count($filas) }}" class="align-top bg-light" style="width: 320px;">
+                                            {{ $mapEtiquetas[(string)$idlab]->etiqueta ?? 'SIN ETIQUETA' }}
+                                           
+                                        </td>
+                                        <td rowspan="{{ count($filas) }}" class="align-middle" style="width: 100px;">
+                                            {{ $idlab }}
+                                        </td>
+                                        @endif
+
+                                        <td>{{ $f['tamiz'] }}</td>
+                                        <td>{{ number_format($f['peso'], 2) }}</td>
+                                        <td>{{ number_format($f['retenido'], 2) }}</td>
+                                        <td>{{ number_format($f['acumulado'], 2) }}</td>
+                                        <td>{{ number_format($f['pasante'], 2) }}</td>
+
+                                    </tr>
+
+                                    @endforeach
+
+                                    @endforeach
+
+                                </tbody>
+
+                            </table>
+                        </div>
+
+                    </div>                  
 
                 </div>
 

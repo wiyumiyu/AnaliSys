@@ -238,18 +238,19 @@
                     <table class="table table-bordered align-middle text-center mb-0">
 
                         <thead>
-                            <tr class="border-bottom">
+                            <tr class="border-bottom fw-bold">
                                 <td rowspan="6" style="background:#F97316; width:300px;"></td>
-                                <th rowspan="2">IDLAB</th>
+                                <th rowspan="3">IDLAB</th>
 
                                 <th colspan="4">Textura</th>
                                 <th colspan="3">Propiedades Físicas</th>
                                 <th colspan="2">Hidráulicas</th>
                                 <th colspan="3">Ret H</th>
-                                <th colspan="2">Estructura</th>
+                                <th colspan="2">Estabilidad de Agregados</th>
+                                <th colspan="1">Estructura</th>
                             </tr>
 
-                            <tr>
+                            <tr class="small text-muted">
                                 <th>Arena</th>
                                 <th>Limo</th>
                                 <th>Arcilla</th>
@@ -263,212 +264,261 @@
                                 <th>Hg 33</th>
                                 <th>Hg 1500</th>
                                 <th>Agua Disp</th>
-                                <th>Est Agr</th>
+                                <th>DMP</th>
+                                <th>EAA</th>
                                 <th>COEL</th>
                             </tr>
-                            
+
+                            <tr class="fw-light text-muted small opacity-75">
+                                <th>%</th>
+                                <th>%</th>
+                                <th>%</th>
+                                <th>-</th>
+
+                                <th>g/cm³</th>
+                                <th>g/cm³</th>
+                                <th>%</th>
+
+                                <th>%</th>
+                                <th>cm/s</th>
+
+                                <th>%</th>
+                                <th>%</th>
+                                <th>%</th>
+
+                                <th>mm</th>
+                                <th>%</th>
+
+                                <th>-</th>
+                            </tr>
+
                         </thead>
 
-                        <tbody>
+<tbody>
 
-                            {{-- ================= FILA 1 ================= --}}
-                            <tr>
-                                @php
-                                $statsT = $estadisticasTextura[$first->idlab] ?? null;
-                                $statsDA = $estadisticasDA[$first->idlab] ?? null;
-                                $statsDP = $estadisticasDP[$first->idlab] ?? null;
-                                $statsPor = $estadisticasPor[$first->idlab] ?? null;
-                                $statsHG = $estadisticasHG[$first->idlab] ?? null;
-                                $statsCH = $estadisticasCH[$first->idlab] ?? null;
-                                $statsRH = $estadisticasRH[$first->idlab] ?? null;
+{{-- ================= FILA 1 ================= --}}
+<tr>
+    @php
+    $statsT = $estadisticasTextura[$first->idlab] ?? null;
+    $statsDA = $estadisticasDA[$first->idlab] ?? null;
+    $statsDP = $estadisticasDP[$first->idlab] ?? null;
+    $statsPor = $estadisticasPor[$first->idlab] ?? null;
+    $statsHG = $estadisticasHG[$first->idlab] ?? null;
+    $statsCH = $estadisticasCH[$first->idlab] ?? null;
+    $statsRH = $estadisticasRH[$first->idlab] ?? null;
+    $statsEA = $estadisticasEA[$first->idlab] ?? null;
+    $statsCOEL = $estadisticasCOEL[$first->idlab] ?? null;
 
-                                $tieneStats =
-                                ($statsDA && count($statsDA['vals']) > 1) ||
-                                ($statsDP && count($statsDP['vals']) > 1) ||
-                                ($statsPor && count($statsPor['vals']) > 1) ||
-                                ($statsHG && count($statsHG['vals']) > 1) ||
-                                ($statsCH && count($statsCH['vals']) > 1) ||
-                                ($statsRH && (
-                                count($statsRH['Hg_33']['vals']) > 1 ||
-                                count($statsRH['Hg_1500']['vals']) > 1 ||
-                                count($statsRH['agua_disponible']['vals']) > 1
-                                ));
+    $tieneStats =
+    ($statsDA && count($statsDA['vals']) > 1) ||
+    ($statsDP && count($statsDP['vals']) > 1) ||
+    ($statsPor && count($statsPor['vals']) > 1) ||
+    ($statsHG && count($statsHG['vals']) > 1) ||
+    ($statsCH && count($statsCH['vals']) > 1) ||
+    ($statsRH && (
+        count($statsRH['Hg_33']['vals']) > 1 ||
+        count($statsRH['Hg_1500']['vals']) > 1 ||
+        count($statsRH['agua_disponible']['vals']) > 1
+    )) ||
+    ($statsEA && (
+        count($statsEA['dmp']['vals']) > 1 ||
+        count($statsEA['eaa']['vals']) > 1
+    )) ||
+    ($statsCOEL && count($statsCOEL['cole']['vals']) > 1);
 
-                                $totalFilas = $count + ($tieneStats ? 3 : 0);
-                                @endphp
+    $totalFilas = $count + ($tieneStats ? 3 : 0);
+    @endphp
 
-                                <td rowspan="{{ $totalFilas }}" class="text-start align-top p-4 border-end">
+    <td rowspan="{{ $totalFilas }}" class="text-start align-top p-4 border-end">
 
-                                    <div class="fw-bold text-primary mb-3 fs-5">
-                                        SOL. {{ $first->solicitud }}
-                                    </div>
+        <div class="fw-bold text-primary mb-3 fs-5">
+            SOL. {{ $first->solicitud }}
+        </div>
 
-                                    <div class="small text-muted">Cultivo</div>
-                                    <div class="fw-semibold text-primary">{{ $first->cultivo ?? '-' }}</div>
+        <div class="small text-muted">Cultivo</div>
+        <div class="fw-semibold text-primary">{{ $first->cultivo ?? '-' }}</div>
 
-                                    <div class="small text-muted mt-2">Cliente</div>
-                                    <div class="fw-semibold">{{ $first->cliente ?? '-' }}</div>
+        <div class="small text-muted mt-2">Cliente</div>
+        <div class="fw-semibold">{{ $first->cliente ?? '-' }}</div>
 
-                                    <div class="small text-muted mt-2">Cantón</div>
-                                    <div class="fw-semibold">{{ $first->canton ?? '-' }}</div>
+        <div class="small text-muted mt-2">Cantón</div>
+        <div class="fw-semibold">{{ $first->canton ?? '-' }}</div>
 
-                                    <div class="small text-muted mt-2">Fecha</div>
-                                    <div class="fw-semibold">
-                                        {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
-                                    </div>
-                                </td>
+        <div class="small text-muted mt-2">Fecha</div>
+        <div class="fw-semibold">
+            {{ \Carbon\Carbon::parse($first->fecha)->format('d/m/Y') }}
+        </div>
+    </td>
 
-                                <td>
-                                    <span class="badge bg-primary-subtle text-primary">
-                                        {{ $first->idlab }}
-                                    </span>
-                                    <div class="small text-muted">Rep {{ $first->rep }}</div>
-                                </td>
+    <td>
+        <span class="badge bg-primary-subtle text-primary">
+            {{ $first->idlab }}
+        </span>
+        <div class="small text-muted">Rep {{ $first->rep }}</div>
+    </td>
 
-                                @php
-                                $t = $texturas[$first->idlab][$first->rep] ?? null;
-                                $d = $densidades[$first->idlab][$first->rep] ?? null;
-                                $dp = $densidadesParticulas[$first->idlab][$first->rep] ?? null;
-                                $p = $porosidades[$first->idlab][$first->rep] ?? null;
-                                $hg = $humedades[$first->idlab][$first->rep] ?? null;
-                                $ch = $conductividades[$first->idlab][$first->rep] ?? null;
-                                $rh = $retenciones[$first->idlab][$first->rep] ?? null;
-                                @endphp
+    @php
+    $t = $texturas[$first->idlab][$first->rep] ?? null;
+    $d = $densidades[$first->idlab][$first->rep] ?? null;
+    $dp = $densidadesParticulas[$first->idlab][$first->rep] ?? null;
+    $p = $porosidades[$first->idlab][$first->rep] ?? null;
+    $hg = $humedades[$first->idlab][$first->rep] ?? null;
+    $ch = $conductividades[$first->idlab][$first->rep] ?? null;
+    $rh = $retenciones[$first->idlab][$first->rep] ?? null;
+    $ea = $estabilidad[$first->idlab][$first->rep] ?? null;
+    $coel = $coefExt[$first->idlab][$first->rep] ?? null;
+    @endphp
 
-                                <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
-                                <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
-                                <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-                                <td>{{ $t['clase'] ?? '-' }}</td>
+    {{-- TEXTURA --}}
+    <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
+    <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
+    <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
+    <td>{{ $t['clase'] ?? '-' }}</td>
 
-                                <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
-                                <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
-                                <td>{{ $p !== null ? number_format($p,2) : '-' }}</td>
-                                <td>{{ $hg !== null ? number_format($hg,2) : '-' }}</td>
-                                <td>{{ $ch !== null ? number_format($ch,6) : '-' }}</td>
+    {{-- FISICAS --}}
+    <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
+    <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
+    <td>{{ $p !== null ? number_format($p,2) : '-' }}</td>
 
-                                <td>{{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}</td>
-                                <td>{{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}</td>
-                                <td>{{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}</td>
+    {{-- HIDRAULICAS --}}
+    <td>{{ $hg !== null ? number_format($hg,2) : '-' }}</td>
+    <td>{{ $ch !== null ? number_format($ch,6) : '-' }}</td>
 
-                                <td>-</td> {{-- Est Agr --}}
-                                <td>-</td> {{-- COEL --}}
+    {{-- RETENCION --}}
+    <td>{{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}</td>
+    <td>{{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}</td>
+    <td>{{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}</td>
 
-                            </tr>
+    {{-- ESTABILIDAD --}}
+    <td>{{ $ea ? number_format($ea['dmp'],4) : '-' }}</td>
+    <td>{{ $ea ? number_format($ea['eaa'],2) : '-' }}</td>
 
-                            {{-- ================= RESTO ================= --}}
-                            @foreach($rows->skip(1) as $row)
-                            <tr>
+    {{-- COEL --}}
+    <td>{{ $coel ? number_format($coel['cole'],4) : '-' }}</td>
 
-                                <td>
-                                    <span class="badge bg-primary-subtle text-primary">
-                                        {{ $row->idlab }}
-                                    </span>
-                                    <div class="small text-muted">Rep {{ $row->rep }}</div>
-                                </td>
+</tr>
 
-                                @php
-                                $t = $texturas[$row->idlab][$row->rep] ?? null;
-                                $d = $densidades[$row->idlab][$row->rep] ?? null;
-                                $dp = $densidadesParticulas[$row->idlab][$row->rep] ?? null;
-                                $p = $porosidades[$row->idlab][$row->rep] ?? null;
-                                $hg = $humedades[$row->idlab][$row->rep] ?? null;
-                                $ch = $conductividades[$row->idlab][$row->rep] ?? null;
-                                $rh = $retenciones[$row->idlab][$row->rep] ?? null;
-                                @endphp
+{{-- ================= RESTO ================= --}}
+@foreach($rows->skip(1) as $row)
+<tr>
 
-                                <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
-                                <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
-                                <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
-                                <td>{{ $t['clase'] ?? '-' }}</td>
+    <td>
+        <span class="badge bg-primary-subtle text-primary">
+            {{ $row->idlab }}
+        </span>
+        <div class="small text-muted">Rep {{ $row->rep }}</div>
+    </td>
 
-                                <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
-                                <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
-                                <td>{{ $p !== null ? number_format($p,2) : '-' }}</td>
-                                <td>{{ $hg !== null ? number_format($hg,2) : '-' }}</td>
-                                <td>{{ $ch !== null ? number_format($ch,6) : '-' }}</td>
+    @php
+    $t = $texturas[$row->idlab][$row->rep] ?? null;
+    $d = $densidades[$row->idlab][$row->rep] ?? null;
+    $dp = $densidadesParticulas[$row->idlab][$row->rep] ?? null;
+    $p = $porosidades[$row->idlab][$row->rep] ?? null;
+    $hg = $humedades[$row->idlab][$row->rep] ?? null;
+    $ch = $conductividades[$row->idlab][$row->rep] ?? null;
+    $rh = $retenciones[$row->idlab][$row->rep] ?? null;
+    $ea = $estabilidad[$row->idlab][$row->rep] ?? null;
+    $coel = $coefExt[$row->idlab][$row->rep] ?? null;
+    @endphp
 
-                                <td>{{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}</td>
-                                <td>{{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}</td>
-                                <td>{{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}</td>
+    <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
+    <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
+    <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
+    <td>{{ $t['clase'] ?? '-' }}</td>
 
-                                <td>-</td>
-                                <td>-</td>
+    <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
+    <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
+    <td>{{ $p !== null ? number_format($p,2) : '-' }}</td>
 
-                            </tr>
-                            @endforeach
+    <td>{{ $hg !== null ? number_format($hg,2) : '-' }}</td>
+    <td>{{ $ch !== null ? number_format($ch,6) : '-' }}</td>
 
-                            {{-- ================= STATS ================= --}}
-                            @if($tieneStats)
+    <td>{{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}</td>
+    <td>{{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}</td>
+    <td>{{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}</td>
 
-                            <tr class="table-light">
-                                <td class="fw-semibold">PROMEDIO</td>
+    <td>{{ $ea ? number_format($ea['dmp'],4) : '-' }}</td>
+    <td>{{ $ea ? number_format($ea['eaa'],2) : '-' }}</td>
+    <td>{{ $coel ? number_format($coel['cole'],4) : '-' }}</td>
 
-                                <td>{{ $statsT && $statsT['arena']['prom'] !== null ? number_format($statsT['arena']['prom'],1) : '-' }}</td>
-                                <td>{{ $statsT && $statsT['limo']['prom'] !== null ? number_format($statsT['limo']['prom'],1) : '-' }}</td>
-                                <td>{{ $statsT && $statsT['arcilla']['prom'] !== null ? number_format($statsT['arcilla']['prom'],1) : '-' }}</td>
-                                <td>-</td>
+</tr>
+@endforeach
 
-                                <td>{{ $statsDA && $statsDA['prom'] !== null ? number_format($statsDA['prom'],3) : '-' }}</td>
-                                <td>{{ $statsDP && $statsDP['prom'] !== null ? number_format($statsDP['prom'],3) : '-' }}</td>
-                                <td>{{ $statsPor && $statsPor['prom'] !== null ? number_format($statsPor['prom'],2) : '-' }}</td>
-                                <td>{{ $statsHG && $statsHG['prom'] !== null ? number_format($statsHG['prom'],2) : '-' }}</td>
-                                <td>{{ $statsCH && $statsCH['prom'] !== null ? number_format($statsCH['prom'],6) : '-' }}</td>
+{{-- ================= STATS ================= --}}
+@if($tieneStats)
 
-                                <td>{{ $statsRH && $statsRH['Hg_33']['prom'] !== null ? number_format($statsRH['Hg_33']['prom'],4) : '-' }}</td>
-                                <td>{{ $statsRH && $statsRH['Hg_1500']['prom'] !== null ? number_format($statsRH['Hg_1500']['prom'],4) : '-' }}</td>
-                                <td>{{ $statsRH && $statsRH['agua_disponible']['prom'] !== null ? number_format($statsRH['agua_disponible']['prom'],4) : '-' }}</td>
+<tr class="table-active">
+    <td class="fw-semibold">PROMEDIO</td>
 
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
+    <td>{{ $statsT['arena']['prom'] ?? '-' }}</td>
+    <td>{{ $statsT['limo']['prom'] ?? '-' }}</td>
+    <td>{{ $statsT['arcilla']['prom'] ?? '-' }}</td>
+    <td>-</td>
 
-                            <tr class="table-light">
-                                <td class="fw-semibold">Desv.Est.</td>
+    <td>{{ $statsDA['prom'] ?? '-' }}</td>
+    <td>{{ $statsDP['prom'] ?? '-' }}</td>
+    <td>{{ $statsPor['prom'] ?? '-' }}</td>
+    <td>{{ $statsHG['prom'] ?? '-' }}</td>
+    <td>{{ $statsCH['prom'] ?? '-' }}</td>
 
-                                <td>{{ $statsT && $statsT['arena']['desv'] !== null ? number_format($statsT['arena']['desv'],2) : '-' }}</td>
-                                <td>{{ $statsT && $statsT['limo']['desv'] !== null ? number_format($statsT['limo']['desv'],2) : '-' }}</td>
-                                <td>{{ $statsT && $statsT['arcilla']['desv'] !== null ? number_format($statsT['arcilla']['desv'],2) : '-' }}</td>
-                                <td>-</td>
+    <td>{{ $statsRH['Hg_33']['prom'] ?? '-' }}</td>
+    <td>{{ $statsRH['Hg_1500']['prom'] ?? '-' }}</td>
+    <td>{{ $statsRH['agua_disponible']['prom'] ?? '-' }}</td>
 
-                                <td>{{ $statsDA && $statsDA['desv'] !== null ? number_format($statsDA['desv'],3) : '-' }}</td>
-                                <td>{{ $statsDP && $statsDP['desv'] !== null ? number_format($statsDP['desv'],3) : '-' }}</td>
-                                <td>{{ $statsPor && $statsPor['desv'] !== null ? number_format($statsPor['desv'],2) : '-' }}</td>
-                                <td>{{ $statsHG && $statsHG['desv'] !== null ? number_format($statsHG['desv'],2) : '-' }}</td>
-                                <td>{{ $statsCH && $statsCH['desv'] !== null ? number_format($statsCH['desv'],6) : '-' }}</td>
+    <td>{{ $statsEA['dmp']['prom'] ?? '-' }}</td>
+    <td>{{ $statsEA['eaa']['prom'] ?? '-' }}</td>
+    <td>{{ $statsCOEL['cole']['prom'] ?? '-' }}</td>
+</tr>
 
-                                <td>{{ $statsRH && $statsRH['Hg_33']['desv'] !== null ? number_format($statsRH['Hg_33']['desv'],4) : '-' }}</td>
-                                <td>{{ $statsRH && $statsRH['Hg_1500']['desv'] !== null ? number_format($statsRH['Hg_1500']['desv'],4) : '-' }}</td>
-                                <td>{{ $statsRH && $statsRH['agua_disponible']['desv'] !== null ? number_format($statsRH['agua_disponible']['desv'],4) : '-' }}</td>
+<tr class="table-active">
+    <td class="fw-semibold">Desv.Est.</td>
 
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
+    <td>{{ $statsT['arena']['desv'] ?? '-' }}</td>
+    <td>{{ $statsT['limo']['desv'] ?? '-' }}</td>
+    <td>{{ $statsT['arcilla']['desv'] ?? '-' }}</td>
+    <td>-</td>
 
-                            <tr class="table-light">
-                                <td class="fw-semibold">CV</td>
+    <td>{{ $statsDA['desv'] ?? '-' }}</td>
+    <td>{{ $statsDP['desv'] ?? '-' }}</td>
+    <td>{{ $statsPor['desv'] ?? '-' }}</td>
+    <td>{{ $statsHG['desv'] ?? '-' }}</td>
+    <td>{{ $statsCH['desv'] ?? '-' }}</td>
 
-                                <td>{{ $statsT && $statsT['arena']['cv'] !== null ? number_format($statsT['arena']['cv'],2) : '-' }}</td>
-                                <td>{{ $statsT && $statsT['limo']['cv'] !== null ? number_format($statsT['limo']['cv'],2) : '-' }}</td>
-                                <td>{{ $statsT && $statsT['arcilla']['cv'] !== null ? number_format($statsT['arcilla']['cv'],2) : '-' }}</td>
-                                <td>-</td>
+    <td>{{ $statsRH['Hg_33']['desv'] ?? '-' }}</td>
+    <td>{{ $statsRH['Hg_1500']['desv'] ?? '-' }}</td>
+    <td>{{ $statsRH['agua_disponible']['desv'] ?? '-' }}</td>
 
-                                <td>{{ $statsDA && $statsDA['cv'] !== null ? number_format($statsDA['cv'],2) : '-' }}</td>
-                                <td>{{ $statsDP && $statsDP['cv'] !== null ? number_format($statsDP['cv'],2) : '-' }}</td>
-                                <td>{{ $statsPor && $statsPor['cv'] !== null ? number_format($statsPor['cv'],2) : '-' }}</td>
-                                <td>{{ $statsHG && $statsHG['cv'] !== null ? number_format($statsHG['cv'],2) : '-' }}</td>
-                                <td>{{ $statsCH && $statsCH['cv'] !== null ? number_format($statsCH['cv'],2) : '-' }}</td>
+    <td>{{ $statsEA['dmp']['desv'] ?? '-' }}</td>
+    <td>{{ $statsEA['eaa']['desv'] ?? '-' }}</td>
+    <td>{{ $statsCOEL['cole']['desv'] ?? '-' }}</td>
+</tr>
 
-                                <td>{{ $statsRH && $statsRH['Hg_33']['cv'] !== null ? number_format($statsRH['Hg_33']['cv'],2) : '-' }}</td>
-                                <td>{{ $statsRH && $statsRH['Hg_1500']['cv'] !== null ? number_format($statsRH['Hg_1500']['cv'],2) : '-' }}</td>
-                                <td>{{ $statsRH && $statsRH['agua_disponible']['cv'] !== null ? number_format($statsRH['agua_disponible']['cv'],2) : '-' }}</td>
+<tr class="table-active">
+    <td class="fw-semibold">CV</td>
 
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
+    <td>{{ $statsT['arena']['cv'] ?? '-' }}</td>
+    <td>{{ $statsT['limo']['cv'] ?? '-' }}</td>
+    <td>{{ $statsT['arcilla']['cv'] ?? '-' }}</td>
+    <td>-</td>
 
-                            @endif
+    <td>{{ $statsDA['cv'] ?? '-' }}</td>
+    <td>{{ $statsDP['cv'] ?? '-' }}</td>
+    <td>{{ $statsPor['cv'] ?? '-' }}</td>
+    <td>{{ $statsHG['cv'] ?? '-' }}</td>
+    <td>{{ $statsCH['cv'] ?? '-' }}</td>
 
-                        </tbody>
+    <td>{{ $statsRH['Hg_33']['cv'] ?? '-' }}</td>
+    <td>{{ $statsRH['Hg_1500']['cv'] ?? '-' }}</td>
+    <td>{{ $statsRH['agua_disponible']['cv'] ?? '-' }}</td>
+
+    <td>{{ $statsEA['dmp']['cv'] ?? '-' }}</td>
+    <td>{{ $statsEA['eaa']['cv'] ?? '-' }}</td>
+    <td>{{ $statsCOEL['cole']['cv'] ?? '-' }}</td>
+</tr>
+
+@endif
+
+</tbody>
                     </table>
 
                 </div>

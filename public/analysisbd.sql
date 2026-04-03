@@ -7491,65 +7491,8 @@ ORDER BY
 END$$
 
 DELIMITER ;
--- -------------------------------------------------------------------------
 
-
-DELIMITER $$
-
-DROP PROCEDURE IF EXISTS sp_reporte_cliente_coeficiente_extensibilidad $$
-CREATE PROCEDURE sp_reporte_cliente_coeficiente_extensibilidad(
-    IN p_id_solicitud INT
-)
-
-BEGIN
-
-SELECT
-
-coem.id_coeficiente_extensibilidad,
-coemm.idlab,
-
-AVG(CASE WHEN a.siglas = 'longitud_inicial' THEN coer.resultado END) AS longitud_inicial,
-AVG(CASE WHEN a.siglas = 'diametro_muestra' THEN coer.resultado END) AS diametro_muestra,
-
-AVG(CASE WHEN a.siglas = 'fecha_medicion' THEN coer.resultado END) AS fecha_medicion,
-AVG(CASE WHEN a.siglas = 'hora_medicion' THEN coer.resultado END) AS hora_medicion
-
-FROM trn_coeficiente_extensibilidad_muestras coem
-
-JOIN trn_coeficiente_extensibilidad coe
-    ON coe.id = coem.id_coeficiente_extensibilidad
-
-LEFT JOIN trn_coeficiente_extensibilidad_resultados coer
-    ON coer.id_coeficiente_extensibilidad_muestras = coem.id
-    AND coer.estado = 1
-
-LEFT JOIN trn_analisis a
-    ON a.id = coer.id_analisis
-    AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
-
-WHERE coem.id_coeficiente_extensibilidad IN (
-
-    SELECT DISTINCT coem2.id_coeficiente_extensibilidad
-    FROM tbm_solicitud_muestras sm
-    JOIN trn_coeficiente_extensibilidad_muestras coem2
-        ON coem2.idlab = sm.idlab
-    WHERE sm.id_solicitud = p_id_solicitud
-
-)
-
-AND coem.estado = 1
-
-GROUP BY
-coem.id_coeficiente_extensibilidad,
-coem.idlab
-
-ORDER BY
-coem.id_coeficiente_extensibilidad,
-coem.idlab;
-
-END$$
-
-DELIMITER ;
+-- ----------------------------------------------------------------------------------------------
 
 DROP PROCEDURE IF EXISTS sp_reporte_cliente_coeficiente_extensibilidad;
 
@@ -7614,11 +7557,65 @@ END$$
 
 DELIMITER ;
 
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_coeficiente_extensibilidad_resultados;
 
+DELIMITER $$
 
+CREATE PROCEDURE sp_coeficiente_extensibilidad_resultados(
+    IN p_lista_archivos TEXT
+)
+BEGIN
 
+SELECT
 
+    cem.id_coeficiente_extensibilidad,
+    cem.idlab,
+    cem.rep,
 
+    /* ================= OD ================= */
+
+    MAX(CASE WHEN a.siglas = 'altura_cilindro_od' THEN tr.resultado END) AS altura_cilindro_od,
+    MAX(CASE WHEN a.siglas = 'diametro_cilindro_od' THEN tr.resultado END) AS diametro_cilindro_od,
+    MAX(CASE WHEN a.siglas = 'peso_cilindro_suelo_seco_od' THEN tr.resultado END) AS peso_cilindro_suelo_seco_od,
+    MAX(CASE WHEN a.siglas = 'peso_cilindro_vacio_od' THEN tr.resultado END) AS peso_cilindro_vacio_od,
+
+    /* ================= 33 kPa ================= */
+
+    MAX(CASE WHEN a.siglas = 'altura_cilindro_33kpa' THEN tr.resultado END) AS altura_cilindro_33kpa,
+    MAX(CASE WHEN a.siglas = 'diametro_cilindro_33kpa' THEN tr.resultado END) AS diametro_cilindro_33kpa,
+    MAX(CASE WHEN a.siglas = 'peso_cilindro_suelo_33kpa' THEN tr.resultado END) AS peso_cilindro_suelo_33kpa,
+    MAX(CASE WHEN a.siglas = 'peso_cilindro_vacio_33kpa' THEN tr.resultado END) AS peso_cilindro_vacio_33kpa
+
+FROM trn_coeficiente_extensibilidad ce
+
+JOIN trn_coeficiente_extensibilidad_muestras cem
+    ON cem.id_coeficiente_extensibilidad = ce.id
+
+LEFT JOIN trn_coeficiente_extensibilidad_resultados tr
+    ON tr.id_coeficiente_extensibilidad_muestras = cem.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'COEFICIENTE_EXTENSIBILIDAD'
+
+WHERE FIND_IN_SET(ce.archivo, p_lista_archivos)
+AND cem.estado = 1
+
+GROUP BY
+    cem.id_coeficiente_extensibilidad,
+    cem.idlab,
+    cem.rep
+
+ORDER BY
+    cem.idlab,
+    cem.rep;
+
+END$$
+
+DELIMITER ;
+-- -------------------------------------------------------------------------
 
 DROP PROCEDURE IF EXISTS sp_reporte_cliente_conductividad_hidraulica;
 
@@ -7961,6 +7958,60 @@ eam.idlab;
 END$$
 
 DELIMITER ;
+
+-- ------------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_estabilidad_agregados_resultados;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_estabilidad_agregados_resultados(
+    IN p_lista_archivos TEXT
+)
+BEGIN
+
+SELECT
+
+    eam.id_estabilidad_agregados,
+    eam.idlab,
+    eam.rep,
+
+    MAX(CASE WHEN a.siglas = 'peso_suelo_seco' THEN tr.resultado END) AS Pt,
+
+    MAX(CASE WHEN a.siglas = 'Pri2' THEN tr.resultado END)   AS Pri2,
+    MAX(CASE WHEN a.siglas = 'Pri1' THEN tr.resultado END)   AS Pri1,
+    MAX(CASE WHEN a.siglas = 'Pri05' THEN tr.resultado END)  AS Pri05,
+    MAX(CASE WHEN a.siglas = 'Pri025' THEN tr.resultado END) AS Pri025,
+    MAX(CASE WHEN a.siglas = 'Pri0' THEN tr.resultado END)   AS Pri0
+
+FROM trn_estabilidad_agregados ea
+
+JOIN trn_estabilidad_agregados_muestras eam
+    ON eam.id_estabilidad_agregados = ea.id
+
+LEFT JOIN trn_estabilidad_agregados_resultados tr
+    ON tr.id_estabilidad_agregados_muestras = eam.id
+    AND tr.estado = 1
+
+LEFT JOIN trn_analisis a
+    ON a.id = tr.id_analisis
+    AND a.origen = 'ESTABILIDAD_AGREGADOS'
+
+WHERE FIND_IN_SET(ea.archivo, p_lista_archivos)
+AND eam.estado = 1
+
+GROUP BY
+    eam.id_estabilidad_agregados,
+    eam.idlab,
+    eam.rep
+
+ORDER BY
+    eam.idlab,
+    eam.rep;
+
+END$$
+
+DELIMITER ;
+-- -------------------------------------------------------------------------
 
 /* ============================================================
    6. DATOS INICIALES

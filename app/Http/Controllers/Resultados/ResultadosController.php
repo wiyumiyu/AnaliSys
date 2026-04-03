@@ -13,6 +13,8 @@ use App\Helpers\Calculos\HumedadGravimetricaResultados;
 use App\Helpers\Calculos\PorosidadResultados;
 use App\Helpers\Calculos\ConductividadHidraulicaResultados;
 use App\Helpers\Calculos\RetencionHumedadResultados;
+use App\Helpers\Calculos\EstabilidadAgregadosResultados;
+use App\Helpers\Calculos\CoeficienteExtensibilidadResultados;
 
 class ResultadosController extends Controller {
 
@@ -270,6 +272,7 @@ class ResultadosController extends Controller {
             $conductividades = ConductividadHidraulicaResultados::calcularPorRep($ch);
         }
 
+
         $archivosRH = $archivos
                 ->where('tipo', 'RETENCION_HUMEDAD')
                 ->pluck('archivo')
@@ -290,7 +293,46 @@ class ResultadosController extends Controller {
             $retenciones = RetencionHumedadResultados::calcularPorRep($rh);
         }
 
+        $archivosEA = $archivos
+                ->where('tipo', 'ESTABILIDAD_AGREGADOS')
+                ->pluck('archivo')
+                ->filter()
+                ->toArray();
 
+        $estabilidad = [];
+
+        if (!empty($archivosEA)) {
+
+            $lista = implode(',', $archivosEA);
+
+            $ea = DB::select(
+                    'CALL sp_estabilidad_agregados_resultados(?)',
+                    [$lista]
+            );
+
+            $estabilidad = EstabilidadAgregadosResultados::calcularPorRep($ea);
+        }
+
+        $archivosCOEL = $archivos
+                ->where('tipo', 'COEFICIENTE_EXTENSIBILIDAD')
+                ->pluck('archivo')
+                ->filter()
+                ->toArray();
+
+        $coefExt = [];
+
+        if (!empty($archivosCOEL)) {
+
+            $lista = implode(',', $archivosCOEL);
+
+            $ce = DB::select(
+                    'CALL sp_coeficiente_extensibilidad_resultados(?)',
+                    [$lista]
+            );
+
+            $coefExt = CoeficienteExtensibilidadResultados::calcularPorRep($ce);
+        }
+        
         /* ------------------------------------------------ */
         // AGRUPAR POR IDLAB (CARDS)
         /* ------------------------------------------------ */
@@ -319,6 +361,8 @@ class ResultadosController extends Controller {
         $estadisticasHG = [];
         $estadisticasCH = [];
         $estadisticasRH = [];
+        $estadisticasEA = [];
+        $estadisticasCOEL = [];
 
         foreach ($cards as $key => $card) {
 
@@ -330,6 +374,8 @@ class ResultadosController extends Controller {
             $estadisticasHG[$key] = Estadisticas::calcular($rows, $humedades);
             $estadisticasCH[$key] = Estadisticas::calcular($rows, $conductividades);
             $estadisticasRH[$key] = RetencionHumedadResultados::estadisticas($rows, $retenciones);
+            $estadisticasEA[$key] = EstabilidadAgregadosResultados::estadisticas($rows, $estabilidad);
+            $estadisticasCOEL[$key] = CoeficienteExtensibilidadResultados::estadisticas($rows, $coefExt);
         }
 
         /* ------------------------------------------------ */
@@ -352,7 +398,11 @@ class ResultadosController extends Controller {
                         'conductividades',
                         'estadisticasCH',
                         'retenciones',
-                        'estadisticasRH'
+                        'estadisticasRH',
+                        'estabilidad',
+                        'estadisticasEA',
+                        'coefExt',
+                        'estadisticasCOEL'
                 ));
     }
 

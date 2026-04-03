@@ -370,31 +370,67 @@
     @endphp
 
     {{-- TEXTURA --}}
-    <td>{{ $t ? number_format($t['arena'],1) : '-' }}</td>
-    <td>{{ $t ? number_format($t['limo'],1) : '-' }}</td>
-    <td>{{ $t ? number_format($t['arcilla'],1) : '-' }}</td>
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($t['arena'] ?? null, 'porcentaje') }}">
+    {{ $t ? number_format($t['arena'],1) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($t['limo'] ?? null, 'porcentaje') }}">
+    {{ $t ? number_format($t['limo'],1) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($t['arcilla'] ?? null, 'porcentaje') }}">
+    {{ $t ? number_format($t['arcilla'],1) : '-' }}
+</td>
     <td>{{ $t['clase'] ?? '-' }}</td>
 
     {{-- FISICAS --}}
-    <td>{{ $d !== null ? number_format($d,3) : '-' }}</td>
-    <td>{{ $dp !== null ? number_format($dp,3) : '-' }}</td>
-    <td>{{ $p !== null ? number_format($p,2) : '-' }}</td>
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($d, 'densidad') }}">
+    {{ $d !== null ? number_format($d,3) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($dp, 'densidad') }}">
+    {{ $dp !== null ? number_format($dp,3) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($p, 'porosidad') }}">
+    {{ $p !== null ? number_format($p,2) : '-' }}
+</td>
 
     {{-- HIDRAULICAS --}}
-    <td>{{ $hg !== null ? number_format($hg,2) : '-' }}</td>
-    <td>{{ $ch !== null ? number_format($ch,6) : '-' }}</td>
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($hg, 'humedad') }}">
+    {{ $hg !== null ? number_format($hg,2) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($ch, 'ch') }}">
+    {{ $ch !== null ? number_format($ch,6) : '-' }}
+</td>
 
     {{-- RETENCION --}}
-    <td>{{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}</td>
-    <td>{{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}</td>
-    <td>{{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}</td>
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($rh['Hg_33'] ?? null, 'retencion') }}">
+    {{ $rh && $rh['Hg_33'] !== null ? number_format($rh['Hg_33'],4) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($rh['Hg_1500'] ?? null, 'retencion') }}">
+    {{ $rh && $rh['Hg_1500'] !== null ? number_format($rh['Hg_1500'],4) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($rh['agua_disponible'] ?? null, 'retencion') }}">
+    {{ $rh && $rh['agua_disponible'] !== null ? number_format($rh['agua_disponible'],4) : '-' }}
+</td>
 
     {{-- ESTABILIDAD --}}
-    <td>{{ $ea ? number_format($ea['dmp'],4) : '-' }}</td>
-    <td>{{ $ea ? number_format($ea['eaa'],2) : '-' }}</td>
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($ea['dmp'] ?? null, 'dmp') }}">
+    {{ $ea ? number_format($ea['dmp'],4) : '-' }}
+</td>
+
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($ea['eaa'] ?? null, 'eaa') }}">
+    {{ $ea ? number_format($ea['eaa'],2) : '-' }}
+</td>
 
     {{-- COEL --}}
-    <td>{{ $coel ? number_format($coel['cole'],4) : '-' }}</td>
+<td class="{{ \App\Helpers\Calculos\UIHelper::color($coel['cole'] ?? null, 'coel') }}">
+    {{ $coel ? number_format($coel['cole'],4) : '-' }}
+</td>
 
 </tr>
 

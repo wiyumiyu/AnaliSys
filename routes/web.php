@@ -686,8 +686,15 @@ Route::prefix('reportes-clientes')->group(function () {
     Route::get('/{id}', [ReporteClienteController::class, 'show'])
             ->name('reportes_clientes.show');
 });
+
+
+Route::get('/reporte/exportar/excel/{id}', 
+    [ReporteClienteController::class, 'exportar']
+)->name('reporte.exportar.excel');
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA
+
+
 
 
 //------------------------------------------------------------------------------

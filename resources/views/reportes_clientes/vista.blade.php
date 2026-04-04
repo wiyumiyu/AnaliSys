@@ -24,9 +24,25 @@
 
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
+
+                    <!-- IZQUIERDA -->
                     <h5 class="mb-0 fw-semibold">
                         Reporte de ensayo
                     </h5>
+
+                    <!-- DERECHA -->
+                    <div class="d-flex gap-2">
+
+                        <a href="{{ route('reporte.exportar.excel', $id) }}"
+                           class="dt-button buttons-copy buttons-html5 btn btn-success">
+
+                            <i class="bi bi-file-earmark-excel me-1"></i> XLSX
+
+                        </a>
+
+
+                    </div>
+
                 </div>
             </div>
 
@@ -279,11 +295,11 @@
                     </div>
                     <br>
                     @php
-  $mapEtiquetas = collect($datos)
-    ->groupBy(fn($item) => (string)$item->idlab)
-    ->map(fn($items) => $items->first());
-                    
-                    
+                    $mapEtiquetas = collect($datos)
+                    ->groupBy(fn($item) => (string)$item->idlab)
+                    ->map(fn($items) => $items->first());
+
+
                     @endphp      
                     <div class="mt-4">
 
@@ -318,7 +334,7 @@
                                         @if($index === 0)
                                         <td rowspan="{{ count($filas) }}" class="align-top bg-light" style="width: 320px;">
                                             {{ $mapEtiquetas[(string)$idlab]->etiqueta ?? 'SIN ETIQUETA' }}
-                                           
+
                                         </td>
                                         <td rowspan="{{ count($filas) }}" class="align-middle" style="width: 100px;">
                                             {{ $idlab }}

@@ -6914,8 +6914,8 @@ s.id_solicitud,
 s.numero,
 s.fecha,
 
-cs.nombre AS cliente,
-
+clientebase.nombre AS cliente,
+cs.nombre as subcliente,
 cc.nombre AS responsable,
 
 sc.cultivo,
@@ -6948,9 +6948,7 @@ LEFT JOIN tbm_dircanton can
 
 /* RESPONSABLE */
 LEFT JOIN tbm_cliente_contacto cc
-    ON cc.id_cliente = s.id_cliente
-    AND cc.responsable = 1
-    AND cc.estado = 1
+    ON cc.id_cliente = s.responsable
 
 /* CORREO DEL CONTACTO DE LA SOLICITUD */
 LEFT JOIN tbm_solicitud_contacto_correo scc
@@ -6965,6 +6963,9 @@ LEFT JOIN tbm_solicitud_contacto_telefono sct
 
 LEFT JOIN tbm_cliente_contacto_telefono telefono
     ON telefono.id_contacto_telefono = sct.id_contacto_telefono
+    
+LEFT JOIN tbm_cliente clientebase
+    ON clientebase.id_cliente = s.id_cliente
 
 WHERE s.id_solicitud = p_id_solicitud
 

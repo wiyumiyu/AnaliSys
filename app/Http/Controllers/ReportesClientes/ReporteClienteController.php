@@ -74,32 +74,41 @@ class ReporteClienteController extends Controller {
         $this->llenarEncabezado($sheet1, $data);
         $this->llenarEncabezado($sheet2, $data);
 
+        
+        
+        
         //------------------------------------------------------------------------
         // llenar encabezados de analisis
         //------------------------------------------------------------------------        
         $col = 5; // E
         $cantidadHojas = count($data['datos']) > 15 ? 2 : 1;
 
+        //TEXTURA
         if ($this->hayTexturaPorDatos($data['datos'], $data['texturas'])) {
             $col = $this->dibujarEncabezadoTextura($spreadsheet, $col, $cantidadHojas);
         }
-
+        //DA
 //        if ($this->hayDensidadPorDatos($data['datos'], $data['texturas'])) {
 //            $col = $this->dibujarEncabezadoDensidad($spreadsheet, $col, $cantidadHojas);
 //        }
-
+        
+        
+        
+        
+        
+        
+        
+        //------------------------------------------------------------------------
         //------------------------------------------------------------------------
         // llenar datos
         //------------------------------------------------------------------------
 
-
+        // Textura
+        // -----------------------------------------------------------------------
         $col = 5;
-
         if ($this->hayTexturaPorDatos($data['datos'], $data['texturas'])) {
 
             $colTextura = $col; // 🔥 guardás inicio
-
-            // $col = $this->dibujarEncabezadoTextura($spreadsheet, $col, $cantidadHojas);
 
             // 🔥 llenar datos usando el inicio
             $this->llenarDatosTextura(
@@ -110,7 +119,18 @@ class ReporteClienteController extends Controller {
                     $colTextura
             );
         }
-
+        // DA
+        // -----------------------------------------------------------------------
+        
+        
+        
+        
+        
+        
+        
+        //---------------------------------------------------------------------------
+        // IDS
+        //---------------------------------------------------------------------------
         $filaBase = 19;
 
         foreach ($data['datos'] as $index => $row) {

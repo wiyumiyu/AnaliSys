@@ -87,6 +87,7 @@ class ReporteClienteController extends Controller {
         if ($this->hayTexturaPorDatos($data['datos'], $data['texturas'])) {
             $col = $this->dibujarEncabezadoTextura($spreadsheet, $col, $cantidadHojas);
         }
+
         //DA
         if ($this->hayDensidadAparentePorDatos($data['datos'], $data['densidades'])) {
             $col = $this->dibujarEncabezadoDensidadAparente($spreadsheet, $col, $cantidadHojas);
@@ -97,6 +98,14 @@ class ReporteClienteController extends Controller {
             $col = $this->dibujarEncabezadoDensidadParticulas($spreadsheet, $col, $cantidadHojas);
         }
         
+        // POROSIDAD
+        if ($this->hayPorosidadPorDatos(
+            $data['datos'],
+            $data['densidades'],
+            $data['densidadesParticulas']
+        )) {
+            $col = $this->dibujarEncabezadoPorosidad($spreadsheet, $col, $cantidadHojas);
+        }
         
         
         
@@ -121,6 +130,8 @@ class ReporteClienteController extends Controller {
                     $data['texturas'],
                     $colTextura
             );
+            
+            $col += 4;
         }
         // DA
         // -----------------------------------------------------------------------
@@ -155,6 +166,26 @@ class ReporteClienteController extends Controller {
             $col += 1;
         }
         
+        // POROSIDAD
+        if ($this->hayPorosidadPorDatos(
+            $data['datos'],
+            $data['densidades'],
+            $data['densidadesParticulas']
+        )) {
+
+            $colP = $col;
+
+            $this->llenarDatosPorosidad(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['densidades'],
+                $data['densidadesParticulas'],
+                $colP
+            );
+
+            $col += 1;
+        }
         
         
         //---------------------------------------------------------------------------
@@ -376,6 +407,45 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
+    private function dibujarEncabezadoPorosidad($spreadsheet, $col, $cantidadHojas) {
+
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "Porosidad");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "P");
+
+            // %
+            $sheet->setCellValue("{$colLetra}18", "%");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(10);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
+    }
+
     private function llenarDatosTextura($sheet1, $sheet2, $datos, $texturas, $col) {
         $filaBase = 19;
 
@@ -515,6 +585,59 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
+    private function llenarDatosPorosidad(
+        $sheet1,
+        $sheet2,
+        $datos,
+        $densidades,
+        $densidadesParticulas,
+        $col
+    ) {
+
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            // hoja
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
+            }
+
+            $idlab = (string) $row->idlab;
+
+            $da = $densidades[$idlab] ?? null;
+            $dp = $densidadesParticulas[$idlab] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($da !== null && $dp !== null && $dp != 0) {
+
+                $p = (1 - ($da / $dp)) * 100;
+
+                $sheet->setCellValue("{$colLetra}{$fila}", round($p, 2));
+            }
+
+            // borde
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // centrado
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return $col + 1;
+    }
+
     private function hayTexturaPorDatos($datos, $texturas) {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
@@ -544,6 +667,21 @@ class ReporteClienteController extends Controller {
             $idlab = (string) $row->idlab;
 
             if (isset($densidadesParticulas[$idlab])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hayPorosidadPorDatos($datos, $densidades, $densidadesParticulas) {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (
+                isset($densidades[$idlab]) &&
+                isset($densidadesParticulas[$idlab])
+            ) {
                 return true;
             }
         }

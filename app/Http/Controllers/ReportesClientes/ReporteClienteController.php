@@ -107,8 +107,15 @@ class ReporteClienteController extends Controller {
             $col = $this->dibujarEncabezadoPorosidad($spreadsheet, $col, $cantidadHojas);
         }
         
+        // HUMEDAD
+        if ($this->hayHumedadPorDatos($data['datos'], $data['humedades'])) {
+            $col = $this->dibujarEncabezadoHumedad($spreadsheet, $col, $cantidadHojas);
+        }
         
-        
+        // CONDUCTIVIDAD
+        if ($this->hayConductividadPorDatos($data['datos'], $data['conductividades'])) {
+            $col = $this->dibujarEncabezadoConductividad($spreadsheet, $col, $cantidadHojas);
+        }
         
         //------------------------------------------------------------------------
         //------------------------------------------------------------------------
@@ -130,7 +137,7 @@ class ReporteClienteController extends Controller {
                     $data['texturas'],
                     $colTextura
             );
-            
+
             $col += 4;
         }
         // DA
@@ -186,7 +193,38 @@ class ReporteClienteController extends Controller {
 
             $col += 1;
         }
+
+        // HUMEDAD
+        if ($this->hayHumedadPorDatos($data['datos'], $data['humedades'])) {
+
+            $colH = $col;
+
+            $this->llenarDatosHumedad(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['humedades'],
+                $colH
+            );
+
+            $col += 1;
+        }
         
+        // CONDUCTIVIDAD
+        if ($this->hayConductividadPorDatos($data['datos'], $data['conductividades'])) {
+
+            $colC = $col;
+
+            $this->llenarDatosConductividad(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['conductividades'],
+                $colC
+            );
+
+            $col += 1;
+        }
         
         //---------------------------------------------------------------------------
         // IDS
@@ -446,6 +484,82 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
+    private function dibujarEncabezadoHumedad($spreadsheet, $col, $cantidadHojas) {
+
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "Humedad");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "Hg");
+
+            // %
+            $sheet->setCellValue("{$colLetra}18", "%");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(10);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
+    }
+
+    private function dibujarEncabezadoConductividad($spreadsheet, $col, $cantidadHojas) {
+
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "Conductividad");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "K");
+
+            // UNIDAD
+            $sheet->setCellValue("{$colLetra}18", "cm/s");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(12);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
+    }
+
     private function llenarDatosTextura($sheet1, $sheet2, $datos, $texturas, $col) {
         $filaBase = 19;
 
@@ -638,6 +752,87 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
+    private function llenarDatosHumedad($sheet1, $sheet2, $datos, $humedades, $col) {
+
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
+            }
+
+            $idlab = (string) $row->idlab;
+            $hg = $humedades[$idlab] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($hg !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", round($hg, 2));
+            }
+
+            // borde derecho
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // centrado
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return $col + 1;
+    }
+
+    private function llenarDatosConductividad($sheet1, $sheet2, $datos, $conductividades, $col) {
+
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
+            }
+
+            $idlab = (string) $row->idlab;
+
+            $k = $conductividades[$idlab]['conductividad_hidraulica'] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($k !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", $k);
+            }
+
+            // borde derecho
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // centrado
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return $col + 1;
+    }
+
     private function hayTexturaPorDatos($datos, $texturas) {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
@@ -682,6 +877,30 @@ class ReporteClienteController extends Controller {
                 isset($densidades[$idlab]) &&
                 isset($densidadesParticulas[$idlab])
             ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hayHumedadPorDatos($datos, $humedades) {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (isset($humedades[$idlab])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hayConductividadPorDatos($datos, $conductividades) {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (isset($conductividades[$idlab])) {
                 return true;
             }
         }

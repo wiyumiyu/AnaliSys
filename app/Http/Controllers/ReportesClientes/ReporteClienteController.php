@@ -66,11 +66,11 @@ class ReporteClienteController extends Controller {
 
         $spreadsheet = IOFactory::load($ruta);
 
-        // 🔥 hojas
+        // hojas
         $sheet1 = $spreadsheet->getSheet(0);
         $sheet2 = $spreadsheet->getSheet(1);
 
-        // 🔥 encabezado en ambas hojas
+        // encabezado en ambas hojas
         $this->llenarEncabezado($sheet1, $data);
         $this->llenarEncabezado($sheet2, $data);
 
@@ -88,11 +88,14 @@ class ReporteClienteController extends Controller {
             $col = $this->dibujarEncabezadoTextura($spreadsheet, $col, $cantidadHojas);
         }
         //DA
-//        if ($this->hayDensidadPorDatos($data['datos'], $data['texturas'])) {
-//            $col = $this->dibujarEncabezadoDensidad($spreadsheet, $col, $cantidadHojas);
-//        }
+        if ($this->hayDensidadAparentePorDatos($data['datos'], $data['densidades'])) {
+            $col = $this->dibujarEncabezadoDensidadAparente($spreadsheet, $col, $cantidadHojas);
+        }
         
-        
+        //DP
+        if ($this->hayDensidadParticulasPorDatos($data['datos'], $data['densidadesParticulas'])) {
+            $col = $this->dibujarEncabezadoDensidadParticulas($spreadsheet, $col, $cantidadHojas);
+        }
         
         
         
@@ -108,9 +111,9 @@ class ReporteClienteController extends Controller {
         $col = 5;
         if ($this->hayTexturaPorDatos($data['datos'], $data['texturas'])) {
 
-            $colTextura = $col; // 🔥 guardás inicio
+            $colTextura = $col; // guardar inicio
 
-            // 🔥 llenar datos usando el inicio
+            // llenar datos usando el inicio
             $this->llenarDatosTextura(
                     $sheet1,
                     $sheet2,
@@ -122,9 +125,35 @@ class ReporteClienteController extends Controller {
         // DA
         // -----------------------------------------------------------------------
         
+       if ($this->hayDensidadAparentePorDatos($data['datos'], $data['densidades'])) {
+
+            $this->llenarDatosDensidadAparente(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['densidades'],
+                $col
+            );
+
+            $col += 1;
+        }
         
-        
-        
+        // DP
+        // -----------------------------------------------------------------------
+        if ($this->hayDensidadParticulasPorDatos($data['datos'], $data['densidadesParticulas'])) {
+
+            $colDP = $col;
+
+            $this->llenarDatosDensidadParticulas(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['densidadesParticulas'],
+                $colDP
+            );
+
+            $col += 1;
+        }
         
         
         
@@ -135,7 +164,7 @@ class ReporteClienteController extends Controller {
 
         foreach ($data['datos'] as $index => $row) {
 
-            // 🔥 decidir hoja
+            // decidir hoja
             if ($index < 15) {
                 $sheet = $sheet1;
                 $fila = $filaBase + $index;
@@ -175,12 +204,12 @@ class ReporteClienteController extends Controller {
             $sheet->setCellValue("D{$fila}", $row->idlab);
         }
 
-        // 🔥 ocultar hoja 2 si no se usa
+        // ocultar hoja 2 si no se usa
         if (count($data['datos']) <= 15) {
             $sheet2->setSheetState(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_HIDDEN);
         }
 
-        // 🔥 descargar
+        // descargar
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
 
         $fileName = 'reporte_' . $id . '.xlsx';
@@ -265,8 +294,86 @@ class ReporteClienteController extends Controller {
                     ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         }
 
-        // 🔥 devolver nueva posición de columna
+        // devolver nueva posición de columna
         return $col + 4;
+    }
+
+    private function dibujarEncabezadoDensidadAparente($spreadsheet, $col, $cantidadHojas) {
+
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "DA");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "Densidad");
+
+            // %
+            $sheet->setCellValue("{$colLetra}18", "");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(10);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
+    }
+
+    private function dibujarEncabezadoDensidadParticulas($spreadsheet, $col, $cantidadHojas) {
+
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "DP");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "Densidad");
+
+            // vacío fila 18
+            $sheet->setCellValue("{$colLetra}18", "");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(10);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
     }
 
     private function llenarDatosTextura($sheet1, $sheet2, $datos, $texturas, $col) {
@@ -276,7 +383,7 @@ class ReporteClienteController extends Controller {
 
             $row = $datos[$i];
 
-            // 🔥 decidir hoja
+            // decidir hoja
             if ($i < 15) {
                 $sheet = $sheet1;
                 $fila = $filaBase + $i;
@@ -303,7 +410,7 @@ class ReporteClienteController extends Controller {
             }
 
             // --------------------------------------------------------
-            // 🔥 BORDES SOLO DONDE QUERÉS
+            // BORDES
             // arcilla → borde derecho
             $sheet->getStyle("{$col3}{$fila}")
                     ->getBorders()
@@ -317,14 +424,95 @@ class ReporteClienteController extends Controller {
                     ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
             // --------------------------------------------------------
-            // 🔥 ALINEACIÓN
+            // ALINEACIÓN
             $sheet->getStyle("{$col1}{$fila}:{$col4}{$fila}")
                     ->getAlignment()
                     ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         }
 
-        // 🔥 devolver siguiente columna
+        // devolver siguiente columna
         return $col + 4;
+    }
+
+    private function llenarDatosDensidadAparente($sheet1, $sheet2, $datos, $densidades, $col) {
+
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
+            }
+
+            $idlab = (string) $row->idlab;
+            $valor = $densidades[$idlab] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($valor !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", round($valor, 3));
+            }
+
+            // borde derecho
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // alineación
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return $col + 1;
+    }
+
+    private function llenarDatosDensidadParticulas($sheet1, $sheet2, $datos, $densidadesParticulas, $col) {
+
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            // hoja
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
+            }
+
+            $idlab = (string) $row->idlab;
+            $dp = $densidadesParticulas[$idlab] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($dp !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", round($dp, 3));
+            }
+
+            // borde derecho
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // centrado
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return $col + 1;
     }
 
     private function hayTexturaPorDatos($datos, $texturas) {
@@ -332,6 +520,30 @@ class ReporteClienteController extends Controller {
             $idlab = (string) $row->idlab;
 
             if (!empty($texturas[$idlab])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hayDensidadAparentePorDatos($datos, $densidades) {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (isset($densidades[$idlab])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hayDensidadParticulasPorDatos($datos, $densidadesParticulas) {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (isset($densidadesParticulas[$idlab])) {
                 return true;
             }
         }

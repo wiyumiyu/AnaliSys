@@ -116,6 +116,22 @@ class ReporteClienteController extends Controller {
         if ($this->hayConductividadPorDatos($data['datos'], $data['conductividades'])) {
             $col = $this->dibujarEncabezadoConductividad($spreadsheet, $col, $cantidadHojas);
         }
+
+        // RETENCION DE HUMEDAD
+        if ($this->hayRetencionHumedadPorDatos($data['datos'], $data['retenciones'])) {
+            $col = $this->dibujarEncabezadoRetencionHumedad($spreadsheet, $col, $cantidadHojas);
+        }
+
+        // ESTABILIDAD DE AGREGADOS
+        if ($this->hayEstabilidadAgregadosPorDatos($data['datos'], $data['estabilidades'])) {
+            $col = $this->dibujarEncabezadoEstabilidadAgregados($spreadsheet, $col, $cantidadHojas);
+        }
+
+        // COEFICIENTE DE EXTENSIBILIDAD
+        if ($this->hayCoeficienteExtensibilidadPorDatos($data['datos'], $data['coeficientes'])) {
+            $col = $this->dibujarEncabezadoCoeficienteExtensibilidad($spreadsheet, $col, $cantidadHojas);
+        }
+
         
         //------------------------------------------------------------------------
         //------------------------------------------------------------------------
@@ -221,6 +237,54 @@ class ReporteClienteController extends Controller {
                 $data['datos'],
                 $data['conductividades'],
                 $colC
+            );
+
+            $col += 1;
+        }
+
+        //RETENCION DE HUMEDAD
+        if ($this->hayRetencionHumedadPorDatos($data['datos'], $data['retenciones'])) {
+
+            $colRH = $col;
+
+            $this->llenarDatosRetencionHumedad(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['retenciones'],
+                $colRH
+            );
+
+            $col += 1;
+        }
+
+        // ESTABILIDAD DE AGREGADOS   
+        if ($this->hayEstabilidadAgregadosPorDatos($data['datos'], $data['estabilidades'])) {
+
+            $colEA = $col;
+
+            $this->llenarDatosEstabilidadAgregados(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['estabilidades'],
+                $colEA
+            );
+
+            $col += 1;
+        }
+
+        // COEFICIENTE DE EXTENSIBILIDAD
+        if ($this->hayCoeficienteExtensibilidadPorDatos($data['datos'], $data['coeficientes'])) {
+
+            $colCE = $col;
+
+            $this->llenarDatosCoeficienteExtensibilidad(
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['coeficientes'],
+                $colCE
             );
 
             $col += 1;
@@ -560,6 +624,118 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
+    private function dibujarEncabezadoRetencionHumedad($spreadsheet, $col, $cantidadHojas) {
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "Retención de Humedad");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "RH");
+
+            // UNIDAD
+            $sheet->setCellValue("{$colLetra}18", "%");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(15);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
+
+    }
+     private function dibujarEncabezadoEstabilidadAgregados($spreadsheet, $col, $cantidadHojas) {
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "Estabilidad de Agregados");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "EA");
+
+            // UNIDAD
+            $sheet->setCellValue("{$colLetra}18", "%");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(15);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
+    }
+
+     private function dibujarEncabezadoCoeficienteExtensibilidad($spreadsheet, $col, $cantidadHojas) {
+        for ($i = 0; $i < $cantidadHojas; $i++) {
+
+            $sheet = $spreadsheet->getSheet($i);
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            // TITULO
+            $sheet->setCellValue("{$colLetra}16", "Coeficiente de Extensibilidad");
+
+            // SUBHEADER
+            $sheet->setCellValue("{$colLetra}17", "CE");
+
+            // UNIDAD
+            $sheet->setCellValue("{$colLetra}18", "");
+
+            // ancho
+            $sheet->getColumnDimension($colLetra)->setWidth(20);
+
+            // estilos
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 10],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            // bordes
+            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(Border::BORDER_THIN);
+        }
+
+        return $col + 1;
+    }
+
+
     private function llenarDatosTextura($sheet1, $sheet2, $datos, $texturas, $col) {
         $filaBase = 19;
 
@@ -833,6 +1009,126 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
+    private function llenarDatosRetencionHumedad($sheet1, $sheet2, $datos, $retenciones, $col) {
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
+            }
+
+            $idlab = (string) $row->idlab;
+
+            $rh = $retenciones[$idlab]['retencion_humedad'] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($rh !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", round($rh, 2));
+            }
+
+            // borde derecho
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // centrado
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return $col + 1;
+    }
+
+     private function llenarDatosEstabilidadAgregados($sheet1, $sheet2, $datos, $estabilidades, $col) {
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
+            }
+
+            $idlab = (string) $row->idlab;
+
+            $ea = $estabilidades[$idlab]['estabilidad_agregados'] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($ea !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", round($ea, 2));
+            }
+
+            // borde derecho
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // centrado
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
+
+        return $col + 1;
+    }
+
+        private function llenarDatosCoeficienteExtensibilidad($sheet1, $sheet2, $datos, $coeficientes, $col) {
+            $filaBase = 19;
+    
+            for ($i = 0; $i < count($datos); $i++) {
+    
+                $row = $datos[$i];
+    
+                if ($i < 15) {
+                    $sheet = $sheet1;
+                    $fila = $filaBase + $i;
+                } else {
+                    $sheet = $sheet2;
+                    $fila = $filaBase + ($i - 15);
+                }
+    
+                $idlab = (string) $row->idlab;
+    
+                $ce = $coeficientes[$idlab]['coeficiente_extensibilidad'] ?? null;
+    
+                $colLetra = Coordinate::stringFromColumnIndex($col);
+    
+                if ($ce !== null) {
+                    $sheet->setCellValue("{$colLetra}{$fila}", round($ce, 3));
+                }
+    
+                // borde derecho
+                $sheet->getStyle("{$colLetra}{$fila}")
+                    ->getBorders()
+                    ->getRight()
+                    ->setBorderStyle(Border::BORDER_THIN);
+    
+                // centrado
+                $sheet->getStyle("{$colLetra}{$fila}")
+                    ->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            }
+    
+            return $col + 1;
+        }
+
     private function hayTexturaPorDatos($datos, $texturas) {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
@@ -907,6 +1203,42 @@ class ReporteClienteController extends Controller {
 
         return false;
     }
+
+        private function hayRetencionHumedadPorDatos($datos, $retenciones) {
+            foreach ($datos as $row) {
+                $idlab = (string) $row->idlab;
+    
+                if (isset($retenciones[$idlab])) {
+                    return true;
+                }
+            }
+    
+            return false;
+        }
+    
+        private function hayEstabilidadAgregadosPorDatos($datos, $estabilidades) {
+            foreach ($datos as $row) {
+                $idlab = (string) $row->idlab;
+    
+                if (isset($estabilidades[$idlab])) {
+                    return true;
+                }
+            }
+    
+            return false;
+        }
+    
+        private function hayCoeficienteExtensibilidadPorDatos($datos, $coeficientes) {
+            foreach ($datos as $row) {
+                $idlab = (string) $row->idlab;
+    
+                if (isset($coeficientes[$idlab])) {
+                    return true;
+                }
+            }
+    
+            return false;
+        }
 
     private function llenarEncabezado($sheet, $data) {
         $sheet->setCellValue('B8', $data['encabezado']->numero ?? '');

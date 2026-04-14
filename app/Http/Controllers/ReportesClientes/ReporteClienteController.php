@@ -684,42 +684,47 @@ class ReporteClienteController extends Controller
     }
 
     private function dibujarEncabezadoEstabilidadAgregados($spreadsheet, $col, $cantidadHojas)
-    {
-        for ($i = 0; $i < $cantidadHojas; $i++) {
+{
+    for ($i = 0; $i < $cantidadHojas; $i++) {
 
-            $sheet = $spreadsheet->getSheet($i);
-            $colLetra = Coordinate::stringFromColumnIndex($col);
+        $sheet = $spreadsheet->getSheet($i);
 
-            // TITULO
-            $sheet->setCellValue("{$colLetra}16", "Estabilidad de Agregados");
+        $col1 = Coordinate::stringFromColumnIndex($col);
+        $col2 = Coordinate::stringFromColumnIndex($col + 1);
 
-            // SUBHEADER
-            $sheet->setCellValue("{$colLetra}17", "EA");
+        // TITULO (merge 2 columnas)
+        $sheet->mergeCells("{$col1}16:{$col2}16");
+        $sheet->setCellValue("{$col1}16", "Estabilidad de Agregados");
 
-            // UNIDAD
-            $sheet->setCellValue("{$colLetra}18", "%");
+        // SUBHEADER
+        $sheet->setCellValue("{$col1}17", "EA1");
+        $sheet->setCellValue("{$col2}17", "EA2");
 
-            // ancho
-            $sheet->getColumnDimension($colLetra)->setWidth(15);
+        // UNIDAD
+        $sheet->setCellValue("{$col1}18", "%");
+        $sheet->setCellValue("{$col2}18", "%");
 
-            // estilos
-            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
-                'font' => ['bold' => true, 'size' => 10],
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical' => Alignment::VERTICAL_CENTER,
-                ],
-            ]);
+        // ancho
+        $sheet->getColumnDimension($col1)->setWidth(15);
+        $sheet->getColumnDimension($col2)->setWidth(15);
 
-            // bordes
-            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
-                ->getBorders()
-                ->getAllBorders()
-                ->setBorderStyle(Border::BORDER_THIN);
-        }
+        // estilos
+        $sheet->getStyle("{$col1}16:{$col2}18")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 10],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
 
-        return $col + 1;
+        // bordes
+        $sheet->getStyle("{$col1}16:{$col2}18")
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
     }
+
+    return $col + 2; 
 
     private function dibujarEncabezadoCoeficienteExtensibilidad($spreadsheet, $col, $cantidadHojas)
     {
@@ -1062,25 +1067,25 @@ class ReporteClienteController extends Controller
 
             $valores = [$rh1, $rh2, $rh3];
 
-             for ($j = 0; $j < 3; $j++) {
+            for ($j = 0; $j < 3; $j++) {
 
-            $colLetra = Coordinate::stringFromColumnIndex($col + $j);
+                $colLetra = Coordinate::stringFromColumnIndex($col + $j);
 
-            if ($valores[$j] !== null) {
-                $sheet->setCellValue("{$colLetra}{$fila}", round($valores[$j], 2));
+                if ($valores[$j] !== null) {
+                    $sheet->setCellValue("{$colLetra}{$fila}", round($valores[$j], 2));
+                }
+
+                // Bordes
+                $sheet->getStyle("{$colLetra}{$fila}")
+                    ->getBorders()
+                    ->getRight()
+                    ->setBorderStyle(Border::BORDER_THIN);
+
+                // Centrado
+                $sheet->getStyle("{$colLetra}{$fila}")
+                    ->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
             }
-
-            // Bordes
-            $sheet->getStyle("{$colLetra}{$fila}")
-                ->getBorders()
-                ->getRight()
-                ->setBorderStyle(Border::BORDER_THIN);
-
-            // Centrado
-            $sheet->getStyle("{$colLetra}{$fila}")
-                ->getAlignment()
-                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
-             }
         }
 
         return $col + 3;
@@ -1104,27 +1109,34 @@ class ReporteClienteController extends Controller
 
             $idlab = (string) $row->idlab;
 
-            $ea = $estabilidades[$idlab]['estabilidad_agregados'] ?? null;
+            
+            $ea1 = $estabilidades[$idlab]['ea1'] ?? null;
+            $ea2 = $estabilidades[$idlab]['ea2'] ?? null;
 
-            $colLetra = Coordinate::stringFromColumnIndex($col);
+            $valores = [$ea1, $ea2];
 
-            if ($ea !== null) {
-                $sheet->setCellValue("{$colLetra}{$fila}", round($ea, 2));
+            for ($j = 0; $j < 2; $j++) {
+
+                $colLetra = Coordinate::stringFromColumnIndex($col + $j);
+
+                if ($valores[$j] !== null) {
+                    $sheet->setCellValue("{$colLetra}{$fila}", round($valores[$j], 2));
+                }
+
+                // borde
+                $sheet->getStyle("{$colLetra}{$fila}")
+                    ->getBorders()
+                    ->getRight()
+                    ->setBorderStyle(Border::BORDER_THIN);
+
+                // centrado
+                $sheet->getStyle("{$colLetra}{$fila}")
+                    ->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
             }
-
-            // borde derecho
-            $sheet->getStyle("{$colLetra}{$fila}")
-                ->getBorders()
-                ->getRight()
-                ->setBorderStyle(Border::BORDER_THIN);
-
-            // centrado
-            $sheet->getStyle("{$colLetra}{$fila}")
-                ->getAlignment()
-                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
         }
 
-        return $col + 1;
+        return $col + 2;
     }
 
     private function llenarDatosCoeficienteExtensibilidad($sheet1, $sheet2, $datos, $coeficientes, $col)

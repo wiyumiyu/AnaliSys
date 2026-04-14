@@ -22,40 +22,44 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class ReporteClienteController extends Controller {
+class ReporteClienteController extends Controller
+{
 
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $periodo = $request->get('periodo');
 
         if (!$periodo) {
             $periodo = DB::table('tbm_solicitud')
-                    ->selectRaw('MAX(YEAR(fecha)) as anio')
-                    ->value('anio');
+                ->selectRaw('MAX(YEAR(fecha)) as anio')
+                ->value('anio');
         }
 
         $estadoRep = $request->get('estado', 0);
         $buscar = $request->get('buscar', '');
 
         $solicitudes = DB::select(
-                'CALL sp_listar_reportes_clientes(?, ?, ?)',
-                [$periodo, $estadoRep, $buscar]
+            'CALL sp_listar_reportes_clientes(?, ?, ?)',
+            [$periodo, $estadoRep, $buscar]
         );
 
         return view('reportes_clientes.index', compact(
-                        'solicitudes',
-                        'periodo',
-                        'estadoRep',
-                        'buscar'
-                ));
+            'solicitudes',
+            'periodo',
+            'estadoRep',
+            'buscar'
+        ));
     }
 
-    public function show($id) {
+    public function show($id)
+    {
         $data = $this->getDatosReporte($id);
 
         return view('reportes_clientes.vista', $data);
     }
 
-    public function exportar($id) {
+    public function exportar($id)
+    {
         $data = $this->getDatosReporte($id);
 
         $ruta = storage_path('app/plantillas/Rep01.xlsx');
@@ -74,9 +78,9 @@ class ReporteClienteController extends Controller {
         $this->llenarEncabezado($sheet1, $data);
         $this->llenarEncabezado($sheet2, $data);
 
-        
-        
-        
+
+
+
         //------------------------------------------------------------------------
         // llenar encabezados de analisis
         //------------------------------------------------------------------------        
@@ -92,12 +96,12 @@ class ReporteClienteController extends Controller {
         if ($this->hayDensidadAparentePorDatos($data['datos'], $data['densidades'])) {
             $col = $this->dibujarEncabezadoDensidadAparente($spreadsheet, $col, $cantidadHojas);
         }
-        
+
         //DP
         if ($this->hayDensidadParticulasPorDatos($data['datos'], $data['densidadesParticulas'])) {
             $col = $this->dibujarEncabezadoDensidadParticulas($spreadsheet, $col, $cantidadHojas);
         }
-        
+
         // POROSIDAD
         if ($this->hayPorosidadPorDatos(
             $data['datos'],
@@ -106,12 +110,12 @@ class ReporteClienteController extends Controller {
         )) {
             $col = $this->dibujarEncabezadoPorosidad($spreadsheet, $col, $cantidadHojas);
         }
-        
+
         // HUMEDAD
         if ($this->hayHumedadPorDatos($data['datos'], $data['humedades'])) {
             $col = $this->dibujarEncabezadoHumedad($spreadsheet, $col, $cantidadHojas);
         }
-        
+
         // CONDUCTIVIDAD
         if ($this->hayConductividadPorDatos($data['datos'], $data['conductividades'])) {
             $col = $this->dibujarEncabezadoConductividad($spreadsheet, $col, $cantidadHojas);
@@ -132,7 +136,7 @@ class ReporteClienteController extends Controller {
             $col = $this->dibujarEncabezadoCoeficienteExtensibilidad($spreadsheet, $col, $cantidadHojas);
         }
 
-        
+
         //------------------------------------------------------------------------
         //------------------------------------------------------------------------
         // llenar datos
@@ -147,19 +151,19 @@ class ReporteClienteController extends Controller {
 
             // llenar datos usando el inicio
             $this->llenarDatosTextura(
-                    $sheet1,
-                    $sheet2,
-                    $data['datos'],
-                    $data['texturas'],
-                    $colTextura
+                $sheet1,
+                $sheet2,
+                $data['datos'],
+                $data['texturas'],
+                $colTextura
             );
 
             $col += 4;
         }
         // DA
         // -----------------------------------------------------------------------
-        
-       if ($this->hayDensidadAparentePorDatos($data['datos'], $data['densidades'])) {
+
+        if ($this->hayDensidadAparentePorDatos($data['datos'], $data['densidades'])) {
 
             $this->llenarDatosDensidadAparente(
                 $sheet1,
@@ -171,7 +175,7 @@ class ReporteClienteController extends Controller {
 
             $col += 1;
         }
-        
+
         // DP
         // -----------------------------------------------------------------------
         if ($this->hayDensidadParticulasPorDatos($data['datos'], $data['densidadesParticulas'])) {
@@ -188,7 +192,7 @@ class ReporteClienteController extends Controller {
 
             $col += 1;
         }
-        
+
         // POROSIDAD
         if ($this->hayPorosidadPorDatos(
             $data['datos'],
@@ -225,7 +229,7 @@ class ReporteClienteController extends Controller {
 
             $col += 1;
         }
-        
+
         // CONDUCTIVIDAD
         if ($this->hayConductividadPorDatos($data['datos'], $data['conductividades'])) {
 
@@ -289,7 +293,7 @@ class ReporteClienteController extends Controller {
 
             $col += 1;
         }
-        
+
         //---------------------------------------------------------------------------
         // IDS
         //---------------------------------------------------------------------------
@@ -311,28 +315,28 @@ class ReporteClienteController extends Controller {
             $sheet->mergeCells("A{$fila}:C{$fila}");
 
             $sheet->getStyle("A{$fila}:C{$fila}")
-                    ->getBorders()
-                    ->getLeft()
-                    ->setBorderStyle(Border::BORDER_THIN);
+                ->getBorders()
+                ->getLeft()
+                ->setBorderStyle(Border::BORDER_THIN);
 
             $sheet->getStyle("A{$fila}:C{$fila}")
-                    ->getBorders()
-                    ->getRight()
-                    ->setBorderStyle(Border::BORDER_THIN);
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
 
             $sheet->setCellValue("A{$fila}", $row->etiqueta);
 
             // --------------------------------------------------------
             // ID LAB (D)
             $sheet->getStyle("D{$fila}")
-                    ->getBorders()
-                    ->getLeft()
-                    ->setBorderStyle(Border::BORDER_THIN);
+                ->getBorders()
+                ->getLeft()
+                ->setBorderStyle(Border::BORDER_THIN);
 
             $sheet->getStyle("D{$fila}")
-                    ->getBorders()
-                    ->getRight()
-                    ->setBorderStyle(Border::BORDER_THIN);
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
 
             $sheet->setCellValue("D{$fila}", $row->idlab);
         }
@@ -355,7 +359,8 @@ class ReporteClienteController extends Controller {
         exit;
     }
 
-    private function dibujarEncabezadoTextura($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoTextura($spreadsheet, $col, $cantidadHojas)
+    {
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
             $sheet = $spreadsheet->getSheet($i);
@@ -371,32 +376,32 @@ class ReporteClienteController extends Controller {
             // --------------------------------------------------------
             // SUBHEADERS
             $sheet->setCellValue(
-                    \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . "17",
-                    "Arena"
+                \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . "17",
+                "Arena"
             );
             $sheet->setCellValue(
-                    \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . "17",
-                    "Limo"
+                \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . "17",
+                "Limo"
             );
             $sheet->setCellValue(
-                    \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 2) . "17",
-                    "Arcilla"
+                \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 2) . "17",
+                "Arcilla"
             );
             $sheet->setCellValue(
-                    \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 3) . "17",
-                    "Clase Textural"
+                \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 3) . "17",
+                "Clase Textural"
             );
 
             // --------------------------------------------------------
             // %
             $sheet->mergeCells(
-                    \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . "18:" .
+                \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . "18:" .
                     \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 2) . "18"
             );
 
             $sheet->setCellValue(
-                    \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . "18",
-                    "%"
+                \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . "18",
+                "%"
             );
 
             // --------------------------------------------------------
@@ -422,16 +427,17 @@ class ReporteClienteController extends Controller {
             // --------------------------------------------------------
             // BORDES
             $sheet->getStyle("{$colLetra}16:{$colFin}18")
-                    ->getBorders()
-                    ->getAllBorders()
-                    ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                ->getBorders()
+                ->getAllBorders()
+                ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         }
 
         // devolver nueva posición de columna
         return $col + 4;
     }
 
-    private function dibujarEncabezadoDensidadAparente($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoDensidadAparente($spreadsheet, $col, $cantidadHojas)
+    {
 
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
@@ -470,7 +476,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function dibujarEncabezadoDensidadParticulas($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoDensidadParticulas($spreadsheet, $col, $cantidadHojas)
+    {
 
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
@@ -509,7 +516,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function dibujarEncabezadoPorosidad($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoPorosidad($spreadsheet, $col, $cantidadHojas)
+    {
 
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
@@ -548,7 +556,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function dibujarEncabezadoHumedad($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoHumedad($spreadsheet, $col, $cantidadHojas)
+    {
 
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
@@ -586,7 +595,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function dibujarEncabezadoConductividad($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoConductividad($spreadsheet, $col, $cantidadHojas)
+    {
 
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
@@ -624,26 +634,38 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function dibujarEncabezadoRetencionHumedad($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoRetencionHumedad($spreadsheet, $col, $cantidadHojas)
+    {
+
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
             $sheet = $spreadsheet->getSheet($i);
-            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            $col1 = Coordinate::stringFromColumnIndex($col);
+            $col2 = Coordinate::stringFromColumnIndex($col + 1);
+            $col3 = Coordinate::stringFromColumnIndex($col + 2);
 
             // TITULO
-            $sheet->setCellValue("{$colLetra}16", "Retención de Humedad");
+            $sheet->mergeCells("{$col1}16:{$col3}16");
+            $sheet->setCellValue("{$col1}16", "Retención de Humedad");
 
             // SUBHEADER
-            $sheet->setCellValue("{$colLetra}17", "RH");
+            $sheet->setCellValue("{$col1}17", "RH");
+            $sheet->setCellValue("{$col2}17", "RH");
+            $sheet->setCellValue("{$col3}17", "RH");
 
             // UNIDAD
-            $sheet->setCellValue("{$colLetra}18", "%");
+            $sheet->setCellValue("{$col1}18", "%");
+            $sheet->setCellValue("{$col2}18", "%");
+            $sheet->setCellValue("{$col3}18", "%");
 
-            // ancho
-            $sheet->getColumnDimension($colLetra)->setWidth(15);
+            // ANCHO
+            $sheet->getColumnDimension($col1)->setWidth(15);
+            $sheet->getColumnDimension($col2)->setWidth(15);
+            $sheet->getColumnDimension($col3)->setWidth(15);
 
-            // estilos
-            $sheet->getStyle("{$colLetra}16:{$colLetra}18")->applyFromArray([
+            // ESTILOS
+            $sheet->getStyle("{$col1}16:{$col3}18")->applyFromArray([
                 'font' => ['bold' => true, 'size' => 10],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -651,17 +673,18 @@ class ReporteClienteController extends Controller {
                 ],
             ]);
 
-            // bordes
-            $sheet->getStyle("{$colLetra}16:{$colLetra}18")
+            // BORDES
+            $sheet->getStyle("{$col1}16:{$col3}18")
                 ->getBorders()
                 ->getAllBorders()
                 ->setBorderStyle(Border::BORDER_THIN);
         }
 
-        return $col + 1;
-
+        return $col + 3;
     }
-     private function dibujarEncabezadoEstabilidadAgregados($spreadsheet, $col, $cantidadHojas) {
+
+    private function dibujarEncabezadoEstabilidadAgregados($spreadsheet, $col, $cantidadHojas)
+    {
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
             $sheet = $spreadsheet->getSheet($i);
@@ -698,7 +721,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-     private function dibujarEncabezadoCoeficienteExtensibilidad($spreadsheet, $col, $cantidadHojas) {
+    private function dibujarEncabezadoCoeficienteExtensibilidad($spreadsheet, $col, $cantidadHojas)
+    {
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
             $sheet = $spreadsheet->getSheet($i);
@@ -736,7 +760,8 @@ class ReporteClienteController extends Controller {
     }
 
 
-    private function llenarDatosTextura($sheet1, $sheet2, $datos, $texturas, $col) {
+    private function llenarDatosTextura($sheet1, $sheet2, $datos, $texturas, $col)
+    {
         $filaBase = 19;
 
         for ($i = 0; $i < count($datos); $i++) {
@@ -773,28 +798,29 @@ class ReporteClienteController extends Controller {
             // BORDES
             // arcilla → borde derecho
             $sheet->getStyle("{$col3}{$fila}")
-                    ->getBorders()
-                    ->getRight()
-                    ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
             // clase textural → borde derecho
             $sheet->getStyle("{$col4}{$fila}")
-                    ->getBorders()
-                    ->getRight()
-                    ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
             // --------------------------------------------------------
             // ALINEACIÓN
             $sheet->getStyle("{$col1}{$fila}:{$col4}{$fila}")
-                    ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                ->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         }
 
         // devolver siguiente columna
         return $col + 4;
     }
 
-    private function llenarDatosDensidadAparente($sheet1, $sheet2, $datos, $densidades, $col) {
+    private function llenarDatosDensidadAparente($sheet1, $sheet2, $datos, $densidades, $col)
+    {
 
         $filaBase = 19;
 
@@ -834,7 +860,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function llenarDatosDensidadParticulas($sheet1, $sheet2, $datos, $densidadesParticulas, $col) {
+    private function llenarDatosDensidadParticulas($sheet1, $sheet2, $datos, $densidadesParticulas, $col)
+    {
 
         $filaBase = 19;
 
@@ -928,7 +955,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function llenarDatosHumedad($sheet1, $sheet2, $datos, $humedades, $col) {
+    private function llenarDatosHumedad($sheet1, $sheet2, $datos, $humedades, $col)
+    {
 
         $filaBase = 19;
 
@@ -968,7 +996,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function llenarDatosConductividad($sheet1, $sheet2, $datos, $conductividades, $col) {
+    private function llenarDatosConductividad($sheet1, $sheet2, $datos, $conductividades, $col)
+    {
 
         $filaBase = 19;
 
@@ -1009,7 +1038,8 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-    private function llenarDatosRetencionHumedad($sheet1, $sheet2, $datos, $retenciones, $col) {
+    private function llenarDatosRetencionHumedad($sheet1, $sheet2, $datos, $retenciones, $col)
+    {
         $filaBase = 19;
 
         for ($i = 0; $i < count($datos); $i++) {
@@ -1026,30 +1056,38 @@ class ReporteClienteController extends Controller {
 
             $idlab = (string) $row->idlab;
 
-            $rh = $retenciones[$idlab]['retencion_humedad'] ?? null;
+            $rh1 = $retenciones[$idlab]['rh1'] ?? null;
+            $rh2 = $retenciones[$idlab]['rh2'] ?? null;
+            $rh3 = $retenciones[$idlab]['rh3'] ?? null;
 
-            $colLetra = Coordinate::stringFromColumnIndex($col);
+            $valores = [$rh1, $rh2, $rh3];
 
-            if ($rh !== null) {
-                $sheet->setCellValue("{$colLetra}{$fila}", round($rh, 2));
+             for ($j = 0; $j < 3; $j++) {
+
+            $colLetra = Coordinate::stringFromColumnIndex($col + $j);
+
+            if ($valores[$j] !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", round($valores[$j], 2));
             }
 
-            // borde derecho
+            // Bordes
             $sheet->getStyle("{$colLetra}{$fila}")
                 ->getBorders()
                 ->getRight()
                 ->setBorderStyle(Border::BORDER_THIN);
 
-            // centrado
+            // Centrado
             $sheet->getStyle("{$colLetra}{$fila}")
                 ->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+             }
         }
 
-        return $col + 1;
+        return $col + 3;
     }
 
-     private function llenarDatosEstabilidadAgregados($sheet1, $sheet2, $datos, $estabilidades, $col) {
+    private function llenarDatosEstabilidadAgregados($sheet1, $sheet2, $datos, $estabilidades, $col)
+    {
         $filaBase = 19;
 
         for ($i = 0; $i < count($datos); $i++) {
@@ -1089,47 +1127,49 @@ class ReporteClienteController extends Controller {
         return $col + 1;
     }
 
-        private function llenarDatosCoeficienteExtensibilidad($sheet1, $sheet2, $datos, $coeficientes, $col) {
-            $filaBase = 19;
-    
-            for ($i = 0; $i < count($datos); $i++) {
-    
-                $row = $datos[$i];
-    
-                if ($i < 15) {
-                    $sheet = $sheet1;
-                    $fila = $filaBase + $i;
-                } else {
-                    $sheet = $sheet2;
-                    $fila = $filaBase + ($i - 15);
-                }
-    
-                $idlab = (string) $row->idlab;
-    
-                $ce = $coeficientes[$idlab]['coeficiente_extensibilidad'] ?? null;
-    
-                $colLetra = Coordinate::stringFromColumnIndex($col);
-    
-                if ($ce !== null) {
-                    $sheet->setCellValue("{$colLetra}{$fila}", round($ce, 3));
-                }
-    
-                // borde derecho
-                $sheet->getStyle("{$colLetra}{$fila}")
-                    ->getBorders()
-                    ->getRight()
-                    ->setBorderStyle(Border::BORDER_THIN);
-    
-                // centrado
-                $sheet->getStyle("{$colLetra}{$fila}")
-                    ->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    private function llenarDatosCoeficienteExtensibilidad($sheet1, $sheet2, $datos, $coeficientes, $col)
+    {
+        $filaBase = 19;
+
+        for ($i = 0; $i < count($datos); $i++) {
+
+            $row = $datos[$i];
+
+            if ($i < 15) {
+                $sheet = $sheet1;
+                $fila = $filaBase + $i;
+            } else {
+                $sheet = $sheet2;
+                $fila = $filaBase + ($i - 15);
             }
-    
-            return $col + 1;
+
+            $idlab = (string) $row->idlab;
+
+            $ce = $coeficientes[$idlab]['coeficiente_extensibilidad'] ?? null;
+
+            $colLetra = Coordinate::stringFromColumnIndex($col);
+
+            if ($ce !== null) {
+                $sheet->setCellValue("{$colLetra}{$fila}", round($ce, 3));
+            }
+
+            // borde derecho
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getBorders()
+                ->getRight()
+                ->setBorderStyle(Border::BORDER_THIN);
+
+            // centrado
+            $sheet->getStyle("{$colLetra}{$fila}")
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
         }
 
-    private function hayTexturaPorDatos($datos, $texturas) {
+        return $col + 1;
+    }
+
+    private function hayTexturaPorDatos($datos, $texturas)
+    {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
 
@@ -1141,7 +1181,8 @@ class ReporteClienteController extends Controller {
         return false;
     }
 
-    private function hayDensidadAparentePorDatos($datos, $densidades) {
+    private function hayDensidadAparentePorDatos($datos, $densidades)
+    {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
 
@@ -1153,7 +1194,8 @@ class ReporteClienteController extends Controller {
         return false;
     }
 
-    private function hayDensidadParticulasPorDatos($datos, $densidadesParticulas) {
+    private function hayDensidadParticulasPorDatos($datos, $densidadesParticulas)
+    {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
 
@@ -1165,7 +1207,8 @@ class ReporteClienteController extends Controller {
         return false;
     }
 
-    private function hayPorosidadPorDatos($datos, $densidades, $densidadesParticulas) {
+    private function hayPorosidadPorDatos($datos, $densidades, $densidadesParticulas)
+    {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
 
@@ -1180,7 +1223,8 @@ class ReporteClienteController extends Controller {
         return false;
     }
 
-    private function hayHumedadPorDatos($datos, $humedades) {
+    private function hayHumedadPorDatos($datos, $humedades)
+    {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
 
@@ -1192,7 +1236,8 @@ class ReporteClienteController extends Controller {
         return false;
     }
 
-    private function hayConductividadPorDatos($datos, $conductividades) {
+    private function hayConductividadPorDatos($datos, $conductividades)
+    {
         foreach ($datos as $row) {
             $idlab = (string) $row->idlab;
 
@@ -1204,43 +1249,47 @@ class ReporteClienteController extends Controller {
         return false;
     }
 
-        private function hayRetencionHumedadPorDatos($datos, $retenciones) {
-            foreach ($datos as $row) {
-                $idlab = (string) $row->idlab;
-    
-                if (isset($retenciones[$idlab])) {
-                    return true;
-                }
+    private function hayRetencionHumedadPorDatos($datos, $retenciones)
+    {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (isset($retenciones[$idlab])) {
+                return true;
             }
-    
-            return false;
-        }
-    
-        private function hayEstabilidadAgregadosPorDatos($datos, $estabilidades) {
-            foreach ($datos as $row) {
-                $idlab = (string) $row->idlab;
-    
-                if (isset($estabilidades[$idlab])) {
-                    return true;
-                }
-            }
-    
-            return false;
-        }
-    
-        private function hayCoeficienteExtensibilidadPorDatos($datos, $coeficientes) {
-            foreach ($datos as $row) {
-                $idlab = (string) $row->idlab;
-    
-                if (isset($coeficientes[$idlab])) {
-                    return true;
-                }
-            }
-    
-            return false;
         }
 
-    private function llenarEncabezado($sheet, $data) {
+        return false;
+    }
+
+    private function hayEstabilidadAgregadosPorDatos($datos, $estabilidades)
+    {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (isset($estabilidades[$idlab])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hayCoeficienteExtensibilidadPorDatos($datos, $coeficientes)
+    {
+        foreach ($datos as $row) {
+            $idlab = (string) $row->idlab;
+
+            if (isset($coeficientes[$idlab])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function llenarEncabezado($sheet, $data)
+    {
         $sheet->setCellValue('B8', $data['encabezado']->numero ?? '');
         $sheet->setCellValue('B9', $data['encabezado']->cliente ?? '');
         $sheet->setCellValue('B10', $data['encabezado']->subcliente ?? '');
@@ -1254,7 +1303,7 @@ class ReporteClienteController extends Controller {
         // fecha recepción
         if (!empty($data['encabezado']->fecha)) {
             $excelDate = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel(
-                    \Carbon\Carbon::parse($data['encabezado']->fecha)
+                \Carbon\Carbon::parse($data['encabezado']->fecha)
             );
 
             $sheet->setCellValue('Z11', $excelDate);
@@ -1268,29 +1317,30 @@ class ReporteClienteController extends Controller {
         $sheet->getStyle('Z12')->getNumberFormat()->setFormatCode('dd/mm/yyyy');
     }
 
-    private function getDatosReporte($id) {
+    private function getDatosReporte($id)
+    {
         /* ------------------------------------------------ */
         // ENCABEZADO
         /* ------------------------------------------------ */
         $encabezado = DB::select(
-                'CALL sp_reporte_cliente_encabezado(?)',
-                [$id]
+            'CALL sp_reporte_cliente_encabezado(?)',
+            [$id]
         );
 
         /* ------------------------------------------------ */
         // DATOS BASE
         /* ------------------------------------------------ */
         $datos = DB::select(
-                'CALL sp_obtener_reporte_cliente(?)',
-                [$id]
+            'CALL sp_obtener_reporte_cliente(?)',
+            [$id]
         );
 
         /* ------------------------------------------------ */
         // TEXTURA
         /* ------------------------------------------------ */
         $textura = DB::select(
-                'CALL sp_reporte_cliente_textura(?)',
-                [$id]
+            'CALL sp_reporte_cliente_textura(?)',
+            [$id]
         );
         $texturas = Textura::calcularTexturas($textura);
 
@@ -1298,17 +1348,17 @@ class ReporteClienteController extends Controller {
         // DENSIDAD APARENTE
         /* ------------------------------------------------ */
         $densidadAparente = DB::select(
-                'CALL sp_reporte_cliente_densidad_aparente(?)',
-                [$id]
+            'CALL sp_reporte_cliente_densidad_aparente(?)',
+            [$id]
         );
 
         $densidades = [];
         foreach ($densidadAparente as $m) {
             $da = DensidadAparente::calcular_densidad(
-                    $m->altura_cilindro,
-                    $m->diametro_cilindro,
-                    $m->peso_seco,
-                    $m->peso_cilindro
+                $m->altura_cilindro,
+                $m->diametro_cilindro,
+                $m->peso_seco,
+                $m->peso_cilindro
             );
 
             if ($da !== null) {
@@ -1320,18 +1370,18 @@ class ReporteClienteController extends Controller {
         // DENSIDAD PARTICULAS
         /* ------------------------------------------------ */
         $densidadParticulas = DB::select(
-                'CALL sp_reporte_cliente_densidad_particulas(?)',
-                [$id]
+            'CALL sp_reporte_cliente_densidad_particulas(?)',
+            [$id]
         );
 
         $densidadesParticulas = [];
         foreach ($densidadParticulas as $m) {
             $dp = DensidadParticulas::calcular(
-                    $m->numero_balon,
-                    $m->p1,
-                    $m->p2,
-                    $m->p3,
-                    $m->temperatura
+                $m->numero_balon,
+                $m->p1,
+                $m->p2,
+                $m->p3,
+                $m->temperatura
             );
 
             if ($dp !== null) {
@@ -1343,17 +1393,17 @@ class ReporteClienteController extends Controller {
         // POROSIDAD
         /* ------------------------------------------------ */
         $porosidades = Porosidad::calcular(
-                $densidades,
-                $densidadesParticulas,
-                $datos
+            $densidades,
+            $densidadesParticulas,
+            $datos
         );
 
         /* ------------------------------------------------ */
         // HUMEDAD
         /* ------------------------------------------------ */
         $humedadGravimetrica = DB::select(
-                'CALL sp_reporte_cliente_humedad_gravimetrica(?)',
-                [$id]
+            'CALL sp_reporte_cliente_humedad_gravimetrica(?)',
+            [$id]
         );
 
         $humedades = [];
@@ -1369,8 +1419,8 @@ class ReporteClienteController extends Controller {
         // CONDUCTIVIDAD
         /* ------------------------------------------------ */
         $conductividadHidraulica = DB::select(
-                'CALL sp_reporte_cliente_conductividad_hidraulica(?)',
-                [$id]
+            'CALL sp_reporte_cliente_conductividad_hidraulica(?)',
+            [$id]
         );
         $conductividades = conductividadHidraulica::calcularConductividades($conductividadHidraulica);
 
@@ -1378,8 +1428,8 @@ class ReporteClienteController extends Controller {
         // RETENCION
         /* ------------------------------------------------ */
         $retencionHumedad = DB::select(
-                'CALL sp_reporte_cliente_retencion_humedad(?)',
-                [$id]
+            'CALL sp_reporte_cliente_retencion_humedad(?)',
+            [$id]
         );
         $retenciones = RetencionHumedad::calcularRetenciones($retencionHumedad);
 
@@ -1387,8 +1437,8 @@ class ReporteClienteController extends Controller {
         // ESTABILIDAD
         /* ------------------------------------------------ */
         $estabilidadAgregados = DB::select(
-                'CALL sp_reporte_cliente_estabilidad_agregados(?)',
-                [$id]
+            'CALL sp_reporte_cliente_estabilidad_agregados(?)',
+            [$id]
         );
         $estabilidades = EstabilidadAgregados::calcular($estabilidadAgregados);
 
@@ -1396,8 +1446,8 @@ class ReporteClienteController extends Controller {
         // COEL
         /* ------------------------------------------------ */
         $coel = DB::select(
-                'CALL sp_reporte_cliente_coeficiente_extensibilidad(?)',
-                [$id]
+            'CALL sp_reporte_cliente_coeficiente_extensibilidad(?)',
+            [$id]
         );
         $coeles = CoeficienteExtensibilidad::calcularPorMuestras($coel);
 
@@ -1405,8 +1455,8 @@ class ReporteClienteController extends Controller {
         // GRANULOMETRIA
         /* ------------------------------------------------ */
         $granulometria = DB::select(
-                'CALL sp_reporte_cliente_granulometria(?)',
-                [$id]
+            'CALL sp_reporte_cliente_granulometria(?)',
+            [$id]
         );
         $granulometrias = Granulometria::calcularPorMuestras($granulometria);
 

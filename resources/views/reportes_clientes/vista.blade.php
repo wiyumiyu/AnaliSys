@@ -152,7 +152,7 @@
                                     <th colspan="2">Est. Agregados</th>
 
                                     <th rowspan="2">COEL</th>
-                                    <th rowspan="2">Frac.A</th>
+                                    
 
                                 </tr>
 
@@ -201,7 +201,7 @@
 
                                     <!-- RESTO -->
                                     <th></th>
-                                    <th></th>
+
 
                                 </tr>
 
@@ -282,7 +282,7 @@
                                     $coel = $coeficientes[$row->idlab] ?? null;
                                     @endphp
                                     <td> {{ isset($coel['cole']) ? number_format($coel['cole'], 4) : '-' }}</td>
-                                    <td></td>
+                                    
 
 
                                 </tr>

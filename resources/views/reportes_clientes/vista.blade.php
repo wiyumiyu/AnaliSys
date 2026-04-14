@@ -279,7 +279,7 @@
                                     <td>{{ isset($ea['dmp']) ? number_format($ea['dmp'], 2) : '-' }}</td>
                                     <td>{{ isset($ea['eaa']) ? number_format($ea['eaa'], 2) : '-' }}</td>
                                     @php
-                                    $coel = $coeles[$row->idlab] ?? null;
+                                    $coel = $coeficientes[$row->idlab] ?? null;
                                     @endphp
                                     <td> {{ isset($coel['cole']) ? number_format($coel['cole'], 4) : '-' }}</td>
                                     <td></td>

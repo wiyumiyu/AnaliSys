@@ -691,6 +691,10 @@ Route::prefix('reportes-clientes')->group(function () {
 Route::get('/reporte/exportar/excel/{id}', 
     [ReporteClienteController::class, 'exportar']
 )->name('reporte.exportar.excel');
+
+Route::get('/reporte/exportar/granulometria/{id}', 
+    [ReporteClienteController::class, 'exportarGranulometria']
+)->name('reporte.exportar.granulometria');
 //------------------------------------------------------------------------------
 // ----------------------------------------------------------PLANTILLA
 

@@ -350,6 +350,94 @@ class ReporteClienteController extends Controller {
         exit;
     }
 
+    public function exportarGranulometria($id)
+    {
+        $data = $this->getDatosReporte($id);
+
+        $ruta = storage_path('app/plantillas/Rep02.xlsx');
+
+        if (!file_exists($ruta)) {
+            dd('NO EXISTE:', $ruta);
+        }
+
+        $spreadsheet = IOFactory::load($ruta);
+
+        $plantilla = $spreadsheet->getSheet(0);
+
+        $spreadsheet->removeSheetByIndex(0);
+
+        $granulometrias = $data['granulometrias'];
+
+        $mapDatos = collect($data['datos'])
+            ->keyBy(fn($d) => (string)$d->idlab);
+
+        $sheetIndex = 0;
+
+        foreach ($granulometrias as $idlab => $filas) {
+
+            // -----------------------------
+            // CREAR HOJA
+            // -----------------------------
+            $sheet = clone $plantilla;
+
+            $sheet->setTitle("Muestra {$idlab}_" . $sheetIndex);
+
+            $spreadsheet->addSheet($sheet);
+
+            // -----------------------------
+            // ENCABEZADO
+            // -----------------------------
+            $this->llenarEncabezado($sheet, $data);
+
+            $etiqueta = $mapDatos[$idlab]->etiqueta ?? 'SIN ETIQUETA';
+
+            // -----------------------------
+            // POSICIÓN TABLA
+            // -----------------------------
+            $filaBase = 18;
+
+            // -----------------------------
+            // LLENAR DATOS
+            // -----------------------------
+            foreach ($filas as $i => $f) {
+
+                $fila = $filaBase + $i;
+
+                if ($i === 0) {
+
+                    $sheet->mergeCells("A{$fila}:C" . ($fila + count($filas) - 1));
+                    $sheet->setCellValue("A{$fila}", $etiqueta);
+
+                    $sheet->mergeCells("D{$fila}:D" . ($fila + count($filas) - 1));
+                    $sheet->setCellValue("D{$fila}", $idlab);
+                }
+
+                // Datos en columnas
+                $sheet->setCellValue("F{$fila}", round($f['tamiz'], 2));
+                $sheet->setCellValue("F{$fila}", round($f['peso'], 2));
+                $sheet->setCellValue("G{$fila}", round($f['retenido'], 2));
+                $sheet->setCellValue("H{$fila}", round($f['acumulado'], 2));
+                $sheet->setCellValue("I{$fila}", round($f['pasante'], 2));
+            }
+
+            $sheetIndex++;
+        }
+
+        // -----------------------------
+        // DESCARGA
+        // -----------------------------
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+
+        $fileName = 'granulometria_' . $id . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
     private function dibujarEncabezadoTextura($spreadsheet, $col, $cantidadHojas) {
         for ($i = 0; $i < $cantidadHojas; $i++) {
 
@@ -1152,7 +1240,7 @@ class ReporteClienteController extends Controller {
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
         }
 
-        // 🔥 AVANZA 2 COLUMNAS
+        // AVANZA 2 COLUMNAS
         return $col + 2;
     }
 

@@ -148,7 +148,7 @@
 
                                     <th colspan="3">Ret. Humedad</th>
 
-                                    <!-- 🔥 ESTABILIDAD AGR -->
+                                    <!-- ESTABILIDAD AGR -->
                                     <th colspan="2">Est. Agregados</th>
 
                                     <th rowspan="2">COEL</th>
@@ -168,7 +168,7 @@
                                     <th>Hg 1500 kPa</th>
                                     <th>Agua Disp.</th>
 
-                                    <!-- 🔥 ESTABILIDAD -->
+                                    <!-- ESTABILIDAD -->
                                     <th>DMP</th>
                                     <th>EAA</th>
                                 </tr>
@@ -195,7 +195,7 @@
                                     <th>%</th>
                                     <th>%</th>
 
-                                    <!-- 🔥 ESTABILIDAD -->
+                                    <!-- ESTABILIDAD -->
                                     <th>mm</th>
                                     <th>%</th>
 
@@ -302,6 +302,15 @@
 
                     @endphp      
                     <div class="mt-4">
+
+                        <div class="d-flex justify-content-end mb-2">
+                            <a href="{{ route('reporte.exportar.granulometria', $id) }}"
+                            class="btn btn-success">
+
+                                <i class="bi bi-file-earmark-excel me-1"></i>
+                                XLSX Granulometría
+                            </a>
+                        </div>
 
                         <h5 class="fw-semibold mb-3">
                             Granulometría de la Fracción Gruesa

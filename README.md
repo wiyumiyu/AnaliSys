@@ -7,5 +7,6 @@ El sistema AnaliSys es una aplicación web que será realizada para CIA-UCR con 
 - PHP >= 8.1
 - Extensiones:
   - gd
+  - zip
   - pdo
   - pdo_mysql
